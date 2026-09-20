@@ -1,0 +1,26 @@
+# Archivos generados por .NET
+**/bin/
+**/obj/
+
+# Dependencias y compilaciones del frontend
+**/node_modules/
+**/dist/
+**/dist-ssr/
+
+# Configuracion local de los editores
+**/.vs/
+**/.idea/
+*.user
+*.suo
+*.sln.docstates
+
+# Variables de entorno locales
+.env
+.env.*
+!.env.example
+
+# Logs y archivos del sistema operativo
+*.log
+.DS_Store
+Thumbs.db
+Desktop.ini
