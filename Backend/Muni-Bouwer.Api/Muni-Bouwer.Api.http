@@ -1,0 +1,6 @@
+@Muni_Bouwer.Api_HostAddress = http://localhost:5218
+
+GET {{Muni_Bouwer.Api_HostAddress}}/swagger/v1/swagger.json
+Accept: application/json
+
+###

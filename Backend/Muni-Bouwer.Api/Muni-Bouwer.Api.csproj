@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Muni_Bouwer.Api</RootNamespace>
+    <UserSecretsId>50e339dd-8843-4723-985a-95b10031180b</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.19">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Muni-Bouwer.Business\Muni-Bouwer.Business.csproj" />
+    <ProjectReference Include="..\Muni-Bouwer.Data\Muni-Bouwer.Data.csproj" />
+    <ProjectReference Include="..\Muni-Bouwer.Entities\Muni-Bouwer.Entities.csproj" />
+  </ItemGroup>
+
+</Project>
