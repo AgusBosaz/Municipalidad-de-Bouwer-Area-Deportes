@@ -4,145 +4,147 @@
 classDiagram
     direction TB
 
-    class Usuario {
+    class User {
         <<abstract>>
         +id: int
-        +nombre: string
-        +apellido: string
+        +firstName: string
+        +lastName: string
         +dni: string
-        +genero: string
-        +telefono: string
-        +domicilio: string
-        +fechaNacimiento: date
-        +fechaAlta: date
-        +fechaModificacion: date
-        - bool estado
+        +gender: string
+        +phoneNumber: string
+        +address: string
+        +birthDate: date
+        +createdAt: date
+        +updatedAt: date
+        +isActive: bool
         +passwordHash: string?
-        +login(email, password) bool
+        +login(identifier, password) bool
         +logout() void
-        +visualizarGrillaActividades() Actividad[]
+        +viewActivitySchedule() Activity[]
     }
 
-    class Rol {
+    class Role {
         +id: int
-        +nombre: string
-        +descripcion: string
+        +name: string
+        +description: string
     }
 
-    class Permiso {
+    class Permission {
         +id: int
-        +nombre: string
-        +descripcion: string
+        +name: string
+        +description: string
     }
 
-    class Docente {
-        +especialidad: string
-        +inscribirAlumno(alumno, actividad) Inscripcion
-        +ingresarDocumentacion(alumno, doc) void
-        +visualizarFichaMedica(alumno) FichaMedica
-        +tomarAsistencia(actividad, fecha) Asistencia
+    class Instructor {
+        +specialty: string
+        +enrollStudent(student, activity) Enrollment
+        +uploadDocumentation(student, document) void
+        +viewMedicalRecord(student) MedicalRecord
+        +recordAttendance(activity, date) Attendance
     }
 
-    class Coordinador {
-        +crearActividad(actividad) void
-        +editarActividad(actividad) void
-        +eliminarActividad(id) void
-        +listarActividades() Actividad[]
-        +crearDocente(docente) void
-        +editarDocente(docente) void
-        +eliminarDocente(id) void
-        +asignarActividadADocente(docente, actividad) void
-        +inscribirAlumno(alumno, actividad) Inscripcion
-        +ingresarDocumentacion(alumno, doc) void
-        +visualizarFichaMedica(alumno) FichaMedica
+    class Coordinator {
+        +createActivity(activity) void
+        +updateActivity(activity) void
+        +deleteActivity(id) void
+        +listActivities() Activity[]
+        +createInstructor(instructor) void
+        +updateInstructor(instructor) void
+        +deleteInstructor(id) void
+        +assignActivityToInstructor(instructor, activity) void
+        +enrollStudent(student, activity) Enrollment
+        +uploadDocumentation(student, document) void
+        +viewMedicalRecord(student) MedicalRecord
     }
 
-    class Actividad {
+    class Activity {
         +id: int
-        +nombre: string
-        +categoria: CategoriaEtaria
-        +horarioInicio: time
-        +horarioFin: time
-        +cupoMaximo: int
+        +name: string
+        +category: AgeCategory
+        +startTime: time
+        +endTime: time
+        +maximumCapacity: int
     }
 
-    class Docente_Actividad {
+    class InstructorActivity {
         +id: int
-        +idDocente: int
-        +idActividad: int
+        +instructorId: int
+        +activityId: int
     }
-    class Alumno_Actividad {
+
+    class StudentActivity {
         +id: int
-        +idAlumno: int
-        +idActividad: int
+        +studentId: int
+        +activityId: int
     }
-    class CategoriaEtaria {
+
+    class AgeCategory {
         <<enumeration>>
-        NINOS
-        ADOLESCENTES
-        TERCERA_EDAD
+        Children
+        Teenagers
+        OlderAdults
     }
 
-    class Alumno {
-        +nombreContactoEmergencia: string
-        +telContactoEmergencia: string
+    class Student {
+        +emergencyContactName: string
+        +emergencyContactPhoneNumber: string
     }
 
-    class Inscripcion {
+    class Enrollment {
         +id: int
-        +idAlumno_Actividad: int
-        +fechaInscripcion: date
-        +estado: string
+        +studentActivityId: int
+        +enrollmentDate: date
+        +status: string
     }
 
-    class Documentacion {
+    class Documentation {
         +id: int
-        +idAlumno: int
-        +tipo: string
-        +archivoUrl: string
-        +fechaCarga: date
+        +studentId: int
+        +type: string
+        +fileUrl: string
+        +uploadedAt: date
     }
 
-    class FichaMedica {
+    class MedicalRecord {
         +id: int
-        +idAlumno: int
-        +enfermedades: string
+        +studentId: int
+        +diseases: string
         +cus: string
-        +observaciones: string
+        +observations: string
     }
 
-    class Asistencia_Alumno {
+    class StudentAttendance {
         +id: int
-        +idAlumno_Actividad: int
-        +fecha: date
-        +presente: bool
+        +studentActivityId: int
+        +date: date
+        +isPresent: bool
     }
 
-    class Asistencia_Docente {
+    class InstructorAttendance {
         +id: int
-        +idDocente_Actividad: int
-        +fecha: date
-        +presente: bool
+        +instructorActivityId: int
+        +date: date
+        +isPresent: bool
     }
 
-    Usuario <|-- Alumno
-    Usuario <|-- Docente
-    Usuario <|-- Coordinador
-    Usuario "*" --> "*" Rol : tiene
-    Rol "*" --> "*" Permiso : otorga
+    User <|-- Student
+    User <|-- Instructor
+    User <|-- Coordinator
+    User "*" --> "*" Role : has
+    Role "*" --> "*" Permission : grants
 
-    Coordinador "1" --> "*" Docente : administra
-    Coordinador "1" --> "*" Actividad : administra
-    Coordinador "1" --> "*" Docente_Actividad : asigna
-    Docente "1" --> "*" Docente_Actividad : es referenciado por
-    Actividad "1" --> "*" Docente_Actividad : es referenciada por
-    Actividad --> CategoriaEtaria : clasificada por
+    Coordinator "1" --> "*" Instructor : manages
+    Coordinator "1" --> "*" Activity : manages
+    Coordinator "1" --> "*" InstructorActivity : assigns
+    Instructor "1" --> "*" InstructorActivity : referenced by
+    Activity "1" --> "*" InstructorActivity : referenced by
+    Activity --> AgeCategory : classified by
 
-    Alumno "1" --> "*" Documentacion : posee
-    Alumno "1" --> "1" FichaMedica : posee
-    Alumno "1" --> "*" Alumno_Actividad : participa
-    Actividad "1" --> "*" Alumno_Actividad : recibe
-    Alumno_Actividad "1" --> "*" Inscripcion : registra
-    Alumno_Actividad "1" --> "*" Asistencia_Alumno : registra
-    Docente_Actividad "1" --> "*" Asistencia_Docente : registra
+    Student "1" --> "*" Documentation : owns
+    Student "1" --> "1" MedicalRecord : owns
+    Student "1" --> "*" StudentActivity : participates
+    Activity "1" --> "*" StudentActivity : receives
+    StudentActivity "1" --> "*" Enrollment : records
+    StudentActivity "1" --> "*" StudentAttendance : records
+    InstructorActivity "1" --> "*" InstructorAttendance : records
 ```

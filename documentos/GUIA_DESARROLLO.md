@@ -1,4 +1,4 @@
-﻿# Guía de desarrollo
+# Guía de desarrollo
 
 Esta guía explica cómo preparar el proyecto y dónde debe trabajar cada integrante. Las decisiones académicas generales se encuentran en [`../context.md`](../context.md).
 
@@ -133,41 +133,41 @@ Ubicación: `Backend/Muni-Bouwer.Entities/DTOs`
 | `src/assets/images` | Imágenes importadas desde React |
 | `public` | Archivos públicos servidos directamente |
 
-`src/services/api.js` contiene la función común `solicitarApi`. Cada funcionalidad puede crear su propio Service y reutilizarla.
+`src/services/api.js` contiene la función común `apiRequest`. Cada funcionalidad puede crear su propio Service y reutilizarla.
 
 Ejemplo conceptual:
 
 ```javascript
-import { solicitarApi } from './api'
+import { apiRequest } from './api'
 
-export function obtenerActividades() {
-  return solicitarApi('/actividades')
+export function getActivities() {
+  return apiRequest('/activities')
 }
 ```
 
-La ruta del ejemplo supone que el Controller correspondiente utiliza `/api/actividades`.
+La ruta del ejemplo supone que el Controller correspondiente utiliza `/api/activities`.
 
 ## 7. Convenciones de nombres
 
 Backend:
 
 ```text
-Actividad.cs
-ActividadController.cs
-ActividadService.cs
-ActividadDAL.cs
-CrearActividadDto.cs
-ActualizarActividadDto.cs
-ActividadRespuestaDto.cs
+Activity.cs
+ActivitiesController.cs
+ActivityService.cs
+ActivityDAL.cs
+CreateActivityDto.cs
+UpdateActivityDto.cs
+ActivityResponseDto.cs
 ```
 
 Frontend:
 
 ```text
-pages/actividades/ActividadesPage.jsx
-components/actividades/ActividadForm.jsx
-services/actividadService.js
-styles/actividades.css
+pages/activities/ActivitiesPage.jsx
+components/activities/ActivityForm.jsx
+services/activityService.js
+styles/activities.css
 ```
 
 Los nombres deben expresar su responsabilidad. No crear carpetas llamadas `Equipo1`, `Equipo2` o `Equipo3`; la organización se realiza por funcionalidad.
@@ -196,20 +196,20 @@ Antes de implementar una funcionalidad, revisar si la entidad y sus relaciones y
 
 ## 9. Trabajo con Git
 
-Crear una rama desde una versión actualizada de `main`:
+Crear una rama desde una versión actualizada de `desarrollo`:
 
 ```powershell
-git switch main
-git pull
+git switch desarrollo
+git pull origin desarrollo
 git switch -c feature/nombre-descriptivo
 ```
 
 Ejemplos:
 
 ```text
-feature/crud-actividades
-feature/inscripcion-alumnos
-fix/validacion-cupo
+feature/activity-crud
+feature/student-enrollment
+fix/capacity-validation
 ```
 
 Antes de enviar cambios:
@@ -239,7 +239,7 @@ Las migraciones afectan a todos los equipos. Deben ser creadas por la persona re
 Cuando un cambio aprobado modifica el modelo:
 
 ```powershell
-dotnet tool run dotnet-ef migrations add NombreDescriptivo --project Backend/Muni-Bouwer.Data/Muni-Bouwer.Data.csproj --startup-project Backend/Muni-Bouwer.Api/Muni-Bouwer.Api.csproj --output-dir Migrations
+dotnet tool run dotnet-ef migrations add DescriptiveName --project Backend/Muni-Bouwer.Data/Muni-Bouwer.Data.csproj --startup-project Backend/Muni-Bouwer.Api/Muni-Bouwer.Api.csproj --output-dir Migrations
 ```
 
 Luego se aplica en la base local:
