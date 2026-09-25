@@ -49,12 +49,12 @@ Vite reenvia /api/... al backend conservando la ruta. No se necesitan variables 
 
 ## Solicitudes a la API
 
-src/services/api.js exporta solicitarApi(ruta, opciones).
+`src/services/api.js` exporta `apiRequest(path, options)`.
 La ruta comienza con / y no incluye /api.
 Devuelve datos JSON o texto, null para respuestas vacias, y lanza un error con status para respuestas HTTP fallidas. Los errores de red se propagan para que la pantalla los maneje.
 Para POST o PUT, pasar method y body: JSON.stringify(datos). Se agrega Content-Type: application/json cuando el body es un string.
 
-Los futuros Controllers deben usar [Route("api/[controller]")]. Actualmente AlumnoController tiene [Route("[controller]")] y no contiene acciones; todavia no hay endpoints de negocio para consumir.
+Los Controllers deben usar `[Route("api/[controller]")]`. Actualmente `StudentsController` no contiene acciones; todavía no hay endpoints de negocio para consumir.
 
 ## Verificacion
 

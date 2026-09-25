@@ -219,11 +219,11 @@ Deben comprender operaciones como:
 Ejemplo conceptual:
 
 ```text
-GET     /api/alumnos
-GET     /api/alumnos/5
-POST    /api/alumnos
-PUT     /api/alumnos/5
-DELETE  /api/alumnos/5
+GET     /api/students
+GET     /api/students/5
+POST    /api/students
+PUT     /api/students/5
+DELETE  /api/students/5
 ```
 
 La IA debe respetar convenciones REST sencillas y comprensibles.
@@ -345,8 +345,8 @@ Se pueden utilizar, entre otros:
 Ejemplo:
 
 ```csharp
-var alumnosActivos = alumnos
-    .Where(a => a.Activo)
+var activeStudents = students
+    .Where(student => student.IsActive)
     .ToList();
 ```
 
@@ -573,14 +573,14 @@ El objetivo es generar código que un estudiante de segundo año pueda:
 Preferir:
 
 ```csharp
-var alumno = alumnos.FirstOrDefault(a => a.Id == id);
+var student = students.FirstOrDefault(student => student.Id == id);
 
-if (alumno == null)
+if (student == null)
 {
     return NotFound();
 }
 
-return Ok(alumno);
+return Ok(student);
 ```
 
 frente a soluciones excesivamente compactas que dificulten su comprensión.
@@ -748,8 +748,8 @@ Si alguna respuesta representa un problema, adaptar la solución antes de presen
 
 Estas decisiones complementan las reglas anteriores y deben respetarse al trabajar en este repositorio:
 
-- `Usuario` es una clase abstracta.
-- `Alumno`, `Docente` y `Coordinador` heredan de `Usuario`.
+- `User` es una clase abstracta.
+- `Student`, `Instructor` y `Coordinator` heredan de `User`.
 - Por el momento, el alumno es registrado y administrado por docentes y coordinadores; no inicia sesión.
 - `PasswordHash` es opcional mientras existan tipos de usuario sin acceso al sistema.
 - No agregar `Email` ni otros datos de autenticación hasta que el equipo los defina.

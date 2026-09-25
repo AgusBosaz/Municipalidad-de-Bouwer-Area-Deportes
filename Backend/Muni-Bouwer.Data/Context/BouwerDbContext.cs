@@ -9,88 +9,88 @@ public class BouwerDbContext : DbContext
     {
     }
 
-    public DbSet<Usuario> Usuarios { get; set; }
-    public DbSet<Alumno> Alumnos { get; set; }
-    public DbSet<Docente> Docentes { get; set; }
-    public DbSet<Coordinador> Coordinadores { get; set; }
-    public DbSet<Rol> Roles { get; set; }
-    public DbSet<Permiso> Permisos { get; set; }
-    public DbSet<Actividad> Actividades { get; set; }
-    public DbSet<DocenteActividad> DocenteActividades { get; set; }
-    public DbSet<AlumnoActividad> AlumnoActividades { get; set; }
-    public DbSet<Inscripcion> Inscripciones { get; set; }
-    public DbSet<Documentacion> Documentaciones { get; set; }
-    public DbSet<FichaMedica> FichasMedicas { get; set; }
-    public DbSet<AsistenciaAlumno> AsistenciasAlumnos { get; set; }
-    public DbSet<AsistenciaDocente> AsistenciasDocentes { get; set; }
+    public DbSet<User> Users { get; set; }
+    public DbSet<Student> Students { get; set; }
+    public DbSet<Instructor> Instructors { get; set; }
+    public DbSet<Coordinator> Coordinators { get; set; }
+    public DbSet<Role> Roles { get; set; }
+    public DbSet<Permission> Permissions { get; set; }
+    public DbSet<Activity> Activities { get; set; }
+    public DbSet<InstructorActivity> InstructorActivities { get; set; }
+    public DbSet<StudentActivity> StudentActivities { get; set; }
+    public DbSet<Enrollment> Enrollments { get; set; }
+    public DbSet<Documentation> Documents { get; set; }
+    public DbSet<MedicalRecord> MedicalRecords { get; set; }
+    public DbSet<StudentAttendance> StudentAttendances { get; set; }
+    public DbSet<InstructorAttendance> InstructorAttendances { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<Usuario>()
-            .HasDiscriminator<string>("TipoUsuario")
-            .HasValue<Alumno>("Alumno")
-            .HasValue<Docente>("Docente")
-            .HasValue<Coordinador>("Coordinador");
+        modelBuilder.Entity<User>()
+            .HasDiscriminator<string>("UserType")
+            .HasValue<Student>("Student")
+            .HasValue<Instructor>("Instructor")
+            .HasValue<Coordinator>("Coordinator");
 
-        modelBuilder.Entity<Usuario>()
-            .HasMany(usuario => usuario.Roles)
-            .WithMany(rol => rol.Usuarios)
-            .UsingEntity(tabla => tabla.ToTable("UsuariosRoles"));
+        modelBuilder.Entity<User>()
+            .HasMany(user => user.Roles)
+            .WithMany(role => role.Users)
+            .UsingEntity(table => table.ToTable("UserRoles"));
 
-        modelBuilder.Entity<Rol>()
-            .HasMany(rol => rol.Permisos)
-            .WithMany(permiso => permiso.Roles)
-            .UsingEntity(tabla => tabla.ToTable("RolesPermisos"));
+        modelBuilder.Entity<Role>()
+            .HasMany(role => role.Permissions)
+            .WithMany(permission => permission.Roles)
+            .UsingEntity(table => table.ToTable("RolePermissions"));
 
-        modelBuilder.Entity<Actividad>()
-            .Property(actividad => actividad.Categoria)
+        modelBuilder.Entity<Activity>()
+            .Property(activity => activity.Category)
             .HasConversion<string>();
 
-        modelBuilder.Entity<DocenteActividad>()
-            .HasOne(relacion => relacion.Docente)
-            .WithMany(docente => docente.DocenteActividades)
-            .HasForeignKey(relacion => relacion.IdDocente);
+        modelBuilder.Entity<InstructorActivity>()
+            .HasOne(assignment => assignment.Instructor)
+            .WithMany(instructor => instructor.InstructorActivities)
+            .HasForeignKey(assignment => assignment.InstructorId);
 
-        modelBuilder.Entity<DocenteActividad>()
-            .HasOne(relacion => relacion.Actividad)
-            .WithMany(actividad => actividad.DocenteActividades)
-            .HasForeignKey(relacion => relacion.IdActividad);
+        modelBuilder.Entity<InstructorActivity>()
+            .HasOne(assignment => assignment.Activity)
+            .WithMany(activity => activity.InstructorActivities)
+            .HasForeignKey(assignment => assignment.ActivityId);
 
-        modelBuilder.Entity<AlumnoActividad>()
-            .HasOne(relacion => relacion.Alumno)
-            .WithMany(alumno => alumno.AlumnoActividades)
-            .HasForeignKey(relacion => relacion.IdAlumno);
+        modelBuilder.Entity<StudentActivity>()
+            .HasOne(assignment => assignment.Student)
+            .WithMany(student => student.StudentActivities)
+            .HasForeignKey(assignment => assignment.StudentId);
 
-        modelBuilder.Entity<AlumnoActividad>()
-            .HasOne(relacion => relacion.Actividad)
-            .WithMany(actividad => actividad.AlumnoActividades)
-            .HasForeignKey(relacion => relacion.IdActividad);
+        modelBuilder.Entity<StudentActivity>()
+            .HasOne(assignment => assignment.Activity)
+            .WithMany(activity => activity.StudentActivities)
+            .HasForeignKey(assignment => assignment.ActivityId);
 
-        modelBuilder.Entity<Inscripcion>()
-            .HasOne(inscripcion => inscripcion.AlumnoActividad)
-            .WithMany(relacion => relacion.Inscripciones)
-            .HasForeignKey(inscripcion => inscripcion.IdAlumnoActividad);
+        modelBuilder.Entity<Enrollment>()
+            .HasOne(enrollment => enrollment.StudentActivity)
+            .WithMany(assignment => assignment.Enrollments)
+            .HasForeignKey(enrollment => enrollment.StudentActivityId);
 
-        modelBuilder.Entity<Documentacion>()
-            .HasOne(documentacion => documentacion.Alumno)
-            .WithMany(alumno => alumno.Documentaciones)
-            .HasForeignKey(documentacion => documentacion.IdAlumno);
+        modelBuilder.Entity<Documentation>()
+            .HasOne(document => document.Student)
+            .WithMany(student => student.Documents)
+            .HasForeignKey(document => document.StudentId);
 
-        modelBuilder.Entity<FichaMedica>()
-            .HasOne(ficha => ficha.Alumno)
-            .WithOne(alumno => alumno.FichaMedica)
-            .HasForeignKey<FichaMedica>(ficha => ficha.IdAlumno);
+        modelBuilder.Entity<MedicalRecord>()
+            .HasOne(record => record.Student)
+            .WithOne(student => student.MedicalRecord)
+            .HasForeignKey<MedicalRecord>(record => record.StudentId);
 
-        modelBuilder.Entity<AsistenciaAlumno>()
-            .HasOne(asistencia => asistencia.AlumnoActividad)
-            .WithMany(relacion => relacion.Asistencias)
-            .HasForeignKey(asistencia => asistencia.IdAlumnoActividad);
+        modelBuilder.Entity<StudentAttendance>()
+            .HasOne(attendance => attendance.StudentActivity)
+            .WithMany(assignment => assignment.Attendances)
+            .HasForeignKey(attendance => attendance.StudentActivityId);
 
-        modelBuilder.Entity<AsistenciaDocente>()
-            .HasOne(asistencia => asistencia.DocenteActividad)
-            .WithMany(relacion => relacion.Asistencias)
-            .HasForeignKey(asistencia => asistencia.IdDocenteActividad);
+        modelBuilder.Entity<InstructorAttendance>()
+            .HasOne(attendance => attendance.InstructorActivity)
+            .WithMany(assignment => assignment.Attendances)
+            .HasForeignKey(attendance => attendance.InstructorActivityId);
     }
 }
