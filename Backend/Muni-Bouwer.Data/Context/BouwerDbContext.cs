@@ -35,6 +35,10 @@ public class BouwerDbContext : DbContext
             .HasValue<Coordinator>("Coordinator");
 
         modelBuilder.Entity<User>()
+            .HasIndex(user => user.Dni)
+            .IsUnique();
+
+        modelBuilder.Entity<User>()
             .HasMany(user => user.Roles)
             .WithMany(role => role.Users)
             .UsingEntity(table => table.ToTable("UserRoles"));
