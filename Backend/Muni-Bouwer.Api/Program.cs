@@ -7,20 +7,18 @@ using Microsoft.OpenApi.Models;
 using Muni_Bouwer.Business.Services;
 using Muni_Bouwer.Data.Context;
 using Muni_Bouwer.Data.DAL;
-<<<<<<< HEAD
+
 using Muni_Bouwer.Business.Services;
-=======
+
 using Muni_Bouwer.Entities.Models;
->>>>>>> origin/desarrollo
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-<<<<<<< HEAD
 builder.Services.AddScoped<IActivityDAL, ActivityDAL>();
 builder.Services.AddScoped<IActivityService, ActivityService>();
-=======
+
 string jwtKey = builder.Configuration["Jwt:Key"]
     ?? throw new InvalidOperationException("JWT key is not configured.");
 
@@ -30,7 +28,6 @@ string jwtIssuer = builder.Configuration["Jwt:Issuer"]
 string jwtAudience = builder.Configuration["Jwt:Audience"]
     ?? throw new InvalidOperationException("JWT audience is not configured.");
 
->>>>>>> origin/desarrollo
 builder.Services.AddControllers();
 
 builder.Services.AddDbContext<BouwerDbContext>(options =>
