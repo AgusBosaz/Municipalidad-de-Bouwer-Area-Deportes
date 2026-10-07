@@ -1,10 +1,14 @@
 using Microsoft.EntityFrameworkCore;
 using Muni_Bouwer.Data.Context;
+using Muni_Bouwer.Data.DAL;
+using Muni_Bouwer.Business.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
+builder.Services.AddScoped<IActivityDAL, ActivityDAL>();
+builder.Services.AddScoped<IActivityService, ActivityService>();
 builder.Services.AddControllers();
 builder.Services.AddDbContext<BouwerDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("BouwerDatabase")));
