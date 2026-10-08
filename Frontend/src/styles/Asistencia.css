@@ -1,0 +1,19 @@
+.asistencia-filtros {
+  margin-bottom: 25px;
+}
+
+.asistencia-table {
+  margin-top: 10px;
+}
+
+.asistencia-table input[type="checkbox"] {
+  width: 17px;
+  height: 17px;
+  accent-color: #9a1b45;
+}
+
+.asistencia-table td:last-child,
+.asistencia-table th:last-child {
+  width: 120px;
+  text-align: center;
+}
