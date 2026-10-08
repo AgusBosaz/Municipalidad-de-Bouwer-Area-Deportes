@@ -7,11 +7,17 @@ using Microsoft.OpenApi.Models;
 using Muni_Bouwer.Business.Services;
 using Muni_Bouwer.Data.Context;
 using Muni_Bouwer.Data.DAL;
+
+using Muni_Bouwer.Business.Services;
+
 using Muni_Bouwer.Entities.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+builder.Services.AddScoped<IActivityDAL, ActivityDAL>();
+builder.Services.AddScoped<IActivityService, ActivityService>();
 
 string jwtKey = builder.Configuration["Jwt:Key"]
     ?? throw new InvalidOperationException("JWT key is not configured.");
