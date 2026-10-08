@@ -1,4 +1,4 @@
-# Guía de desarrollo
+npm# Guía de desarrollo
 
 Esta guía explica cómo preparar el proyecto y dónde debe trabajar cada integrante. Las decisiones académicas generales se encuentran en [`../context.md`](../context.md).
 
@@ -48,7 +48,27 @@ dotnet tool run dotnet-ef database update --project Backend/Muni-Bouwer.Data/Mun
 
 Este comando aplica las migraciones compartidas y crea `MuniBouwerDeportes` si todavía no existe.
 
-## 4. Ejecutar la aplicación
+## 4. Configurar autenticación JWT
+
+Cada desarrollador debe generar una clave JWT local. Esta clave se utiliza para firmar y validar los tokens de autenticación.
+
+Desde la raíz del repositorio, ejecutar en PowerShell:
+
+```powershell
+$bytes = New-Object byte[] 64; $rng = [Security.Cryptography.RandomNumberGenerator]::Create(); $rng.GetBytes($bytes); $rng.Dispose(); $jwtKey = [Convert]::ToBase64String($bytes); dotnet user-secrets set "Jwt:Key" $jwtKey --project "Backend/Muni-Bouwer.Api/Muni-Bouwer.Api.csproj"
+```
+
+Comprobar que la clave fue almacenada:
+
+```powershell
+dotnet user-secrets list --project "Backend/Muni-Bouwer.Api/Muni-Bouwer.Api.csproj"
+```
+
+Debe aparecer una entrada llamada `Jwt:Key`. Su valor es privado y no debe compartirse ni guardarse en GitHub.
+
+Cada desarrollador puede utilizar una clave local diferente.
+
+## 5. Ejecutar la aplicación
 
 Abrir dos terminales desde la raíz del repositorio.
 
@@ -72,7 +92,7 @@ npm.cmd run dev
 
 Durante el desarrollo, Vite reenvía las solicitudes `/api/...` al backend. Los Services del frontend no deben repetir `http://localhost:5218`.
 
-## 5. Responsabilidad de cada capa
+## 6. Responsabilidad de cada capa
 
 ### API / Controllers
 
@@ -122,7 +142,7 @@ Ubicación: `Backend/Muni-Bouwer.Entities/DTOs`
 - Se crean únicamente cuando cumplen una finalidad concreta.
 - Pueden existir DTOs de creación, actualización o respuesta cuando el caso de uso lo requiera.
 
-## 6. Organización del frontend
+## 7. Organización del frontend
 
 | Carpeta | Contenido |
 |---|---|
@@ -147,7 +167,7 @@ export function getActivities() {
 
 La ruta del ejemplo supone que el Controller correspondiente utiliza `/api/activities`.
 
-## 7. Convenciones de nombres
+## 8. Convenciones de nombres
 
 Backend:
 
@@ -172,7 +192,7 @@ styles/activities.css
 
 Los nombres deben expresar su responsabilidad. No crear carpetas llamadas `Equipo1`, `Equipo2` o `Equipo3`; la organización se realiza por funcionalidad.
 
-## 8. Flujo de una funcionalidad
+## 9. Flujo de una funcionalidad
 
 Una operación completa sigue este recorrido:
 
@@ -194,7 +214,7 @@ SQL Server
 
 Antes de implementar una funcionalidad, revisar si la entidad y sus relaciones ya existen. No crear propiedades, reglas o endpoints que el equipo no haya acordado.
 
-## 9. Trabajo con Git
+## 10. Trabajo con Git
 
 Crear una rama desde una versión actualizada de `desarrollo`:
 
@@ -232,7 +252,7 @@ No subir:
 
 El `.gitignore` ya excluye esos archivos.
 
-## 10. Migraciones
+## 11. Migraciones
 
 Las migraciones afectan a todos los equipos. Deben ser creadas por la persona responsable de coordinar el modelo de datos para evitar archivos incompatibles entre ramas.
 
@@ -250,7 +270,7 @@ dotnet tool run dotnet-ef database update --project Backend/Muni-Bouwer.Data/Mun
 
 La migración generada debe incluirse en el Pull Request junto con el cambio de las entidades.
 
-## 11. Uso de asistentes de IA
+## 12. Uso de asistentes de IA
 
 Antes de pedir ayuda sobre el proyecto, indicar al asistente:
 
