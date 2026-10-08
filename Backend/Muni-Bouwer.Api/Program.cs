@@ -34,6 +34,8 @@ builder.Services.AddDbContext<BouwerDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("BouwerDatabase")));
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 
+builder.Services.AddScoped<InstructorDAL>();
+builder.Services.AddScoped<InstructorService>();
 builder.Services.AddScoped<UserDAL>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
