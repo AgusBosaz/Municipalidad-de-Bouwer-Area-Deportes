@@ -4,12 +4,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Muni_Bouwer.Business;
 using Muni_Bouwer.Business.Services;
 using Muni_Bouwer.Data.Context;
 using Muni_Bouwer.Data.DAL;
-
-using Muni_Bouwer.Business.Services;
-
 using Muni_Bouwer.Entities.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -36,15 +34,17 @@ builder.Services.AddDbContext<BouwerDbContext>(options =>
 
 builder.Services.AddScoped<InstructorDAL>();
 builder.Services.AddScoped<InstructorService>();
+builder.Services.AddScoped<StudentDAL>();
+builder.Services.AddScoped<StudentService>();
+builder.Services.AddScoped<EnrollmentService>();
+builder.Services.AddScoped<DocumentService>();
+builder.Services.AddScoped<MedicalRecordService>();
 builder.Services.AddScoped<UserDAL>();
 builder.Services.AddScoped<RoleDAL>();
-
 builder.Services.AddScoped<RoleService>();
 builder.Services.AddScoped<AuthService>();
-
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddScoped<PasswordService>();
-
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
