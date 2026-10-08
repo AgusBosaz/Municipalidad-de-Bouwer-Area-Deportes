@@ -1,4 +1,4 @@
-# Guía de desarrollo
+npm# Guía de desarrollo
 
 Esta guía explica cómo preparar el proyecto y dónde debe trabajar cada integrante. Las decisiones académicas generales se encuentran en [`../context.md`](../context.md).
 
