@@ -68,13 +68,15 @@ public class AuthController : ControllerBase
         CurrentUserDto currentUser = new()
         {
             UserId = userId,
-            FullName = User.FindFirstValue(ClaimTypes.Name)
-                ?? string.Empty,
-            Dni = User.FindFirstValue("dni")
-                ?? string.Empty,
+            FullName = User.FindFirstValue(ClaimTypes.Name) ?? string.Empty,
+            Dni = User.FindFirstValue("dni") ?? string.Empty,
             Roles = User.FindAll(ClaimTypes.Role)
                 .Select(claim => claim.Value)
-                .Distinct()
+                .ToList(),
+            Permissions = User.FindAll("permission")
+                .Select(claim => claim.Value)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(permission => permission)
                 .ToList()
         };
 

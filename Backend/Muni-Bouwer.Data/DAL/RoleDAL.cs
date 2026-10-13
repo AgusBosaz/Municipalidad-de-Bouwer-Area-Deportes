@@ -17,6 +17,7 @@ public class RoleDAL
     {
         return await _context.Roles
             .AsNoTracking()
+            .Where(role => role.IsActive)
             .Include(role => role.Permissions)
             .OrderBy(role => role.Name)
             .ToListAsync();
@@ -27,7 +28,7 @@ public class RoleDAL
         return await _context.Roles
             .Include(role => role.Permissions)
             .Include(role => role.Users)
-            .FirstOrDefaultAsync(role => role.Id == id);
+            .FirstOrDefaultAsync(role => role.Id == id && role.IsActive);
     }
 
     public async Task<bool> NameExistsAsync(
@@ -45,13 +46,44 @@ public class RoleDAL
         await _context.Roles.AddAsync(role);
     }
 
-    public void Delete(Role role)
+    public void Deactivate(Role role)
     {
-        _context.Roles.Remove(role);
+        role.IsActive = false;
     }
 
     public async Task SaveChangesAsync()
     {
         await _context.SaveChangesAsync();
+    }
+
+    public async Task<Role?> GetByIdIncludingInactiveAsync(int id)
+    {
+        return await _context.Roles
+            .Include(role => role.Permissions)
+            .Include(role => role.Users)
+            .FirstOrDefaultAsync(role => role.Id == id);
+    }
+
+    public void Activate(Role role)
+    {
+        role.IsActive = true;
+    }
+
+    public async Task<List<Role>> GetInactiveAsync()
+    {
+        return await _context.Roles
+            .AsNoTracking()
+            .Where(role => !role.IsActive)
+            .Include(role => role.Permissions)
+            .OrderBy(role => role.Name)
+            .ToListAsync();
+    }
+
+    public async Task<Role?> GetByNameAsync(string name)
+    {
+        return await _context.Roles
+            .FirstOrDefaultAsync(role =>
+                role.Name == name &&
+                role.IsActive);
     }
 }

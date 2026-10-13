@@ -8,5 +8,6 @@ public class CurrentUserDto
     public string Dni { get; set; } = string.Empty;
 
     public List<string> Roles { get; set; } = new();
+    public List<string> Permissions { get; set; } = new();
 
 }

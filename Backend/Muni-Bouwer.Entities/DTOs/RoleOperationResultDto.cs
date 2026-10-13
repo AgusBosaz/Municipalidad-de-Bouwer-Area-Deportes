@@ -5,7 +5,8 @@ public enum RoleOperationStatus
     Success,
     NotFound,
     DuplicateName,
-    RoleInUse
+    RoleInUse,
+    InvalidPermissions
 }
 
 public class RoleOperationResultDto
