@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Muni_Bouwer.Data.DAL;
+using Muni_Bouwer.Entities.Authorization;
 using Muni_Bouwer.Entities.DTOs;
 using Muni_Bouwer.Entities.Models;
 
@@ -83,6 +84,19 @@ public class AuthService
         }
 
         DateTime expiresAt = DateTime.UtcNow.AddMinutes(expirationMinutes);
+        bool isCoordinator = user.Roles.Any(role =>
+            role.Name == RoleNames.Coordinator);
+
+        List<string> permissions = isCoordinator
+            ? PermissionNames.All
+                .OrderBy(permissionName => permissionName)
+                .ToList()
+            : user.Roles
+                .SelectMany(role => role.Permissions)
+                .Select(permission => permission.Name)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(permissionName => permissionName)
+                .ToList();
 
         List<Claim> claims =
             [
@@ -96,6 +110,11 @@ public class AuthService
         foreach (Role role in user.Roles)
         {
             claims.Add(new Claim(ClaimTypes.Role, role.Name));
+        }
+
+        foreach (string permission in permissions)
+        {
+            claims.Add(new Claim("permission", permission));
         }
 
         SymmetricSecurityKey securityKey =
@@ -123,7 +142,8 @@ public class AuthService
                 FullName = $"{user.FirstName} {user.LastName}",
                 Roles = user.Roles
                     .Select(role => role.Name)
-                    .ToList()
+                    .ToList(),
+                Permissions = permissions
             }
         };
     }
