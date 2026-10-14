@@ -1,3 +1,4 @@
+
 .actividades-page {
   padding-bottom: 30px;
 }
@@ -12,15 +13,11 @@
 .activities-toolbar select {
   height: 40px;
   padding: 0 14px;
-
   border: 1px solid #e2e2e2;
   border-radius: 8px;
-
   outline: none;
-
   background: white;
   color: #555;
-
   font-size: 11px;
 }
 
@@ -32,12 +29,9 @@
 
 .activity-card {
   overflow: hidden;
-
   border: 1px solid #e7e7e7;
   border-radius: 13px;
-
   background: white;
-
   box-shadow: 0 5px 18px rgba(0, 0, 0, 0.03);
 }
 
@@ -45,7 +39,6 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-
   padding: 20px 20px 5px;
 }
 
@@ -53,14 +46,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-
   width: 43px;
   height: 43px;
-
   border-radius: 11px;
-
   background: #f8eaf0;
-
   font-size: 18px;
 }
 
@@ -70,7 +59,6 @@
 
 .activity-category {
   color: #9a1b45;
-
   font-size: 9px;
   font-weight: 800;
   letter-spacing: 1px;
@@ -79,7 +67,6 @@
 
 .activity-card-body h3 {
   margin: 5px 0 17px;
-
   color: #2d2d2d;
   font-size: 18px;
 }
@@ -94,9 +81,7 @@
   display: flex;
   align-items: center;
   gap: 9px;
-
   color: #777;
-
   font-size: 11px;
 }
 
@@ -110,21 +95,16 @@
   display: flex;
   justify-content: flex-end;
   gap: 8px;
-
   padding: 12px 20px;
-
   border-top: 1px solid #eee;
   background: #fcfcfc;
 }
 
 .activity-card-footer button {
   padding: 7px 11px;
-
   border: none;
   background: transparent;
-
   color: #777;
-
   font-size: 10px;
   font-weight: 700;
 }
@@ -133,12 +113,229 @@
   color: #9a1b45;
 }
 
+/* Fondo oscuro del popup */
+.activity-modal-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 99999 !important;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 20px;
+
+  overflow-y: auto;
+  background: rgba(25, 18, 21, 0.65);
+  backdrop-filter: blur(3px);
+}
+
+/* Ventana del popup */
+.activity-modal {
+  position: relative !important;
+  flex: 0 1 760px;
+
+  width: 100%;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  box-sizing: border-box;
+
+  margin: auto;
+  padding: 30px;
+
+  border: 1px solid #eee3e8;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 20px 70px rgba(0, 0, 0, 0.25);
+
+  animation: activity-modal-appear 0.2s ease-out;
+}
+
+/* Botón para cerrar */
+.activity-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  z-index: 2;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 36px;
+  height: 36px;
+
+  border: 0;
+  border-radius: 50%;
+  background: #f5f0f2;
+  color: #6e1735;
+
+  font-size: 27px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.activity-modal-close:hover {
+  background: #f0dfe6;
+}
+
+/* Encabezado del formulario */
+.crear-actividad-modal-content .page-top {
+  padding-right: 35px;
+  margin-bottom: 24px;
+}
+
+.crear-actividad-modal-content .page-top h2 {
+  margin: 7px 0;
+  color: #30262a;
+  font-size: 25px;
+}
+
+.crear-actividad-modal-content .page-top p,
+.crear-actividad-modal-content .form-section-title p {
+  color: #777;
+}
+
+/* Secciones del formulario */
+.crear-actividad-modal-content .form-section {
+  margin-bottom: 24px;
+}
+
+.crear-actividad-modal-content .form-section-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.crear-actividad-modal-content .form-section-title > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  width: 35px;
+  height: 35px;
+
+  border-radius: 9px;
+  background: #f8eaf0;
+  color: #9a1b45;
+
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.crear-actividad-modal-content .form-section-title h3 {
+  margin: 0 0 4px;
+  color: #34272d;
+  font-size: 15px;
+}
+
+.crear-actividad-modal-content .form-section-title p {
+  margin: 0;
+  font-size: 12px;
+}
+
+/* Distribución de campos */
+.crear-actividad-modal-content .form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.crear-actividad-modal-content .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.crear-actividad-modal-content .form-group-full {
+  grid-column: 1 / -1;
+}
+
+.crear-actividad-modal-content .form-group label {
+  color: #51434a;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Inputs, listas desplegables y descripción */
+.crear-actividad-modal-content .form-group input,
+.crear-actividad-modal-content .form-group select,
+.crear-actividad-modal-content .form-group textarea {
+  width: 100%;
+  min-height: 42px;
+  box-sizing: border-box;
+  padding: 10px 12px;
+
+  border: 1px solid #ded7da;
+  border-radius: 8px;
+  outline: none;
+
+  background: #fff;
+  color: #30262a;
+  font: inherit;
+  font-size: 13px;
+}
+
+.crear-actividad-modal-content .form-group textarea {
+  resize: vertical;
+}
+
+.crear-actividad-modal-content .form-group input:focus,
+.crear-actividad-modal-content .form-group select:focus,
+.crear-actividad-modal-content .form-group textarea:focus {
+  border-color: #9a1b45;
+  box-shadow: 0 0 0 3px rgba(154, 27, 69, 0.1);
+}
+
+/* Botones inferiores */
+.crear-actividad-modal-content .form-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+
+  padding-top: 20px;
+  border-top: 1px solid #eee7ea;
+}
+
+.crear-actividad-modal-content .form-actions button {
+  cursor: pointer;
+}
+
+/* Tabla vacía al buscar */
+.activities-empty {
+  padding: 28px;
+  color: #777;
+  text-align: center;
+}
+
+/* Animación de entrada */
+@keyframes activity-modal-appear {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.99);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Adaptación a pantallas medianas */
 @media (max-width: 800px) {
   .activities-grid {
     grid-template-columns: 1fr;
   }
 }
 
+/* Adaptación a celulares */
 @media (max-width: 600px) {
   .activities-toolbar {
     align-items: stretch;
@@ -147,5 +344,27 @@
 
   .activities-toolbar .search-box {
     width: 100%;
+  }
+
+  .activity-modal-overlay {
+    padding: 10px;
+  }
+
+  .activity-modal {
+    flex-basis: 100%;
+    max-height: 95vh;
+    padding: 22px 16px;
+  }
+
+  .crear-actividad-modal-content .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .crear-actividad-modal-content .form-group-full {
+    grid-column: auto;
+  }
+
+  .crear-actividad-modal-content .page-top h2 {
+    font-size: 22px;
   }
 }
