@@ -47,6 +47,19 @@ Vite reenvia /api/... al backend conservando la ruta. No se necesitan variables 
 - src/assets/images: imagenes importadas desde React.
 - public: archivos publicos servidos directamente.
 
+## Pantalla de recuperacion de contraseña
+
+`src/App.jsx` muestra `src/pages/RecoverPassword.jsx`. La marca municipal se
+encuentra en `src/components/MunicipalBrand.jsx`, el logo en
+`src/assets/images/logo-bouwer.png` y los estilos en `src/styles`.
+
+La pantalla de recuperacion implementa la interfaz solicitada. El campo de correo
+es obligatorio y utiliza la validacion de formato del navegador. No realiza
+solicitudes a la API, no envia correos y no navega al login: los botones muestran
+avisos de las funciones pendientes. El equipo debe definir la autenticacion y el
+endpoint antes de conectar el formulario. No se agregaron datos de autenticacion
+a las entidades del backend.
+
 ## Solicitudes a la API
 
 `src/services/api.js` exporta `apiRequest(path, options)`.
