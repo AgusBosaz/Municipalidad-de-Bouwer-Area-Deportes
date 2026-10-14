@@ -5,9 +5,15 @@
 }
 
 :root {
-  font-family: Arial, Helvetica, sans-serif;
+  --color-primary: #8b1d3d;
+  --color-primary-dark: #6b132d;
+  --color-bg: #e6e6e6;
+  --color-surface: #ffffff;
+  --color-text: #1f2937;
+  --color-muted: #64748b;
 
-  color: #252525;
+  font-family: Arial, Helvetica, sans-serif;
+  color: var(--color-text);
   background: #f7f7f7;
 
   font-synthesis: none;
@@ -19,6 +25,11 @@ body {
   min-height: 100vh;
   margin: 0;
   background: #f7f7f7;
+}
+
+#root {
+  min-height: 100vh;
+  width: 100%;
 }
 
 button,
