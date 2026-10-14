@@ -1,20 +1,169 @@
+using System.Security.Claims;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using Muni_Bouwer.Business;
+using Muni_Bouwer.Business.Services;
 using Muni_Bouwer.Data.Context;
+using Muni_Bouwer.Data.DAL;
+using Muni_Bouwer.Data.Seed;
+using Muni_Bouwer.Entities.Authorization;
+using Muni_Bouwer.Entities.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
+builder.Services.AddScoped<IActivityDAL, ActivityDAL>();
+builder.Services.AddScoped<IActivityService, ActivityService>();
+
+string jwtKey = builder.Configuration["Jwt:Key"]
+    ?? throw new InvalidOperationException("JWT key is not configured.");
+
+string jwtIssuer = builder.Configuration["Jwt:Issuer"]
+    ?? throw new InvalidOperationException("JWT issuer is not configured.");
+
+string jwtAudience = builder.Configuration["Jwt:Audience"]
+    ?? throw new InvalidOperationException("JWT audience is not configured.");
+
 builder.Services.AddControllers();
+
 builder.Services.AddDbContext<BouwerDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("BouwerDatabase")));
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
+builder.Services.AddScoped<InstructorDAL>();
+builder.Services.AddScoped<StudentDAL>();
+builder.Services.AddScoped<UserDAL>();
+builder.Services.AddScoped<RoleDAL>();
+builder.Services.AddScoped<PermissionDAL>();
+
+builder.Services.AddScoped<InstructorService>();
+builder.Services.AddScoped<StudentService>();
+builder.Services.AddScoped<EnrollmentService>();
+builder.Services.AddScoped<DocumentService>();
+builder.Services.AddScoped<MedicalRecordService>();
+builder.Services.AddScoped<RoleService>();
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<PasswordService>();
+builder.Services.AddScoped<PermissionService>();
+
+builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = jwtIssuer,
+            ValidateAudience = true,
+            ValidAudience = jwtAudience,
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(jwtKey))
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = async context =>
+            {
+                string? userIdValue = context.Principal?
+                    .FindFirstValue(ClaimTypes.NameIdentifier);
+
+                if (!int.TryParse(userIdValue, out int userId))
+                {
+                    context.Fail("El token no contiene un usuario válido.");
+                    return;
+                }
+
+                BouwerDbContext dbContext = context.HttpContext
+                    .RequestServices
+                    .GetRequiredService<BouwerDbContext>();
+
+                bool userIsActive = await dbContext.Users
+                    .AsNoTracking()
+                    .AnyAsync(user =>
+                        user.Id == userId &&
+                        user.IsActive);
+
+                if (!userIsActive)
+                {
+                    context.Fail("El usuario está inactivo.");
+                }
+            }
+        };
+    });
+
+builder.Services.AddAuthorization(options =>
+{
+    foreach (string permission in PermissionNames.All)
+    {
+        options.AddPolicy(
+            permission,
+            policy =>
+            {
+                policy.RequireAuthenticatedUser();
+
+                policy.RequireAssertion(context =>
+                    context.User.IsInRole(RoleNames.Coordinator) ||
+                    context.User.HasClaim(
+                        "permission",
+                        permission));
+            });
+    }
+});
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition(
+        "Bearer",
+        new OpenApiSecurityScheme
+        {
+            Name = "Authorization",
+            Type = SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT",
+            In = ParameterLocation.Header,
+            Description = "Ingrese el token JWT."
+        });
+
+    options.AddSecurityRequirement(
+        new OpenApiSecurityRequirement
+        {
+            {
+                new OpenApiSecurityScheme
+                {
+                    Reference = new OpenApiReference
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = "Bearer"
+                    }
+                },
+                Array.Empty<string>()
+            }
+        });
+});
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+using (IServiceScope scope = app.Services.CreateScope())
+{
+    BouwerDbContext context =
+        scope.ServiceProvider.GetRequiredService<BouwerDbContext>();
+
+    await RoleSeeder.SeedAsync(context);
+    await PermissionSeeder.SeedAsync(context);
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -23,6 +172,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

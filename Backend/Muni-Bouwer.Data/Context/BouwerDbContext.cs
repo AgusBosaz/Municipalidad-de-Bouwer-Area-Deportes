@@ -48,6 +48,10 @@ public class BouwerDbContext : DbContext
             .WithMany(permission => permission.Roles)
             .UsingEntity(table => table.ToTable("RolePermissions"));
 
+        modelBuilder.Entity<Role>()
+            .Property(role => role.IsActive)
+            .HasDefaultValue(true);
+
         modelBuilder.Entity<Activity>()
             .Property(activity => activity.Category)
             .HasConversion<string>();
@@ -96,5 +100,9 @@ public class BouwerDbContext : DbContext
             .HasOne(attendance => attendance.InstructorActivity)
             .WithMany(assignment => assignment.Attendances)
             .HasForeignKey(attendance => attendance.InstructorActivityId);
+
+        modelBuilder.Entity<Permission>()
+            .Property(permission => permission.IsActive)
+            .HasDefaultValue(true);
     }
 }
