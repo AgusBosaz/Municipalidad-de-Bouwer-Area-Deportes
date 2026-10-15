@@ -1,7 +1,7 @@
 /* Estilos específicos para la sección de Inscripción basados en Figma */
 .inscripcion-container {
   padding: 2rem;
-  background-color: #f3f4f6;
+  background-color: #f7f7f7;
   min-height: 100vh;
   font-family: system-ui, -apple-system, sans-serif;
 }
@@ -9,7 +9,7 @@
 .inscripcion-header h1 {
   font-size: 1.875rem;
   font-weight: bold;
-  color: #8b1e41;
+  color: #333;
   margin-bottom: 0.25rem;
 }
 
@@ -20,12 +20,12 @@
 }
 
 .inscripcion-card {
-  background-color: #e5e7eb;
-  border-radius: 1.5rem;
+  background-color: white;
+  border-radius: 17px;
   padding: 2rem;
   margin-bottom: 2rem;
-  border: 1px solid #d1d5db;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  border: 1px solid #eee;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.035);
 }
 
 .inscripcion-card h2 {
@@ -75,7 +75,7 @@
 }
 
 .btn-primary {
-  background-color: #8b1e41;
+  background-color: #9a1b45;
   color: #ffffff;
   font-weight: 500;
   padding: 0.65rem 1.5rem;
@@ -87,7 +87,7 @@
 }
 
 .btn-primary:hover {
-  background-color: #721835;
+  background-color: #801638;
 }
 
 .btn-secondary {
@@ -108,7 +108,7 @@
 .table-wrapper {
   background-color: #ffffff;
   border-radius: 1rem;
-  overflow: hidden;
+  overflow: auto;
   border: 1px solid #e5e7eb;
 }
 
@@ -137,4 +137,108 @@
 
 .custom-table tr:hover {
   background-color: #f9fafb;
+}
+
+@media (max-width: 700px) {
+  .inscripcion-container {
+    padding: 12px;
+  }
+
+  .inscripcion-header h1 {
+    font-size: 22px;
+    line-height: 1.2;
+  }
+
+  .inscripcion-header p {
+    line-height: 1.45;
+    margin-bottom: 16px;
+  }
+
+  .inscripcion-card {
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  .inscripcion-container .form-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .inscripcion-container .form-group label {
+    font-size: 13px;
+  }
+
+  .inscripcion-container .form-group input,
+  .inscripcion-container .form-group select {
+    min-height: 44px;
+    font-size: 16px;
+  }
+
+  .inscripcion-container .form-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .inscripcion-container .form-actions button {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  .inscripcion-container .table-wrapper {
+  overflow: visible;
+  border: 0;
+  background: transparent;
+}
+
+.inscripcion-container .custom-table,
+.inscripcion-container .custom-table tbody {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+.inscripcion-container .custom-table thead {
+  display: none;
+}
+
+.inscripcion-container .custom-table tr {
+  display: block;
+  margin-bottom: 12px;
+  overflow: hidden;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  background: white;
+}
+
+.inscripcion-container .custom-table td {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 14px;
+  overflow-wrap: anywhere;
+}
+
+.inscripcion-container .custom-table td::before {
+  color: #888;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.inscripcion-container .custom-table td:nth-child(1)::before {
+  content: "Nombre y apellido";
+}
+
+.inscripcion-container .custom-table td:nth-child(2)::before {
+  content: "DNI";
+}
+
+.inscripcion-container .custom-table td:nth-child(3)::before {
+  content: "Actividad";
+}
+
+.inscripcion-container .custom-table td:nth-child(4)::before {
+  content: "Fecha de inscripción";
+}
 }

@@ -1,4 +1,3 @@
-
 .actividades-page {
   padding-bottom: 30px;
 }
@@ -211,7 +210,7 @@
   margin-bottom: 18px;
 }
 
-.crear-actividad-modal-content .form-section-title > span {
+.crear-actividad-modal-content .form-section-title>span {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -366,5 +365,110 @@
 
   .crear-actividad-modal-content .page-top h2 {
     font-size: 22px;
+  }
+
+  .actividades-page .page-header-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .actividades-page .search-input {
+    width: 100%;
+    flex: none;
+    height: 44px;
+    font-size: 16px;
+  }
+
+  .actividades-page .page-header-actions .primary-button {
+    width: 100%;
+  }
+
+  .actividades-page {
+    padding: 20px 0 30px;
+  }
+
+  .actividades-page .content-card {
+    padding: 16px;
+  }
+
+  .actividades-page .table-container {
+    overflow: visible;
+  }
+
+  .actividades-page .table-container table,
+  .actividades-page .table-container tbody {
+    display: block;
+    width: 100%;
+  }
+
+  .actividades-page .table-container thead {
+    display: none;
+  }
+
+  .actividades-page .table-container tbody tr {
+    display: block;
+    margin-bottom: 12px;
+    border: 1px solid #eee;
+    border-radius: 12px;
+  }
+
+  .actividades-page .table-container tbody tr:last-child {
+    margin-bottom: 0;
+  }
+
+  .actividades-page .table-container td {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 12px;
+    overflow-wrap: anywhere;
+  }
+
+  .actividades-page .table-container td:not([colspan])::before {
+    color: #888;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .actividades-page .table-container td:nth-child(1)::before {
+    content: "Nombre";
+  }
+
+  .actividades-page .table-container td:nth-child(2)::before {
+    content: "Categoría";
+  }
+
+  .actividades-page .table-container td:nth-child(3)::before {
+    content: "Horario";
+  }
+
+  .actividades-page .table-container td:nth-child(4)::before {
+    content: "Lugar";
+  }
+
+  .actividades-page .table-container td:nth-child(5)::before {
+    content: "Cupos";
+  }
+
+  .actividades-page .table-container td:nth-child(6)::before {
+    content: "Estado";
+  }
+
+  .actividades-page .table-container td:nth-child(7)::before {
+    content: "Acciones";
+  }
+
+  .actividades-page .table-container td[colspan]::before {
+    content: none;
+  }
+
+  .actividades-page .status-badge {
+    align-self: flex-start;
+  }
+
+  .actividades-page .table-actions {
+    flex-wrap: wrap;
   }
 }

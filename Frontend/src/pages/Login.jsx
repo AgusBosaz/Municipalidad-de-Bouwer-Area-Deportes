@@ -1,19 +1,31 @@
 import { useState } from "react";
 import "../styles/Login.css";
 
+import { useNavigate } from 'react-router-dom'
+import { loginDemo } from '../demoAuth'
+
 function Login() {
   const [usuario, setUsuario] = useState("");
   const [contrasena, setContrasena] = useState("");
 
+  const navigate = useNavigate()
+
   function ingresar(e) {
-    e.preventDefault();
+    e.preventDefault()
 
     if (!usuario.trim() || !contrasena.trim()) {
-      alert("Completa todos los campos");
-      return;
+      alert('Completá todos los campos')
+      return
     }
 
-    alert("Datos completos");
+    const session = loginDemo(usuario, contrasena)
+
+    if (!session) {
+      alert('Usuario o contraseña incorrectos')
+      return
+    }
+
+    navigate('/', { replace: true })
   }
 
   return (
@@ -119,20 +131,20 @@ function Login() {
                      V205 H0 Z"
                   fill="white"
                 />
-                    
-            {/*líneas curvas */}
-            <g
-            stroke="#981744"
-            strokeWidth="10"
-            strokeLinecap="round"
-            fill="none"
-            >
-            <path d="M32 200 Q65 128 195 111" />
-            <path d="M60 205 Q91 139 198 121" />
-            <path d="M90 207 Q119 150 201 133" />
-            <path d="M120 208 Q147 164 204 146" />
-            <path d="M150 208 Q175 179 207 160" />
-            </g>
+
+                {/*líneas curvas */}
+                <g
+                  stroke="#981744"
+                  strokeWidth="10"
+                  strokeLinecap="round"
+                  fill="none"
+                >
+                  <path d="M32 200 Q65 128 195 111" />
+                  <path d="M60 205 Q91 139 198 121" />
+                  <path d="M90 207 Q119 150 201 133" />
+                  <path d="M120 208 Q147 164 204 146" />
+                  <path d="M150 208 Q175 179 207 160" />
+                </g>
 
               </g>
             </svg>
@@ -184,10 +196,6 @@ function Login() {
 
         <p className="olvidaste">
           ¿Olvidaste tu contraseña?
-        </p>
-
-        <p className="docente">
-          ¿Sos docente? Hacé clic acá
         </p>
       </section>
     </main>

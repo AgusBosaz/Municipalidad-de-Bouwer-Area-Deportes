@@ -1,9 +1,24 @@
 import { NavLink } from 'react-router-dom'
 import '../../styles/layout.css'
 
-function Sidebar() {
+function Sidebar({ isOpen, onNavigate, session, onLogout }) {
+  const links = session.role === 'Coordinator'
+    ? [
+      { to: '/', label: 'Inicio', icon: '⌂' },
+      { to: '/docentes', label: 'Docentes', icon: '♙' },
+      { to: '/actividades', label: 'Actividades', icon: '⚽' },
+      { to: '/asignaciones', label: 'Asignaciones', icon: '⇄' },
+      { to: '/inscribir-alumnos', label: 'Inscripciones', icon: '📋' },
+      { to: '/asistencia', label: 'Asistencia', icon: '✓' },
+    ]
+    : [
+      { to: '/asistencia', label: 'Asistencia', icon: '✓' },
+    ]
   return (
-    <aside className="sidebar">
+    <aside
+      id="primary-navigation"
+      className={`sidebar ${isOpen ? 'sidebar-open' : ''}`}
+    >
 
       <div className="sidebar-brand">
         <div className="sidebar-brand-icon">
@@ -17,89 +32,36 @@ function Sidebar() {
       </div>
 
       <nav className="sidebar-nav">
-
-        <NavLink
-          to="/"
-          end
-          className={({ isActive }) =>
-            isActive ? 'active' : ''
-          }
-        >
-          <span className="sidebar-nav-icon">
-            ⌂
-          </span>
-
-          Inicio
-        </NavLink>
-
-        <NavLink
-          to="/docentes"
-          className={({ isActive }) =>
-            isActive ? 'active' : ''
-          }
-        >
-          <span className="sidebar-nav-icon">
-            ♙
-          </span>
-
-          Docentes
-        </NavLink>
-
-        <NavLink
-          to="/actividades"
-          className={({ isActive }) =>
-            isActive ? 'active' : ''
-          }
-        >
-          <span className="sidebar-nav-icon">
-            ⚽
-          </span>
-
-          Actividades
-        </NavLink>
-
-        <NavLink
-          to="/asignaciones"
-          className={({ isActive }) =>
-            isActive ? 'active' : ''
-          }
-        >
-          <span className="sidebar-nav-icon">
-            ⇄
-          </span>
-
-          Asignaciones
-        </NavLink>
-
-        <NavLink
-          to="/inscribir-alumnos"
-          className={({ isActive }) =>
-            isActive ? 'active' : ''
-          }
-        >
-          <span className="sidebar-nav-icon">
-            📋
-          </span>
-
-          Inscripciones
-        </NavLink>
-
+        {links.map(({ to, label, icon }) => (
+          <NavLink
+            key={to}
+            to={to}
+            end={to === '/'}
+            onClick={onNavigate}
+            className={({ isActive }) => isActive ? 'active' : ''}
+          >
+            <span className="sidebar-nav-icon">{icon}</span>
+            {label}
+          </NavLink>
+        ))}
       </nav>
 
       <div className="sidebar-user">
 
         <div className="sidebar-user-icon">
-          👤
+          {session.name.charAt(0)}
         </div>
 
         <div className="sidebar-user-info">
-          <strong>Coordinador</strong>
-          <span>Rol Coordinador</span>
+          <strong>{session.name}</strong>
+          <span>
+            Rol {session.role === 'Coordinator' ? 'Coordinador' : 'Docente'}
+          </span>
         </div>
 
-        <span className="sidebar-user-arrow">
-          ›
-        </span>
+        <button type="button" className="sidebar-logout" onClick={onLogout}>
+          Salir
+        </button>
 
       </div>
 

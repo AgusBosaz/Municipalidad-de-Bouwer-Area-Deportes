@@ -17,3 +17,40 @@
   width: 120px;
   text-align: center;
 }
+
+@media (max-width: 600px) {
+  .asistencia-page {
+    padding: 20px 0 30px;
+  }
+
+  .asistencia-page .page-header h1 {
+    font-size: 25px;
+  }
+
+  .asistencia-page .content-card {
+    padding: 16px;
+  }
+
+  .asistencia-filtros {
+    grid-template-columns: 1fr;
+  }
+
+  .asistencia-filtros input,
+  .asistencia-filtros select {
+    font-size: 16px;
+  }
+
+  .asistencia-table th,
+  .asistencia-table td {
+    padding: 12px 8px;
+  }
+
+  .asistencia-table th:last-child,
+  .asistencia-table td:last-child {
+    width: 88px;
+  }
+
+  .asistencia-page .form-actions .primary-button {
+    width: 100%;
+  }
+}
