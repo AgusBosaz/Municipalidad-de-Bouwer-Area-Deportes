@@ -7,6 +7,7 @@ import DashboardPage from './pages/DashboardPage'
 import DocentesPage from './pages/DocentesPage'
 import ActividadesPage from './pages/ActividadesPage'
 import AsignacionesPage from './pages/AsignacionesPage'
+import InscripcionAlumnos from "./pages/InscripcionAlumnos";
 
 import './styles/App.css'
 
@@ -22,6 +23,7 @@ function App() {
         <Route path="/docentes" element={<DocentesPage />} />
         <Route path="/actividades" element={<ActividadesPage />} />
         <Route path="/asignaciones" element={<AsignacionesPage />} />
+        <Route path="/inscribir-alumnos" element={<InscripcionAlumnos />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
