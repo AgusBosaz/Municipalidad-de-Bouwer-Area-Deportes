@@ -1,7 +1,9 @@
 namespace Muni_Bouwer.Api.Controllers;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Muni_Bouwer.Business.Services;
+using Muni_Bouwer.Entities.Authorization;
 using Muni_Bouwer.Entities.DTOs;
 
 [ApiController]
@@ -15,6 +17,7 @@ public class ActivityController : ControllerBase
         _activityService = activityService;
     }
 
+    [Authorize(Policy = PermissionNames.ActivitiesRead)]
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
@@ -22,6 +25,7 @@ public class ActivityController : ControllerBase
         return Ok(activities);
     }
 
+    [Authorize(Policy = PermissionNames.ActivitiesRead)]
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetById(int id)
     {
@@ -31,6 +35,7 @@ public class ActivityController : ControllerBase
         return Ok(activity);
     }
 
+    [Authorize(Policy = PermissionNames.ActivitiesManage)]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateActivityDto dto)
     {
@@ -40,6 +45,7 @@ public class ActivityController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = createdActivity.Id }, createdActivity);
     }
 
+    [Authorize(Policy = PermissionNames.ActivitiesManage)]
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateActivityDto dto)
     {
@@ -51,6 +57,7 @@ public class ActivityController : ControllerBase
         return NoContent();
     }
 
+    [Authorize(Policy = PermissionNames.ActivitiesManage)]
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {

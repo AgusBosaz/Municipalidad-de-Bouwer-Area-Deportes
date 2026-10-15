@@ -88,15 +88,43 @@ builder.Services
                     .RequestServices
                     .GetRequiredService<BouwerDbContext>();
 
-                bool userIsActive = await dbContext.Users
+                User? currentUser = await dbContext.Users
                     .AsNoTracking()
-                    .AnyAsync(user =>
-                        user.Id == userId &&
-                        user.IsActive);
+                    .Include(user => user.Roles
+                        .Where(role => role.IsActive))
+                    .ThenInclude(role => role.Permissions
+                        .Where(permission => permission.IsActive))
+                    .FirstOrDefaultAsync(user => user.Id == userId);
 
-                if (!userIsActive)
+                if (currentUser is null || !currentUser.IsActive)
                 {
                     context.Fail("El usuario está inactivo.");
+                    return;
+                }
+
+                HashSet<string> currentRoles = currentUser.Roles
+                    .Select(role => role.Name)
+                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+                HashSet<string> tokenRoles = context.Principal!
+                    .FindAll(ClaimTypes.Role)
+                    .Select(claim => claim.Value)
+                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+                HashSet<string> currentPermissions = currentRoles.Contains(RoleNames.Coordinator)
+                    ? PermissionNames.All.ToHashSet(StringComparer.OrdinalIgnoreCase)
+                    : currentUser.Roles
+                        .SelectMany(role => role.Permissions)
+                        .Select(permission => permission.Name)
+                        .ToHashSet(StringComparer.OrdinalIgnoreCase);
+                HashSet<string> tokenPermissions = context.Principal
+                    .FindAll("permission")
+                    .Select(claim => claim.Value)
+                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+                if (!currentRoles.SetEquals(tokenRoles) ||
+                    !currentPermissions.SetEquals(tokenPermissions))
+                {
+                    context.Fail("Los permisos cambiaron. Iniciá sesión nuevamente.");
                 }
             }
         };

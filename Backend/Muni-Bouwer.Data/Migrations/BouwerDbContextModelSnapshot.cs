@@ -37,6 +37,11 @@ namespace Muni_Bouwer.Data.Migrations
                     b.Property<TimeOnly>("EndTime")
                         .HasColumnType("time");
 
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
                     b.Property<int>("MaximumCapacity")
                         .HasColumnType("int");
 
@@ -63,6 +68,11 @@ namespace Muni_Bouwer.Data.Migrations
                     b.Property<string>("FileUrl")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
 
                     b.Property<int>("StudentId")
                         .HasColumnType("int");

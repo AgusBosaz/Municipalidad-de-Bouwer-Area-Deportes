@@ -24,7 +24,9 @@ public class ActivityService : IActivityService
             StartTime = a.StartTime,
             EndTime = a.EndTime,
             MaximumCapacity = a.MaximumCapacity,
-            EnrolledStudentsCount = a.StudentActivities.Count
+            EnrolledStudentsCount = a.StudentActivities.Count(studentActivity =>
+                studentActivity.Enrollments.Any(enrollment =>
+                    enrollment.Status != EnrollmentStatuses.Cancelled))
         }).ToList();
     }
 
@@ -41,7 +43,9 @@ public class ActivityService : IActivityService
             StartTime = a.StartTime,
             EndTime = a.EndTime,
             MaximumCapacity = a.MaximumCapacity,
-            EnrolledStudentsCount = a.StudentActivities.Count
+            EnrolledStudentsCount = a.StudentActivities.Count(studentActivity =>
+                studentActivity.Enrollments.Any(enrollment =>
+                    enrollment.Status != EnrollmentStatuses.Cancelled))
         };
     }
 
