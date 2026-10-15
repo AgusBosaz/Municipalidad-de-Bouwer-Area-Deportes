@@ -71,6 +71,19 @@ function Sidebar() {
           Asignaciones
         </NavLink>
 
+        <NavLink
+          to="/inscribir-alumnos"
+          className={({ isActive }) =>
+            isActive ? 'active' : ''
+          }
+        >
+          <span className="sidebar-nav-icon">
+            📋
+          </span>
+
+          Inscripciones
+        </NavLink>
+
       </nav>
 
       <div className="sidebar-user">
