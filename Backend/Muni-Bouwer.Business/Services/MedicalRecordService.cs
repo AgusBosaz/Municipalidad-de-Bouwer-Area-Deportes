@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Muni_Bouwer.Data.Context;
+using Muni_Bouwer.Entities.DTOs;
 using Muni_Bouwer.Entities.Models;
 
 namespace Muni_Bouwer.Business
@@ -13,32 +14,53 @@ namespace Muni_Bouwer.Business
             _context = context;
         }
 
-        public async Task<MedicalRecord?> GetByStudentIdAsync(int studentId)
+        public async Task<MedicalRecordResponseDto?> GetByStudentIdAsync(int studentId)
         {
             return await _context.MedicalRecords
-                .FirstOrDefaultAsync(mr => mr.StudentId == studentId);
+                .AsNoTracking()
+                .Where(record => record.StudentId == studentId)
+                .Select(record => new MedicalRecordResponseDto
+                {
+                    Id = record.Id,
+                    StudentId = record.StudentId,
+                    Diseases = record.Diseases,
+                    Cus = record.Cus,
+                    Observations = record.Observations
+                })
+                .FirstOrDefaultAsync();
         }
 
-        public async Task<MedicalRecord> SaveOrUpdateAsync(int studentId, MedicalRecord dto)
+        public async Task<MedicalRecordResponseDto> SaveOrUpdateAsync(
+            int studentId,
+            UpsertMedicalRecordDto dto)
         {
             var existingRecord = await _context.MedicalRecords
                 .FirstOrDefaultAsync(mr => mr.StudentId == studentId);
 
             if (existingRecord == null)
             {
-                dto.StudentId = studentId;
-                _context.MedicalRecords.Add(dto);
-                await _context.SaveChangesAsync();
-                return dto;
+                existingRecord = new MedicalRecord
+                {
+                    StudentId = studentId
+                };
+
+                _context.MedicalRecords.Add(existingRecord);
             }
-            else
+
+            existingRecord.Diseases = dto.Diseases;
+            existingRecord.Cus = dto.Cus;
+            existingRecord.Observations = dto.Observations;
+
+            await _context.SaveChangesAsync();
+
+            return new MedicalRecordResponseDto
             {
-                _context.Entry(existingRecord).CurrentValues.SetValues(dto);
-                existingRecord.StudentId = studentId;
-                
-                await _context.SaveChangesAsync();
-                return existingRecord;
-            }
+                Id = existingRecord.Id,
+                StudentId = existingRecord.StudentId,
+                Diseases = existingRecord.Diseases,
+                Cus = existingRecord.Cus,
+                Observations = existingRecord.Observations
+            };
         }
     }
 }

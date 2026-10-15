@@ -16,7 +16,9 @@ public class ActivityDAL : IActivityDAL
     public async Task<List<Activity>> GetAllAsync()
     {
         return await _context.Activities
+            .Where(activity => activity.IsActive)
             .Include(a => a.StudentActivities)
+                .ThenInclude(studentActivity => studentActivity.Enrollments)
             .AsNoTracking()
             .ToListAsync();
     }
@@ -25,8 +27,9 @@ public class ActivityDAL : IActivityDAL
     {
         return await _context.Activities
             .Include(a => a.StudentActivities)
+                .ThenInclude(studentActivity => studentActivity.Enrollments)
             .AsNoTracking()
-            .FirstOrDefaultAsync(a => a.Id == id);
+            .FirstOrDefaultAsync(a => a.Id == id && a.IsActive);
     }
 
     public async Task<Activity> CreateAsync(Activity activity)
@@ -38,16 +41,23 @@ public class ActivityDAL : IActivityDAL
 
     public async Task<bool> UpdateAsync(Activity activity)
     {
-        _context.Activities.Update(activity);
+        var existing = await _context.Activities.FindAsync(activity.Id);
+        if (existing is null || !existing.IsActive) return false;
+
+        existing.Name = activity.Name;
+        existing.Category = activity.Category;
+        existing.StartTime = activity.StartTime;
+        existing.EndTime = activity.EndTime;
+        existing.MaximumCapacity = activity.MaximumCapacity;
         return await _context.SaveChangesAsync() > 0;
     }
 
     public async Task<bool> DeleteAsync(int id)
     {
         var activity = await _context.Activities.FindAsync(id);
-        if (activity == null) return false;
+        if (activity is null || !activity.IsActive) return false;
 
-        _context.Activities.Remove(activity);
+        activity.IsActive = false;
         return await _context.SaveChangesAsync() > 0;
     }
 }

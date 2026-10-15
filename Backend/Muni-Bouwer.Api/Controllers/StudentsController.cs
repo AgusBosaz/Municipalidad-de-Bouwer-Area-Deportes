@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Muni_Bouwer.Business.Services;
+using Muni_Bouwer.Entities.Authorization;
 using Muni_Bouwer.Entities.DTOs;
 
 namespace Muni_Bouwer.Api.Controllers;
@@ -15,18 +17,20 @@ public class StudentsController : ControllerBase
         _studentService = studentService;
     }
 
+    [Authorize(Policy = PermissionNames.StudentsRead)]
     [HttpGet]
-    public IActionResult GetAll()
+    public async Task<ActionResult<List<StudentResponseDto>>> GetAll()
     {
-        var students = _studentService.GetAll();
+        var students = await _studentService.GetAllAsync();
 
         return Ok(students);
     }
 
+    [Authorize(Policy = PermissionNames.StudentsRead)]
     [HttpGet("{id}")]
-    public IActionResult GetById(int id)
+    public async Task<ActionResult<StudentResponseDto>> GetById(int id)
     {
-        var student = _studentService.GetById(id);
+        var student = await _studentService.GetByIdAsync(id);
 
         if (student == null)
         {
@@ -36,10 +40,16 @@ public class StudentsController : ControllerBase
         return Ok(student);
     }
 
+    [Authorize(Policy = PermissionNames.StudentsManage)]
     [HttpPost]
-    public IActionResult Create(StudentCreateDTO data)
+    public async Task<ActionResult<StudentResponseDto>> Create(StudentCreateDTO data)
     {
-        var student = _studentService.Create(data);
+        var student = await _studentService.CreateAsync(data);
+
+        if (student is null)
+        {
+            return Conflict(new { message = "Ya existe un usuario con ese DNI." });
+        }
 
         return CreatedAtAction(
             nameof(GetById),
@@ -48,10 +58,19 @@ public class StudentsController : ControllerBase
         );
     }
 
+    [Authorize(Policy = PermissionNames.StudentsManage)]
     [HttpPatch("{id}")]
-    public IActionResult Update(int id, StudentUpdateDTO data)
+    public async Task<IActionResult> Update(int id, StudentUpdateDTO data)
     {
-        var updated = _studentService.Update(id, data);
+        bool updated;
+        try
+        {
+            updated = await _studentService.UpdateAsync(id, data);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
 
         if (!updated)
         {

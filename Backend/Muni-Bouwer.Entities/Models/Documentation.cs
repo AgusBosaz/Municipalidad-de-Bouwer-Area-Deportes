@@ -7,6 +7,7 @@ public class Documentation
     public string Type { get; set; } = string.Empty;
     public string FileUrl { get; set; } = string.Empty;
     public DateOnly UploadedAt { get; set; }
+    public bool IsActive { get; set; } = true;
 
     public Student Student { get; set; } = null!;
 }
