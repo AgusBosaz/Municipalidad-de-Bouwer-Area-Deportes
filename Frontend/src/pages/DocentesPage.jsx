@@ -4,6 +4,7 @@ import '../styles/docentes.css'
 
 function DocentesPage() {
   const [modalOpen, setModalOpen] = useState(false)
+  const [docenteEnEdicion, setDocenteEnEdicion] = useState(null)
   const [busqueda, setBusqueda] = useState('')
 
   const [docentes, setDocentes] = useState([
@@ -54,13 +55,24 @@ function DocentesPage() {
   }
 
   const abrirModal = () => {
+    setDocenteEnEdicion(null)
     setForm({
       nombre: '',
       email: '',
       especialidad: '',
       estado: 'Activo'
     })
+    setModalOpen(true)
+  }
 
+  const abrirEdicion = (docente) => {
+    setDocenteEnEdicion(docente.id)
+    setForm({
+      nombre: docente.nombre,
+      email: docente.email,
+      especialidad: docente.especialidad,
+      estado: docente.estado
+    })
     setModalOpen(true)
   }
 
@@ -93,6 +105,7 @@ function DocentesPage() {
 
     const emailExistente = docentes.some(
       (docente) =>
+        docente.id !== docenteEnEdicion &&
         docente.email.toLowerCase() === email.toLowerCase()
     )
 
@@ -106,16 +119,32 @@ function DocentesPage() {
       return
     }
 
-    setDocentes((actuales) => [
-      ...actuales,
-      {
-        id: Date.now(),
-        nombre,
-        email,
-        especialidad: form.especialidad,
-        estado: form.estado
-      }
-    ])
+    if (docenteEnEdicion !== null) {
+      setDocentes((actuales) =>
+        actuales.map((docente) =>
+          docente.id === docenteEnEdicion
+            ? {
+              ...docente,
+              nombre,
+              email,
+              especialidad: form.especialidad,
+              estado: form.estado
+            }
+            : docente
+        )
+      )
+    } else {
+      setDocentes((actuales) => [
+        ...actuales,
+        {
+          id: Date.now(),
+          nombre,
+          email,
+          especialidad: form.especialidad,
+          estado: form.estado
+        }
+      ])
+    }
 
     cerrarModal()
   }
@@ -182,11 +211,10 @@ function DocentesPage() {
 
                   <td>
                     <span
-                      className={`status-badge ${
-                        docente.estado === 'Activo'
-                          ? 'status-active'
-                          : 'status-inactive'
-                      }`}
+                      className={`status-badge ${docente.estado === 'Activo'
+                        ? 'status-active'
+                        : 'status-inactive'
+                        }`}
                     >
                       {docente.estado}
                     </span>
@@ -197,9 +225,7 @@ function DocentesPage() {
                       <button
                         type="button"
                         className="action-button edit"
-                        onClick={() =>
-                          alert('La edición todavía no está implementada.')
-                        }
+                        onClick={() => abrirEdicion(docente)}
                       >
                         Editar
                       </button>
@@ -269,7 +295,9 @@ function DocentesPage() {
                 <div className="page-top">
                   <div>
                     <span className="page-eyebrow">DOCENTES</span>
-                    <h2 id="docente-modal-title">Nuevo docente</h2>
+                    <h2 id="docente-modal-title">
+                      {docenteEnEdicion !== null ? 'Editar docente' : 'Nuevo docente'}
+                    </h2>
                     <p>Completá los datos para registrar un docente.</p>
                   </div>
                 </div>
@@ -368,11 +396,8 @@ function DocentesPage() {
                       Cancelar
                     </button>
 
-                    <button
-                      type="submit"
-                      className="primary-button"
-                    >
-                      Guardar docente
+                    <button type="submit" className="primary-button">
+                      {docenteEnEdicion !== null ? 'Guardar cambios' : 'Guardar docente'}
                     </button>
                   </div>
                 </form>

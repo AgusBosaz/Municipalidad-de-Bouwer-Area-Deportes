@@ -1,4 +1,3 @@
-
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import '../styles/docentes.css'
@@ -7,6 +6,7 @@ import CrearActividadPage from './CrearActividadPage'
 
 function ActividadesPage() {
   const [modalOpen, setModalOpen] = useState(false)
+  const [actividadEnEdicion, setActividadEnEdicion] = useState(null)
 
   const [actividades, setActividades] = useState([
     {
@@ -41,14 +41,34 @@ function ActividadesPage() {
 
   const [busqueda, setBusqueda] = useState('')
 
-  const guardarActividad = (nuevaActividad) => {
-    setActividades((actuales) => [
-      ...actuales,
-      {
-        ...nuevaActividad,
-        id: Date.now()
-      }
-    ])
+  const abrirNuevo = () => {
+    setActividadEnEdicion(null)
+    setModalOpen(true)
+  }
+
+  const abrirEdicion = (actividad) => {
+    setActividadEnEdicion(actividad)
+    setModalOpen(true)
+  }
+
+  const guardarActividad = (datosActividad) => {
+    if (actividadEnEdicion !== null) {
+      setActividades((actuales) =>
+        actuales.map((actividad) =>
+          actividad.id === actividadEnEdicion.id
+            ? { ...actividad, ...datosActividad }
+            : actividad
+        )
+      )
+    } else {
+      setActividades((actuales) => [
+        ...actuales,
+        {
+          ...datosActividad,
+          id: Date.now()
+        }
+      ])
+    }
 
     setModalOpen(false)
   }
@@ -77,7 +97,7 @@ function ActividadesPage() {
           <button
             type="button"
             className="primary-button"
-            onClick={() => setModalOpen(true)}
+            onClick={abrirNuevo}
           >
             + Nuevo
           </button>
@@ -99,6 +119,8 @@ function ActividadesPage() {
                 <th>Nombre</th>
                 <th>Categoría</th>
                 <th>Horario</th>
+                <th>Lugar</th>
+                <th>Cupos</th>
                 <th>Estado</th>
                 <th>Acciones</th>
               </tr>
@@ -110,7 +132,8 @@ function ActividadesPage() {
                   <td>{actividad.nombre}</td>
                   <td>{actividad.categoria}</td>
                   <td>{actividad.horario || 'Sin horario'}</td>
-
+                  <td>{actividad.lugar || 'Sin lugar'}</td>
+                  <td>{actividad.cupos ?? 'Sin definir'}</td>
                   <td>
                     <span className="status-badge">
                       {actividad.estado}
@@ -122,9 +145,7 @@ function ActividadesPage() {
                       <button
                         type="button"
                         className="action-button edit"
-                        onClick={() =>
-                          alert('La edición todavía no está implementada.')
-                        }
+                        onClick={() => abrirEdicion(actividad)}
                       >
                         Editar
                       </button>
@@ -155,7 +176,7 @@ function ActividadesPage() {
 
               {actividadesFiltradas.length === 0 && (
                 <tr>
-                  <td colSpan="5" className="activities-empty">
+                  <td colSpan="7" className="activities-empty">
                     No se encontraron actividades.
                   </td>
                 </tr>
@@ -191,6 +212,7 @@ function ActividadesPage() {
               </button>
 
               <CrearActividadPage
+                actividadInicial={actividadEnEdicion}
                 onCancel={() => setModalOpen(false)}
                 onSave={guardarActividad}
               />
