@@ -1,10 +1,7 @@
-import { Link, useNavigate } from 'react-router-dom'
+
 import { useState } from 'react'
 import '../styles/actividades.css'
-
-function CrearActividadPage() {
-  const navigate = useNavigate()
-
+function CrearActividadPage({ onCancel, onSave }) {
   const [form, setForm] = useState({
     nombre: '',
     categoria: '',
@@ -16,186 +13,193 @@ function CrearActividadPage() {
   })
 
   const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value
-    })
+    const { name, value } = e.target
+
+    setForm((actual) => ({
+      ...actual,
+      [name]: value
+    }))
   }
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    navigate('/actividades')
+
+    if (!form.nombre.trim()) {
+      alert('Ingresá el nombre de la actividad.')
+      return
+    }
+
+    if (!form.categoria) {
+      alert('Seleccioná una categoría.')
+      return
+    }
+
+    if (!form.cupos || Number(form.cupos) < 1) {
+      alert('Ingresá una cantidad de cupos mayor que cero.')
+      return
+    }
+
+    onSave({
+      ...form,
+      nombre: form.nombre.trim(),
+      cupos: Number(form.cupos)
+    })
   }
 
   return (
-    <section className="actividades-page">
-
+    <section className="crear-actividad-modal-content">
       <div className="page-top">
         <div>
           <span className="page-eyebrow">ACTIVIDADES</span>
-          <h2>Nueva actividad</h2>
+          <h2 id="activity-modal-title">Nueva actividad</h2>
           <p>Completá los datos para crear una actividad.</p>
         </div>
       </div>
 
-      <div className="form-card">
-
-        <form onSubmit={handleSubmit}>
-
-          <div className="form-section">
-
-            <div className="form-section-title">
-              <span>01</span>
-
-              <div>
-                <h3>Información general</h3>
-                <p>Datos principales de la actividad.</p>
-              </div>
+      <form onSubmit={handleSubmit}>
+        <div className="form-section">
+          <div className="form-section-title">
+            <span>01</span>
+            <div>
+              <h3>Información general</h3>
+              <p>Datos principales de la actividad.</p>
             </div>
-
-            <div className="form-grid">
-
-              <div className="form-group form-group-full">
-                <label>Nombre de la actividad</label>
-
-                <input
-                  type="text"
-                  name="nombre"
-                  value={form.nombre}
-                  onChange={handleChange}
-                  placeholder="Ej. Fútbol"
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Categoría</label>
-
-                <select
-                  name="categoria"
-                  value={form.categoria}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="">Seleccionar categoría</option>
-                  <option value="Deportes">Deportes</option>
-                  <option value="Salud">Salud</option>
-                  <option value="Bienestar">Bienestar</option>
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label>Cupos</label>
-
-                <input
-                  type="number"
-                  name="cupos"
-                  value={form.cupos}
-                  onChange={handleChange}
-                  placeholder="Ej. 20"
-                  min="1"
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Horario</label>
-
-                <input
-                  type="text"
-                  name="horario"
-                  value={form.horario}
-                  onChange={handleChange}
-                  placeholder="Ej. Lunes 18:00 hs"
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Lugar</label>
-
-                <input
-                  type="text"
-                  name="lugar"
-                  value={form.lugar}
-                  onChange={handleChange}
-                  placeholder="Ej. Polideportivo Municipal"
-                />
-              </div>
-
-            </div>
-
           </div>
 
-          <div className="form-section">
-
-            <div className="form-section-title">
-              <span>02</span>
-
-              <div>
-                <h3>Descripción</h3>
-                <p>Agregá información adicional.</p>
-              </div>
-            </div>
-
-            <div className="form-group">
-
-              <label>Descripción</label>
-
-              <textarea
-                name="descripcion"
-                value={form.descripcion}
+          <div className="form-grid">
+            <div className="form-group form-group-full">
+              <label htmlFor="actividad-nombre">Nombre de la actividad</label>
+              <input
+                id="actividad-nombre"
+                type="text"
+                name="nombre"
+                value={form.nombre}
                 onChange={handleChange}
-                placeholder="Descripción de la actividad..."
-                rows="5"
+                placeholder="Ej. Fútbol Infantil"
+                maxLength={100}
+                required
               />
-
-            </div>
-
-          </div>
-
-          <div className="form-section">
-
-            <div className="form-section-title">
-              <span>03</span>
-
-              <div>
-                <h3>Estado</h3>
-                <p>Definí si la actividad estará disponible.</p>
-              </div>
             </div>
 
             <div className="form-group">
-
-              <label>Estado</label>
-
+              <label htmlFor="actividad-categoria">Categoría</label>
               <select
-                name="estado"
-                value={form.estado}
+                id="actividad-categoria"
+                name="categoria"
+                value={form.categoria}
                 onChange={handleChange}
+                required
               >
-                <option value="Activa">Activa</option>
-                <option value="Inactiva">Inactiva</option>
+                <option value="">Seleccionar categoría</option>
+                <option value="Deportes">Deportes</option>
+                <option value="Salud">Salud</option>
+                <option value="Bienestar">Bienestar</option>
               </select>
-
             </div>
 
+            <div className="form-group">
+              <label htmlFor="actividad-cupos">Cupos máximos</label>
+              <input
+                id="actividad-cupos"
+                type="number"
+                name="cupos"
+                value={form.cupos}
+                onChange={handleChange}
+                placeholder="Ej. 20"
+                min="1"
+                step="1"
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="actividad-horario">Horario</label>
+              <input
+                id="actividad-horario"
+                type="text"
+                name="horario"
+                value={form.horario}
+                onChange={handleChange}
+                placeholder="Ej. Lunes 18:00 hs"
+                maxLength={100}
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="actividad-lugar">Lugar</label>
+              <input
+                id="actividad-lugar"
+                type="text"
+                name="lugar"
+                value={form.lugar}
+                onChange={handleChange}
+                placeholder="Ej. Polideportivo Municipal"
+                maxLength={100}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="form-section">
+          <div className="form-section-title">
+            <span>02</span>
+            <div>
+              <h3>Descripción</h3>
+              <p>Agregá información adicional.</p>
+            </div>
           </div>
 
-          <div className="form-actions">
+          <div className="form-group">
+            <label htmlFor="actividad-descripcion">Descripción</label>
+            <textarea
+              id="actividad-descripcion"
+              name="descripcion"
+              value={form.descripcion}
+              onChange={handleChange}
+              placeholder="Descripción de la actividad..."
+              rows="3"
+              maxLength={500}
+            />
+          </div>
+        </div>
 
-            <Link to="/actividades" className="secondary-button">
-              Cancelar
-            </Link>
-
-            <button type="submit" className="primary-button">
-              Guardar actividad
-            </button>
-
+        <div className="form-section">
+          <div className="form-section-title">
+            <span>03</span>
+            <div>
+              <h3>Estado</h3>
+              <p>Definí si la actividad estará disponible.</p>
+            </div>
           </div>
 
-        </form>
+          <div className="form-group">
+            <label htmlFor="actividad-estado">Estado</label>
+            <select
+              id="actividad-estado"
+              name="estado"
+              value={form.estado}
+              onChange={handleChange}
+            >
+              <option value="Activa">Activa</option>
+              <option value="Inactiva">Inactiva</option>
+            </select>
+          </div>
+        </div>
 
-      </div>
+        <div className="form-actions">
+          <button
+            type="button"
+            className="secondary-button"
+            onClick={onCancel}
+          >
+            Cancelar
+          </button>
 
+          <button type="submit" className="primary-button">
+            Guardar actividad
+          </button>
+        </div>
+      </form>
     </section>
   )
 }
