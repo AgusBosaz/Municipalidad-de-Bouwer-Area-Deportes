@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Muni_Bouwer.Data.Context;
 using Muni_Bouwer.Entities.Models;
 
@@ -12,29 +13,35 @@ public class StudentDAL
         _context = context;
     }
 
-    public List<Student> GetAll()
+    public async Task<bool> ExistsByDniAsync(string dni, int? excludeId = null)
     {
-        return _context.Students.ToList();
+        return await _context.Users
+            .AnyAsync(user => user.Dni == dni && user.Id != excludeId);
     }
 
-    public Student? GetById(int id)
+    public async Task<List<Student>> GetAllAsync()
     {
-        return _context.Students
-            .FirstOrDefault(student => student.Id == id);
+        return await _context.Students.ToListAsync();
     }
 
-    public Student Create(Student student)
+    public async Task<Student?> GetByIdAsync(int id)
+    {
+        return await _context.Students
+            .FirstOrDefaultAsync(student => student.Id == id);
+    }
+
+    public async Task<Student> CreateAsync(Student student)
     {
         _context.Students.Add(student);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
 
         return student;
     }
 
-    public bool Update(Student student)
+    public async Task<bool> UpdateAsync(Student student)
     {
         _context.Students.Update(student);
 
-        return _context.SaveChanges() > 0;
+        return await _context.SaveChangesAsync() > 0;
     }
 }

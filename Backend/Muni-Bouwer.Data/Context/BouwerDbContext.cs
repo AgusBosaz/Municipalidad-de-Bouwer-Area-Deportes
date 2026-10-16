@@ -56,6 +56,10 @@ public class BouwerDbContext : DbContext
             .Property(activity => activity.Category)
             .HasConversion<string>();
 
+        modelBuilder.Entity<Activity>()
+            .Property(activity => activity.IsActive)
+            .HasDefaultValue(true);
+
         modelBuilder.Entity<InstructorActivity>()
             .HasOne(assignment => assignment.Instructor)
             .WithMany(instructor => instructor.InstructorActivities)
@@ -80,6 +84,10 @@ public class BouwerDbContext : DbContext
             .HasOne(enrollment => enrollment.StudentActivity)
             .WithMany(assignment => assignment.Enrollments)
             .HasForeignKey(enrollment => enrollment.StudentActivityId);
+
+        modelBuilder.Entity<Documentation>()
+            .Property(document => document.IsActive)
+            .HasDefaultValue(true);
 
         modelBuilder.Entity<Documentation>()
             .HasOne(document => document.Student)

@@ -1,30 +1,50 @@
 using Muni_Bouwer.Data.DAL;
 using Muni_Bouwer.Entities.DTOs;
 using Muni_Bouwer.Entities.Models;
+using Muni_Bouwer.Entities.Authorization;
 
 namespace Muni_Bouwer.Business.Services;
 
 public class StudentService
 {
     private readonly StudentDAL _studentDAL;
+    private readonly RoleDAL _roleDAL;
 
-    public StudentService(StudentDAL studentDAL)
+    public StudentService(StudentDAL studentDAL, RoleDAL roleDAL)
     {
         _studentDAL = studentDAL;
+        _roleDAL = roleDAL;
     }
 
-    public List<Student> GetAll()
+    public async Task<List<StudentResponseDto>> GetAllAsync()
     {
-        return _studentDAL.GetAll();
+        List<Student> students = await _studentDAL.GetAllAsync();
+        return students.Select(ToResponseDto).ToList();
     }
 
-    public Student? GetById(int id)
+    public async Task<StudentResponseDto?> GetByIdAsync(int id)
     {
-        return _studentDAL.GetById(id);
+        Student? student = await _studentDAL.GetByIdAsync(id);
+        return student is null ? null : ToResponseDto(student);
     }
 
-    public Student Create(StudentCreateDTO data)
+    public async Task<StudentResponseDto?> CreateAsync(StudentCreateDTO data)
     {
+        if (await _studentDAL.ExistsByDniAsync(data.Dni))
+        {
+            return null;
+        }
+
+        Role? studentRole = await _roleDAL.GetByNameAsync(RoleNames.Student);
+
+        if (studentRole is null)
+        {
+            throw new InvalidOperationException(
+                "El rol estudiante no existe o está inactivo.");
+        }
+
+        DateOnly now = DateOnly.FromDateTime(DateTime.UtcNow);
+
         Student student = new Student
         {
             FirstName = data.FirstName,
@@ -34,23 +54,31 @@ public class StudentService
             PhoneNumber = data.PhoneNumber,
             Address = data.Address,
             BirthDate = data.BirthDate,
-            CreatedAt = DateOnly.FromDateTime(DateTime.Now),
-            UpdatedAt = DateOnly.FromDateTime(DateTime.Now),
+            CreatedAt = now,
+            UpdatedAt = now,
             IsActive = true,
             EmergencyContactName = data.EmergencyContactName,
             EmergencyContactPhoneNumber = data.EmergencyContactPhoneNumber
         };
 
-        return _studentDAL.Create(student);
+        student.Roles.Add(studentRole);
+
+        Student created = await _studentDAL.CreateAsync(student);
+        return ToResponseDto(created);
     }
 
-    public bool Update(int id, StudentUpdateDTO data)
+    public async Task<bool> UpdateAsync(int id, StudentUpdateDTO data)
     {
-        Student? student = _studentDAL.GetById(id);
+        Student? student = await _studentDAL.GetByIdAsync(id);
 
         if (student == null)
         {
             return false;
+        }
+
+        if (await _studentDAL.ExistsByDniAsync(data.Dni, id))
+        {
+            throw new InvalidOperationException("Ya existe un usuario con ese DNI.");
         }
 
         student.FirstName = data.FirstName;
@@ -64,6 +92,21 @@ public class StudentService
         student.EmergencyContactPhoneNumber = data.EmergencyContactPhoneNumber;
         student.UpdatedAt = DateOnly.FromDateTime(DateTime.Now);
 
-        return _studentDAL.Update(student);
+        return await _studentDAL.UpdateAsync(student);
     }
+
+    private static StudentResponseDto ToResponseDto(Student student) => new()
+    {
+        Id = student.Id,
+        FirstName = student.FirstName,
+        LastName = student.LastName,
+        Dni = student.Dni,
+        Gender = student.Gender,
+        PhoneNumber = student.PhoneNumber,
+        Address = student.Address,
+        BirthDate = student.BirthDate,
+        EmergencyContactName = student.EmergencyContactName,
+        EmergencyContactPhoneNumber = student.EmergencyContactPhoneNumber,
+        IsActive = student.IsActive
+    };
 }

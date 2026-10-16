@@ -49,16 +49,15 @@ Vite reenvia /api/... al backend conservando la ruta. No se necesitan variables 
 
 ## Pantalla de recuperacion de contraseña
 
-`src/App.jsx` muestra `src/pages/RecoverPassword.jsx`. La marca municipal se
-encuentra en `src/components/MunicipalBrand.jsx`, el logo en
-`src/assets/images/logo-bouwer.png` y los estilos en `src/styles`.
+La ruta publica `/recuperar-contrasena` muestra `src/pages/RecoverPassword.jsx`
+desde el enlace del login. La marca municipal se encuentra en
+`src/components/MunicipalBrand.jsx` y se comparte con el login. Ambas pantallas
+utilizan `src/styles/Login.css`; `src/styles/recovery.css` contiene solo los ajustes
+del formulario de recuperacion. El enlace para volver al login funciona.
 
-La pantalla de recuperacion implementa la interfaz solicitada. El campo de correo
-es obligatorio y utiliza la validacion de formato del navegador. No realiza
-solicitudes a la API, no envia correos y no navega al login: los botones muestran
-avisos de las funciones pendientes. El equipo debe definir la autenticacion y el
-endpoint antes de conectar el formulario. No se agregaron datos de autenticacion
-a las entidades del backend.
+El campo de correo es obligatorio y utiliza la validacion del navegador. Por
+ahora no se solicitan enlaces a la API ni se envian correos; el formulario informa
+esa limitacion. La recuperacion real requiere definir el flujo y su endpoint.
 
 ## Solicitudes a la API
 

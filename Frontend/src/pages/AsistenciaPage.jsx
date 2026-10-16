@@ -1,5 +1,5 @@
 import '../styles/docentes.css'
-import '../styles/asistencia.css'
+import '../styles/Asistencia.css'
 
 function AsistenciaPage() {
   return (

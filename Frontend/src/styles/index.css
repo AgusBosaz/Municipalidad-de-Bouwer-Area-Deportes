@@ -1,26 +1,41 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@600&display=swap');
-
-:root {
-  font-family: 'Inter', sans-serif;
-  color: #303030;
-  background: #e7e7e7;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  color-scheme: light;
-}
-
 * {
+  margin: 0;
+  padding: 0;
   box-sizing: border-box;
 }
 
-body {
-  margin: 0;
-  min-width: 320px;
+:root {
+  --color-primary: #8b1d3d;
+  --color-primary-dark: #6b132d;
+  --color-bg: #e6e6e6;
+  --color-surface: #ffffff;
+  --color-text: #1f2937;
+  --color-muted: #64748b;
+
+  font-family: Arial, Helvetica, sans-serif;
+  color: var(--color-text);
+  background: #f7f7f7;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
 }
 
-button, input {
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  background: #f7f7f7;
+}
+
+#root {
+  min-height: 100vh;
+  width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
   font: inherit;
 }
 
@@ -28,8 +43,7 @@ button {
   cursor: pointer;
 }
 
-button:focus-visible, input:focus-visible {
-  outline: 3px solid #a71c48;
-  outline-offset: 4px;
+a {
+  color: inherit;
+  text-decoration: none;
 }
-

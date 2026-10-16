@@ -1,5 +1,8 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import MunicipalBrand from '../components/MunicipalBrand'
+import '../styles/Login.css'
+import '../styles/recovery.css'
 
 export default function RecoverPassword() {
   const [email, setEmail] = useState('')
@@ -13,76 +16,42 @@ export default function RecoverPassword() {
   function handleSubmit(event) {
     event.preventDefault()
     setMessage(
-      'Enlace enviado correctamente.',
+      'El envío de enlaces todavía no está disponible. Consultá con el coordinador para recuperar el acceso.',
     )
   }
 
-  function handleBackToLogin() {
-  }
-
   return (
-    <main className="recovery-page">
-      <div className="decoration decoration-top" aria-hidden="true" />
-      <div className="decoration decoration-bottom" aria-hidden="true" />
-      <div className="recovery-layout">
-        <MunicipalBrand />
-        <section className="recovery-card" aria-labelledby="recovery-title">
-          <h1 id="recovery-title">Recuperar contraseña</h1>
-          <p className="recovery-description">
-            Ingresá tu correo electrónico para recibir un enlace y poder
-            restablecer tu contraseña.
+    <main className="login recovery-page">
+      <MunicipalBrand />
+      <section className="login-derecha recovery-card" aria-labelledby="recovery-title">
+        <h2 id="recovery-title">Recuperar contraseña</h2>
+        <p className="recovery-description">
+          Ingresá tu correo electrónico para solicitar la recuperación de tu
+          contraseña.
+        </p>
+        <form onSubmit={handleSubmit}>
+          <label className="recovery-label" htmlFor="email">Correo electrónico</label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            placeholder="Correo electrónico"
+            required
+            value={email}
+            onChange={handleEmailChange}
+          />
+          <button type="submit">Solicitar enlace</button>
+        </form>
+        {message && (
+          <p className="recovery-message" role="status">
+            {message}
           </p>
-          <form onSubmit={handleSubmit}>
-            <label htmlFor="email">Correo electrónico</label>
-            <div className="email-field">
-              <svg
-                viewBox="0 0 28 28"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                aria-hidden="true"
-              >
-                <rect x="2" y="4" width="24" height="20" rx="2" />
-                <path d="m3 6 11 9L25 6" />
-              </svg>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                placeholder="tu@correo.com"
-                required
-                value={email}
-                onChange={handleEmailChange}
-              />
-            </div>
-            <button className="send-button" type="submit">
-              Enviar enlace
-            </button>
-          </form>
-          {message && (
-            <p className="form-message" role="status">
-              {message}
-            </p>
-          )}
-          <button
-            className="back-button"
-            type="button"
-            onClick={handleBackToLogin}
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              aria-hidden="true"
-            >
-              <path d="M21 12H3m7-7-7 7 7 7" />
-            </svg>
-            Volver a iniciar sesión
-          </button>
-        </section>
-      </div>
+        )}
+        <p className="olvidaste">
+          <Link to="/login">Volver a iniciar sesión</Link>
+        </p>
+      </section>
     </main>
   )
 }
