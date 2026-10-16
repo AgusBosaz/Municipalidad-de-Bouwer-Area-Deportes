@@ -1,18 +1,26 @@
 import { NavLink } from 'react-router-dom'
+import {
+  CalendarDays,
+  CircleCheck,
+  ClipboardList,
+  LayoutDashboard,
+  Trophy,
+  UsersRound,
+} from 'lucide-react'
 import '../../styles/layout.css'
 
 function Sidebar({ isOpen, onNavigate, session, onLogout }) {
   const links = session.role === 'Coordinator'
     ? [
-      { to: '/', label: 'Inicio', icon: '⌂' },
-      { to: '/docentes', label: 'Docentes', icon: '♙' },
-      { to: '/actividades', label: 'Actividades', icon: '⚽' },
-      { to: '/asignaciones', label: 'Asignaciones', icon: '⇄' },
-      { to: '/inscribir-alumnos', label: 'Inscripciones', icon: '📋' },
-      { to: '/asistencia', label: 'Asistencia', icon: '✓' },
+      { to: '/', label: 'Inicio', Icon: LayoutDashboard },
+      { to: '/docentes', label: 'Docentes', Icon: UsersRound },
+      { to: '/actividades', label: 'Actividades', Icon: Trophy },
+      { to: '/asignaciones', label: 'Asignaciones', Icon: CalendarDays },
+      { to: '/inscribir-alumnos', label: 'Inscripciones', Icon: ClipboardList },
+      { to: '/asistencia', label: 'Asistencia', Icon: CircleCheck },
     ]
     : [
-      { to: '/asistencia', label: 'Asistencia', icon: '✓' },
+      { to: '/asistencia', label: 'Asistencia', Icon: CircleCheck },
     ]
   return (
     <aside
@@ -32,7 +40,7 @@ function Sidebar({ isOpen, onNavigate, session, onLogout }) {
       </div>
 
       <nav className="sidebar-nav">
-        {links.map(({ to, label, icon }) => (
+        {links.map(({ to, label, Icon }) => (
           <NavLink
             key={to}
             to={to}
@@ -40,7 +48,9 @@ function Sidebar({ isOpen, onNavigate, session, onLogout }) {
             onClick={onNavigate}
             className={({ isActive }) => isActive ? 'active' : ''}
           >
-            <span className="sidebar-nav-icon">{icon}</span>
+            <span className="sidebar-nav-icon" aria-hidden="true">
+              <Icon size={19} strokeWidth={1.8} />
+            </span>
             {label}
           </NavLink>
         ))}

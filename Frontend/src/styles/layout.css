@@ -99,9 +99,10 @@
 
 .sidebar-nav-icon {
   width: 22px;
-  text-align: center;
-  font-size: 17px;
-  line-height: 1;
+  flex: 0 0 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .sidebar-user {

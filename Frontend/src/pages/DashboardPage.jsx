@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { ArrowRight, CalendarDays, Trophy, UsersRound } from 'lucide-react'
 
 import '../styles/dashboard.css'
 
@@ -39,8 +40,8 @@ function DashboardPage() {
           to="/docentes"
           className="dashboard-action-card"
         >
-          <div className="dashboard-card-icon">
-            👤
+          <div className="dashboard-card-icon" aria-hidden="true">
+            <UsersRound size={22} strokeWidth={1.8} />
           </div>
 
           <div>
@@ -55,8 +56,8 @@ function DashboardPage() {
             </p>
           </div>
 
-          <span className="dashboard-arrow">
-            →
+          <span className="dashboard-arrow" aria-hidden="true">
+            <ArrowRight size={20} strokeWidth={1.8} />
           </span>
         </Link>
 
@@ -64,8 +65,8 @@ function DashboardPage() {
           to="/actividades"
           className="dashboard-action-card"
         >
-          <div className="dashboard-card-icon">
-            ⚽
+          <div className="dashboard-card-icon" aria-hidden="true">
+            <Trophy size={22} strokeWidth={1.8} />
           </div>
 
           <div>
@@ -80,8 +81,8 @@ function DashboardPage() {
             </p>
           </div>
 
-          <span className="dashboard-arrow">
-            →
+          <span className="dashboard-arrow" aria-hidden="true">
+            <ArrowRight size={20} strokeWidth={1.8} />
           </span>
         </Link>
 
@@ -89,8 +90,8 @@ function DashboardPage() {
           to="/asignaciones"
           className="dashboard-action-card"
         >
-          <div className="dashboard-card-icon">
-            ↔
+          <div className="dashboard-card-icon" aria-hidden="true">
+            <CalendarDays size={22} strokeWidth={1.8} />
           </div>
 
           <div>
@@ -105,8 +106,8 @@ function DashboardPage() {
             </p>
           </div>
 
-          <span className="dashboard-arrow">
-            →
+          <span className="dashboard-arrow" aria-hidden="true">
+            <ArrowRight size={20} strokeWidth={1.8} />
           </span>
         </Link>
 

@@ -129,7 +129,6 @@
   background: #f8e9ef;
   color: #9a1b45;
   border-radius: 11px;
-  font-size: 18px;
 }
 
 .dashboard-action-card h2,
@@ -151,8 +150,8 @@
   position: absolute;
   right: 20px;
   bottom: 20px;
+  display: flex;
   color: #9a1b45;
-  font-size: 18px;
 }
 
 .dashboard-total-card {

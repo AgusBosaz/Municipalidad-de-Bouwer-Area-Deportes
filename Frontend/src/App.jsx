@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { getDemoSession } from './demoAuth'
 import Layout from './components/layout/Layout'
 import Login from './pages/Login.jsx'
+import RecoverPassword from './pages/RecoverPassword'
 import DashboardPage from './pages/DashboardPage'
 import DocentesPage from './pages/DocentesPage'
 import ActividadesPage from './pages/Actividadespage'
@@ -36,6 +37,7 @@ function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/recuperar-contrasena" element={<RecoverPassword />} />
 
       <Route element={<ProtectedLayout />}>
         <Route path="/" element={<HomePage />} />

@@ -158,14 +158,19 @@
 
 /* TEXTOS INFERIORES */
 .olvidaste {
-  color: #888888;
   text-align: center;
   font-size: 12px;
   margin-top: 18px;
-  cursor: pointer;
 }
 
-.olvidaste:hover {
+.olvidaste a {
+  color: #888888;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.olvidaste a:hover,
+.olvidaste a:focus-visible {
   color: #981744;
 }
 
