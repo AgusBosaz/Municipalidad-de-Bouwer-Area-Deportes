@@ -1,7 +1,7 @@
 
 import { useState } from 'react'
 import '../styles/actividades.css'
-function CrearActividadPage({ onCancel, onSave, actividadInicial }) {
+function CrearActividadPage({ onCancel, onSave, actividadInicial, guardando = false }) {
   const [form, setForm] = useState({
     nombre: actividadInicial?.nombre ?? '',
     categoria: actividadInicial?.categoria ?? '',

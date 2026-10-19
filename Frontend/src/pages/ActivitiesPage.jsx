@@ -4,7 +4,7 @@ import '../styles/docentes.css'
 import '../styles/actividades.css'
 import CrearActividadPage from './CrearActividadPage'
 
-function ActividadesPage() {
+function ActivitiesPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [actividadEnEdicion, setActividadEnEdicion] = useState(null)
 
