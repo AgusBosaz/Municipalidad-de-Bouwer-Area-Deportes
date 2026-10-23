@@ -51,6 +51,8 @@ builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<PasswordService>();
 builder.Services.AddScoped<PermissionService>();
+builder.Services.AddScoped<StudentAttendanceDal>();
+builder.Services.AddScoped<StudentAttendanceService>();
 
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 
