@@ -36,6 +36,10 @@ public class InstructorService
         if (await _instructorDAL.ExistsByDniAsync(dto.Dni))
             return null;
 
+        string email = dto.Email.Trim().ToLowerInvariant();
+        if (await _instructorDAL.ExistsByEmailAsync(email))
+            return null;
+
         var instructorRole = await _roleDAL.GetByNameAsync(RoleNames.Instructor);
 
         if (instructorRole is null)
@@ -52,6 +56,7 @@ public class InstructorService
             FirstName = dto.FirstName,
             LastName = dto.LastName,
             Dni = dto.Dni,
+            Email = email,
             Gender = dto.Gender,
             PhoneNumber = dto.PhoneNumber,
             Address = dto.Address,
@@ -79,9 +84,14 @@ public class InstructorService
         if (await _instructorDAL.ExistsByDniAsync(dto.Dni, excludeId: id))
             return "duplicate";
 
+        string email = dto.Email.Trim().ToLowerInvariant();
+        if (await _instructorDAL.ExistsByEmailAsync(email, excludeId: id))
+            return "emailduplicate";
+
         existing.FirstName = dto.FirstName;
         existing.LastName = dto.LastName;
         existing.Dni = dto.Dni;
+        existing.Email = email;
         existing.Gender = dto.Gender;
         existing.PhoneNumber = dto.PhoneNumber;
         existing.Address = dto.Address;
@@ -111,6 +121,7 @@ public class InstructorService
         FirstName = i.FirstName,
         LastName = i.LastName,
         Dni = i.Dni,
+        Email = i.Email,
         Gender = i.Gender,
         PhoneNumber = i.PhoneNumber,
         Address = i.Address,

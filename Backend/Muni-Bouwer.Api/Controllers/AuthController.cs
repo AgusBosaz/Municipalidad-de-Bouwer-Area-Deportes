@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Muni_Bouwer.Business.Services;
 using Muni_Bouwer.Entities.DTOs;
 
@@ -11,10 +12,41 @@ namespace Muni_Bouwer.Api.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly AuthService _authService;
+    private readonly PasswordRecoveryService _passwordRecoveryService;
 
-    public AuthController(AuthService authService)
+    public AuthController(AuthService authService, PasswordRecoveryService passwordRecoveryService)
     {
         _authService = authService;
+        _passwordRecoveryService = passwordRecoveryService;
+    }
+
+    [AllowAnonymous]
+    [EnableRateLimiting("password-recovery")]
+    [HttpPost("password-reset/request")]
+    public async Task<IActionResult> RequestPasswordReset(RequestPasswordResetDto request)
+    {
+        if (!_passwordRecoveryService.IsConfigured)
+            return StatusCode(StatusCodes.Status503ServiceUnavailable,
+                new { message = "El recupero de contraseña no está disponible todavía." });
+
+        await _passwordRecoveryService.RequestAsync(request.Email);
+        return Accepted(new
+        {
+            message = "Si el correo corresponde a una cuenta habilitada, recibirás un enlace para restablecer la contraseña."
+        });
+    }
+
+    [AllowAnonymous]
+    [EnableRateLimiting("password-recovery")]
+    [HttpPost("password-reset/confirm")]
+    public async Task<IActionResult> ResetPassword(ResetPasswordDto request)
+    {
+        bool changed = await _passwordRecoveryService.ResetAsync(
+            request.Token, request.Password);
+
+        return changed
+            ? NoContent()
+            : BadRequest(new { message = "El enlace no es válido o ya venció." });
     }
 
     [AllowAnonymous]

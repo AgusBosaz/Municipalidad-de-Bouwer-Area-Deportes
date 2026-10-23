@@ -194,6 +194,46 @@ namespace Muni_Bouwer.Data.Migrations
                     b.ToTable("MedicalRecords");
                 });
 
+            modelBuilder.Entity("Muni_Bouwer.Entities.Models.PasswordResetToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CredentialVersionAtIssue")
+                        .HasColumnType("int");
+
+                    b.Property<string>("EmailAtIssue")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("nvarchar(254)");
+
+                    b.Property<DateTime>("ExpiresAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTime?>("UsedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("PasswordResetTokens");
+                });
+
             modelBuilder.Entity("Muni_Bouwer.Entities.Models.Permission", b =>
                 {
                     b.Property<int>("Id")
@@ -311,9 +351,16 @@ namespace Muni_Bouwer.Data.Migrations
                     b.Property<DateOnly>("CreatedAt")
                         .HasColumnType("date");
 
+                    b.Property<int>("CredentialVersion")
+                        .HasColumnType("int");
+
                     b.Property<string>("Dni")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(254)
+                        .HasColumnType("nvarchar(254)");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
@@ -349,6 +396,10 @@ namespace Muni_Bouwer.Data.Migrations
 
                     b.HasIndex("Dni")
                         .IsUnique();
+
+                    b.HasIndex("Email")
+                        .IsUnique()
+                        .HasFilter("[Email] IS NOT NULL AND [UserType] IN (N'Coordinator', N'Instructor')");
 
                     b.ToTable("Users");
 
@@ -481,6 +532,17 @@ namespace Muni_Bouwer.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("Muni_Bouwer.Entities.Models.PasswordResetToken", b =>
+                {
+                    b.HasOne("Muni_Bouwer.Entities.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Muni_Bouwer.Entities.Models.StudentActivity", b =>

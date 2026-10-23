@@ -50,6 +50,8 @@ public class StudentService
             FirstName = data.FirstName,
             LastName = data.LastName,
             Dni = data.Dni,
+            Email = string.IsNullOrWhiteSpace(data.Email)
+                ? null : data.Email.Trim().ToLowerInvariant(),
             Gender = data.Gender,
             PhoneNumber = data.PhoneNumber,
             Address = data.Address,
@@ -84,6 +86,8 @@ public class StudentService
         student.FirstName = data.FirstName;
         student.LastName = data.LastName;
         student.Dni = data.Dni;
+        student.Email = string.IsNullOrWhiteSpace(data.Email)
+            ? null : data.Email.Trim().ToLowerInvariant();
         student.Gender = data.Gender;
         student.PhoneNumber = data.PhoneNumber;
         student.Address = data.Address;
@@ -101,6 +105,7 @@ public class StudentService
         FirstName = student.FirstName,
         LastName = student.LastName,
         Dni = student.Dni,
+        Email = student.Email,
         Gender = student.Gender,
         PhoneNumber = student.PhoneNumber,
         Address = student.Address,

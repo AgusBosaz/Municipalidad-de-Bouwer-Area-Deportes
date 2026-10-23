@@ -13,6 +13,9 @@ public class CreateInstructorDto
     [Required, StringLength(20)]
     public string Dni { get; set; } = string.Empty;
 
+    [Required, EmailAddress, StringLength(254)]
+    public string Email { get; set; } = string.Empty;
+
     [Required, StringLength(30)]
     public string Gender { get; set; } = string.Empty;
 
