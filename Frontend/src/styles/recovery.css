@@ -23,3 +23,7 @@
   font-size: 13px;
   line-height: 1.5;
 }
+
+.recovery-page .recovery-message.error {
+  color: #a1233e;
+}

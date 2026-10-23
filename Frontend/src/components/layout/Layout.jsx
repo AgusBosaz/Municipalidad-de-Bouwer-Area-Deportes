@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
-import { logoutDemo } from '../../demoAuth'
+import { clearSession } from '../../services/AuthSession'
 
 import Sidebar from './sidebar'
 import Header from './Header'
@@ -13,7 +13,7 @@ function Layout({ session }) {
   const navigate = useNavigate()
 
   function handleLogout() {
-    logoutDemo()
+    clearSession()
     setMenuOpen(false)
     navigate('/login', { replace: true })
   }
