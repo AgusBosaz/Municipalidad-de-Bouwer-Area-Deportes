@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../styles/inscripcion.css';
 
 export default function InscripcionAlumnos() {
@@ -8,14 +8,43 @@ export default function InscripcionAlumnos() {
     dni: '',
     fechaNacimiento: '',
     contactoTutor: '',
-    actividad: 'Fútbol Infantil (Lunes y Miércoles)'
+    activityId: '1'
   });
 
-  const [alumnos, setAlumnos] = useState([
-    { nombre: 'Alan Gómez', dni: '45.123.882', actividad: 'Fútbol Infantil', fecha: 'Hoy, 10:24' },
-    { nombre: 'Sofía Martínez', dni: '44.912.443', actividad: 'Ajedrez Inicial', fecha: 'Ayer, 16:15' },
-    { nombre: 'Bruno López', dni: '45.981.012', actividad: 'Fútbol Infantil', fecha: 'Ayer, 14:00' }
-  ]);
+  const [alumnos, setAlumnos] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    return {
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+    };
+  };
+
+  useEffect(() => {
+    fetchInscripciones();
+  }, []);
+
+  const fetchInscripciones = async () => {
+    try {
+      const response = await fetch('http://localhost:5218/api/Inscriptions', {
+        method: 'GET',
+        headers: getAuthHeaders()
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setAlumnos(data);
+      } else {
+        console.error('Error al obtener las inscripciones del servidor.');
+      }
+    } catch (error) {
+      console.error('Error de red al conectar con la API:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -24,44 +53,44 @@ export default function InscripcionAlumnos() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.nombre || !formData.apellido || !formData.dni) {
-      alert('Por favor complete los campos obligatorios.');
+      alert('Por favor complete los campos obligatorios (Nombre, Apellido y DNI).');
       return;
     }
 
-    const alumnoData = {
+    const payload = {
       nombre: formData.nombre,
       apellido: formData.apellido,
       dni: formData.dni,
       fechaNacimiento: formData.fechaNacimiento,
       contactoTutor: formData.contactoTutor,
-      actividadId: 1
+      activityId: parseInt(formData.activityId, 10)
     };
 
     try {
-      const response = await fetch('http://localhost:5000/api/Enrollments', {
+      const response = await fetch('http://localhost:5218/api/Inscriptions', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(alumnoData),
+        headers: getAuthHeaders(),
+        body: JSON.stringify(payload),
       });
 
-      if (response.ok) {
-        alert('¡Alumno inscripto con éxito en la base de datos!');
-        const nuevoAlumno = {
-          nombre: `${formData.nombre} ${formData.apellido}`,
-          dni: formData.dni,
-          actividad: formData.actividad,
-          fecha: 'Hoy, ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        };
-        setAlumnos([nuevoAlumno, ...alumnos]);
-        handleClear();
+      const contentType = response.headers.get("content-type");
+      let result;
+      if (contentType && contentType.includes("application/json")) {
+        result = await response.json();
       } else {
-        alert('Hubo un error al registrar el alumno en el servidor.');
+        result = { message: await response.text() };
+      }
+
+      if (response.ok) {
+        alert('¡Alumno registrado e inscripto con éxito en la base de datos!');
+        handleClear();
+        fetchInscripciones();
+      } else {
+        alert(`Error: ${result.message || 'No se pudo registrar el alumno.'}`);
       }
     } catch (error) {
       console.error('Error de red al conectar con la API:', error);
-      alert('No se pudo conectar con el backend. Asegúrate de que la API esté corriendo.');
+      alert('No se pudo conectar con el backend.');
     }
   };
 
@@ -72,7 +101,7 @@ export default function InscripcionAlumnos() {
       dni: '',
       fechaNacimiento: '',
       contactoTutor: '',
-      actividad: 'Fútbol Infantil (Lunes y Miércoles)'
+      activityId: '1'
     });
   };
 
@@ -116,7 +145,7 @@ export default function InscripcionAlumnos() {
               name="dni"
               value={formData.dni}
               onChange={handleChange}
-              placeholder="ej. 45.123.882"
+              placeholder="ej. 45123882"
             />
           </div>
           <div className="form-group">
@@ -126,7 +155,7 @@ export default function InscripcionAlumnos() {
               name="fechaNacimiento"
               value={formData.fechaNacimiento}
               onChange={handleChange}
-              placeholder="DD/MM/AAAA"
+              placeholder="AAAA-MM-DD"
             />
           </div>
           <div className="form-group">
@@ -136,19 +165,19 @@ export default function InscripcionAlumnos() {
               name="contactoTutor"
               value={formData.contactoTutor}
               onChange={handleChange}
-              placeholder="ej. María Gómez (153-998811)"
+              placeholder="ej. María Gómez (351-998811)"
             />
           </div>
           <div className="form-group">
             <label>Actividad Deportiva</label>
             <select
-              name="actividad"
-              value={formData.actividad}
+              name="activityId"
+              value={formData.activityId}
               onChange={handleChange}
             >
-              <option>Fútbol Infantil (Lunes y Miércoles)</option>
-              <option>Ajedrez Inicial</option>
-              <option>Básquet Juvenil</option>
+              <option value="1">Fútbol Infantil (Lunes y Miércoles)</option>
+              <option value="2">Ajedrez Inicial</option>
+              <option value="3">Básquet Juvenil</option>
             </select>
           </div>
         </form>
@@ -172,20 +201,30 @@ export default function InscripcionAlumnos() {
             <thead>
               <tr>
                 <th>Nombre y Apellido</th>
-                <th>DNI</th>
                 <th>Actividad</th>
                 <th>Fecha de Inscripción</th>
               </tr>
             </thead>
             <tbody>
-              {alumnos.map((alumno, index) => (
-                <tr key={index}>
-                  <td style={{ fontWeight: 500, color: '#111827' }}>{alumno.nombre}</td>
-                  <td>{alumno.dni}</td>
-                  <td>{alumno.actividad}</td>
-                  <td style={{ color: '#6b7280' }}>{alumno.fecha}</td>
+              {loading ? (
+                <tr>
+                  <td colSpan="3" style={{ textAlign: 'center', padding: '1.5rem' }}>Cargando registros...</td>
                 </tr>
-              ))}
+              ) : alumnos.length === 0 ? (
+                <tr>
+                  <td colSpan="3" style={{ textAlign: 'center', padding: '1.5rem' }}>No hay inscripciones registradas.</td>
+                </tr>
+              ) : (
+                alumnos.map((item) => (
+                  <tr key={item.id}>
+                    <td style={{ fontWeight: 500, color: '#111827' }}>
+                      {item.studentName}
+                    </td>
+                    <td>{item.activityName}</td>
+                    <td style={{ color: '#6b7280' }}>{item.enrollmentDate}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
