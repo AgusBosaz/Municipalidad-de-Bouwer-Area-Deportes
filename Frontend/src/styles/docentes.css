@@ -33,6 +33,11 @@
   gap: 12px;
 }
 
+.docentes-page .page-header-actions .search-input,
+.docentes-page .page-header-actions .primary-button {
+  height: 44px;
+}
+
 .primary-button {
   display: inline-flex;
   align-items: center;
