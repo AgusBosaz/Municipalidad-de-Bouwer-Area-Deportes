@@ -1,4 +1,3 @@
-
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import '../styles/docentes.css'
@@ -9,34 +8,10 @@ function DocentesPage() {
   const [mensaje, setMensaje] = useState('')
 
   const [docentes, setDocentes] = useState([
-    {
-      id: 1,
-      nombre: 'Santiago Pérez',
-      email: 'santi@correo.com',
-      especialidad: 'Fútbol',
-      estado: 'Activo'
-    },
-    {
-      id: 2,
-      nombre: 'María Gómez',
-      email: 'maria@correo.com',
-      especialidad: 'Natación',
-      estado: 'Activo'
-    },
-    {
-      id: 3,
-      nombre: 'Lucía Torres',
-      email: 'lucia@correo.com',
-      especialidad: 'Yoga',
-      estado: 'Activo'
-    },
-    {
-      id: 4,
-      nombre: 'Diego Castro',
-      email: 'diego@correo.com',
-      especialidad: 'Básquet',
-      estado: 'Activo'
-    }
+    { id: 1, nombre: 'Santiago Pérez', email: 'santi@correo.com', especialidad: 'Fútbol', estado: 'Activo' },
+    { id: 2, nombre: 'María Gómez', email: 'maria@correo.com', especialidad: 'Natación', estado: 'Activo' },
+    { id: 3, nombre: 'Lucía Torres', email: 'lucia@correo.com', especialidad: 'Yoga', estado: 'Activo' },
+    { id: 4, nombre: 'Diego Castro', email: 'diego@correo.com', especialidad: 'Básquet', estado: 'Activo' }
   ])
 
   const formularioVacio = {
@@ -49,7 +24,6 @@ function DocentesPage() {
     birthDate: '',
     email: '',
     specialty: '',
-    password: '',
     estado: 'Activo'
   }
 
@@ -57,12 +31,7 @@ function DocentesPage() {
 
   const actualizarCampo = (e) => {
     const { name, value } = e.target
-
-    setForm((actual) => ({
-      ...actual,
-      [name]: value
-    }))
-
+    setForm((actual) => ({ ...actual, [name]: value }))
     setMensaje('')
   }
 
@@ -87,9 +56,10 @@ function DocentesPage() {
     const telefono = form.phoneNumber.trim()
     const direccion = form.address.trim()
 
-    if (!nombre || !apellido || !dni || !email ||
-        !telefono || !direccion || !form.birthDate ||
-        !form.gender || !form.specialty || !form.password) {
+    if (
+      !nombre || !apellido || !dni || !email || !telefono ||
+      !direccion || !form.birthDate || !form.gender || !form.specialty
+    ) {
       setMensaje('Completá todos los campos obligatorios.')
       return
     }
@@ -99,35 +69,21 @@ function DocentesPage() {
       return
     }
 
-    if (form.password.length < 8) {
-      setMensaje('La contraseña debe tener al menos 8 caracteres.')
-      return
-    }
-
     if (new Date(`${form.birthDate}T00:00:00`) > new Date()) {
       setMensaje('La fecha de nacimiento no puede ser futura.')
       return
     }
 
-    const emailExistente = docentes.some(
-      (docente) => docente.email.toLowerCase() === email.toLowerCase()
-    )
-
-    if (emailExistente) {
+    if (docentes.some((d) => d.email.toLowerCase() === email.toLowerCase())) {
       setMensaje('Ya existe un docente registrado con ese email.')
       return
     }
 
-    const dniExistente = docentes.some(
-      (docente) => docente.dni === dni
-    )
-
-    if (dniExistente) {
+    if (docentes.some((d) => d.dni === dni)) {
       setMensaje('Ya existe un docente registrado con ese DNI.')
       return
     }
 
-    // Registro temporal en memoria. Todavía no se conecta al backend.
     setDocentes((actuales) => [
       ...actuales,
       {
@@ -167,12 +123,7 @@ function DocentesPage() {
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
           />
-
-          <button
-            type="button"
-            className="primary-button"
-            onClick={abrirModal}
-          >
+          <button type="button" className="primary-button" onClick={abrirModal}>
             + Nuevo
           </button>
         </div>
@@ -197,7 +148,6 @@ function DocentesPage() {
                 <th>Acciones</th>
               </tr>
             </thead>
-
             <tbody>
               {docentesFiltrados.map((docente) => (
                 <tr key={docente.id}>
@@ -205,13 +155,7 @@ function DocentesPage() {
                   <td>{docente.email}</td>
                   <td>{docente.especialidad}</td>
                   <td>
-                    <span
-                      className={`status-badge ${
-                        docente.estado === 'Activo'
-                          ? 'status-active'
-                          : 'status-inactive'
-                      }`}
-                    >
+                    <span className={`status-badge ${docente.estado === 'Activo' ? 'status-active' : 'status-inactive'}`}>
                       {docente.estado}
                     </span>
                   </td>
@@ -220,26 +164,17 @@ function DocentesPage() {
                       <button
                         type="button"
                         className="action-button edit"
-                        onClick={() =>
-                          alert('La edición todavía no está implementada.')
-                        }
+                        onClick={() => alert('La edición todavía no está implementada.')}
                       >
                         Editar
                       </button>
-
                       <button
                         type="button"
                         className="action-button delete"
                         onClick={() => {
-                          const confirmar = window.confirm(
-                            `¿Querés eliminar a ${docente.nombre} de la lista local?`
-                          )
-
-                          if (confirmar) {
+                          if (window.confirm(`¿Querés eliminar a ${docente.nombre} de la lista local?`)) {
                             setDocentes((actuales) =>
-                              actuales.filter(
-                                (item) => item.id !== docente.id
-                              )
+                              actuales.filter((item) => item.id !== docente.id)
                             )
                           }
                         }}
@@ -250,7 +185,6 @@ function DocentesPage() {
                   </td>
                 </tr>
               ))}
-
               {docentesFiltrados.length === 0 && (
                 <tr>
                   <td colSpan="5" className="docentes-empty">
@@ -263,247 +197,146 @@ function DocentesPage() {
         </div>
       </section>
 
-      {modalOpen &&
-        createPortal(
-          <div
-            className="docente-modal-overlay"
-            onMouseDown={(e) => {
-              if (e.target === e.currentTarget) {
-                cerrarModal()
-              }
-            }}
+      {modalOpen && createPortal(
+        <div
+          className="docente-modal-overlay"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) cerrarModal()
+          }}
+        >
+          <section
+            className="docente-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="docente-modal-title"
           >
-            <section
-              className="docente-modal"
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="docente-modal-title"
+            <button
+              type="button"
+              className="docente-modal-close"
+              aria-label="Cerrar"
+              onClick={cerrarModal}
             >
-              <button
-                type="button"
-                className="docente-modal-close"
-                aria-label="Cerrar"
-                onClick={cerrarModal}
-              >
-                ×
-              </button>
+              ×
+            </button>
 
-              <div className="docente-modal-content">
-                <div className="page-top">
-                  <div>
-                    <span className="page-eyebrow">DOCENTES</span>
-                    <h2 id="docente-modal-title">Nuevo docente</h2>
-                    <p>Completá los datos para registrar un docente.</p>
+            <div className="docente-modal-content">
+              <div className="page-top">
+                <div>
+                  <span className="page-eyebrow">DOCENTES</span>
+                  <h2 id="docente-modal-title">Nuevo docente</h2>
+                  <p>Completá los datos para registrar un docente.</p>
+                </div>
+              </div>
+
+              <form onSubmit={guardarDocente}>
+                <div className="form-section">
+                  <div className="form-section-title">
+                    <span>01</span>
+                    <div>
+                      <h3>Información personal</h3>
+                      <p>Datos principales del docente.</p>
+                    </div>
+                  </div>
+
+                  <div className="form-grid">
+                    <div className="form-group">
+                      <label htmlFor="docente-nombre">Nombre *</label>
+                      <input id="docente-nombre" name="firstName" value={form.firstName} onChange={actualizarCampo} maxLength={100} required />
+                    </div>
+
+                    <div className="form-group">
+                      <label htmlFor="docente-apellido">Apellido *</label>
+                      <input id="docente-apellido" name="lastName" value={form.lastName} onChange={actualizarCampo} maxLength={100} required />
+                    </div>
+
+                    <div className="form-group">
+                      <label htmlFor="docente-dni">DNI *</label>
+                      <input id="docente-dni" name="dni" value={form.dni} onChange={actualizarCampo} maxLength={20} required />
+                    </div>
+
+                    <div className="form-group">
+                      <label htmlFor="docente-genero">Género *</label>
+                      <select id="docente-genero" name="gender" value={form.gender} onChange={actualizarCampo} required>
+                        <option value="">Seleccionar</option>
+                        <option value="Femenino">Femenino</option>
+                        <option value="Masculino">Masculino</option>
+                        <option value="Otro">Otro</option>
+                        <option value="Prefiero no decirlo">Prefiero no decirlo</option>
+                      </select>
+                    </div>
+
+                    <div className="form-group">
+                      <label htmlFor="docente-fecha">Fecha de nacimiento *</label>
+                      <input id="docente-fecha" type="date" name="birthDate" value={form.birthDate} onChange={actualizarCampo} max={new Date().toISOString().split('T')[0]} required />
+                    </div>
+
+                    <div className="form-group">
+                      <label htmlFor="docente-telefono">Teléfono *</label>
+                      <input id="docente-telefono" type="tel" name="phoneNumber" value={form.phoneNumber} onChange={actualizarCampo} maxLength={30} required />
+                    </div>
+
+                    <div className="form-group form-group-full">
+                      <label htmlFor="docente-direccion">Dirección *</label>
+                      <input id="docente-direccion" name="address" value={form.address} onChange={actualizarCampo} maxLength={200} required />
+                    </div>
                   </div>
                 </div>
 
-                <form onSubmit={guardarDocente}>
-                  <div className="form-section">
-                    <div className="form-section-title">
-                      <span>01</span>
-                      <div>
-                        <h3>Información personal</h3>
-                        <p>Datos principales del docente.</p>
-                      </div>
-                    </div>
-
-                    <div className="form-grid">
-                      <div className="form-group">
-                        <label htmlFor="docente-nombre">Nombre *</label>
-                        <input
-                          id="docente-nombre"
-                          name="firstName"
-                          value={form.firstName}
-                          onChange={actualizarCampo}
-                          maxLength={100}
-                          required
-                        />
-                      </div>
-
-                      <div className="form-group">
-                        <label htmlFor="docente-apellido">Apellido *</label>
-                        <input
-                          id="docente-apellido"
-                          name="lastName"
-                          value={form.lastName}
-                          onChange={actualizarCampo}
-                          maxLength={100}
-                          required
-                        />
-                      </div>
-
-                      <div className="form-group">
-                        <label htmlFor="docente-dni">DNI *</label>
-                        <input
-                          id="docente-dni"
-                          name="dni"
-                          value={form.dni}
-                          onChange={actualizarCampo}
-                          maxLength={20}
-                          required
-                        />
-                      </div>
-
-                      <div className="form-group">
-                        <label htmlFor="docente-genero">Género *</label>
-                        <select
-                          id="docente-genero"
-                          name="gender"
-                          value={form.gender}
-                          onChange={actualizarCampo}
-                          required
-                        >
-                          <option value="">Seleccionar</option>
-                          <option value="Femenino">Femenino</option>
-                          <option value="Masculino">Masculino</option>
-                          <option value="Otro">Otro</option>
-                          <option value="Prefiero no decirlo">
-                            Prefiero no decirlo
-                          </option>
-                        </select>
-                      </div>
-
-                      <div className="form-group">
-                        <label htmlFor="docente-fecha">Fecha de nacimiento *</label>
-                        <input
-                          id="docente-fecha"
-                          type="date"
-                          name="birthDate"
-                          value={form.birthDate}
-                          onChange={actualizarCampo}
-                          max={new Date().toISOString().split('T')[0]}
-                          required
-                        />
-                      </div>
-
-                      <div className="form-group">
-                        <label htmlFor="docente-telefono">Teléfono *</label>
-                        <input
-                          id="docente-telefono"
-                          type="tel"
-                          name="phoneNumber"
-                          value={form.phoneNumber}
-                          onChange={actualizarCampo}
-                          maxLength={30}
-                          required
-                        />
-                      </div>
-
-                      <div className="form-group form-group-full">
-                        <label htmlFor="docente-direccion">Dirección *</label>
-                        <input
-                          id="docente-direccion"
-                          name="address"
-                          value={form.address}
-                          onChange={actualizarCampo}
-                          maxLength={200}
-                          required
-                        />
-                      </div>
+                <div className="form-section">
+                  <div className="form-section-title">
+                    <span>02</span>
+                    <div>
+                      <h3>Contacto y acceso</h3>
+                      <p>Email y especialidad del docente.</p>
                     </div>
                   </div>
 
-                  <div className="form-section">
-                    <div className="form-section-title">
-                      <span>02</span>
-                      <div>
-                        <h3>Contacto y acceso</h3>
-                        <p>Email, especialidad y contraseña.</p>
-                      </div>
+                  <div className="form-grid">
+                    <div className="form-group form-group-full">
+                      <label htmlFor="docente-email">Email *</label>
+                      <input id="docente-email" type="email" name="email" value={form.email} onChange={actualizarCampo} maxLength={150} required />
                     </div>
 
-                    <div className="form-grid">
-                      <div className="form-group form-group-full">
-                        <label htmlFor="docente-email">Email *</label>
-                        <input
-                          id="docente-email"
-                          type="email"
-                          name="email"
-                          value={form.email}
-                          onChange={actualizarCampo}
-                          maxLength={150}
-                          required
-                        />
-                      </div>
+                    <div className="form-group">
+                      <label htmlFor="docente-especialidad">Especialidad *</label>
+                      <select id="docente-especialidad" name="specialty" value={form.specialty} onChange={actualizarCampo} required>
+                        <option value="">Seleccionar especialidad</option>
+                        <option value="Fútbol">Fútbol</option>
+                        <option value="Natación">Natación</option>
+                        <option value="Yoga">Yoga</option>
+                        <option value="Básquet">Básquet</option>
+                        <option value="Vóley">Vóley</option>
+                        <option value="Gimnasia">Gimnasia</option>
+                        <option value="Otra">Otra</option>
+                      </select>
+                    </div>
 
-                      <div className="form-group">
-                        <label htmlFor="docente-especialidad">
-                          Especialidad *
-                        </label>
-                        <select
-                          id="docente-especialidad"
-                          name="specialty"
-                          value={form.specialty}
-                          onChange={actualizarCampo}
-                          required
-                        >
-                          <option value="">Seleccionar especialidad</option>
-                          <option value="Fútbol">Fútbol</option>
-                          <option value="Natación">Natación</option>
-                          <option value="Yoga">Yoga</option>
-                          <option value="Básquet">Básquet</option>
-                          <option value="Vóley">Vóley</option>
-                          <option value="Gimnasia">Gimnasia</option>
-                          <option value="Otra">Otra</option>
-                        </select>
-                      </div>
-
-                      <div className="form-group">
-                        <label htmlFor="docente-estado">Estado *</label>
-                        <select
-                          id="docente-estado"
-                          name="estado"
-                          value={form.estado}
-                          onChange={actualizarCampo}
-                          required
-                        >
-                          <option value="Activo">Activo</option>
-                          <option value="Inactivo">Inactivo</option>
-                        </select>
-                      </div>
-
-                      <div className="form-group form-group-full">
-                        <label htmlFor="docente-password">Contraseña *</label>
-                        <input
-                          id="docente-password"
-                          type="password"
-                          name="password"
-                          value={form.password}
-                          onChange={actualizarCampo}
-                          minLength={8}
-                          autoComplete="new-password"
-                          required
-                        />
-                        <small>Debe tener al menos 8 caracteres.</small>
-                      </div>
+                    <div className="form-group">
+                      <label htmlFor="docente-estado">Estado *</label>
+                      <select id="docente-estado" name="estado" value={form.estado} onChange={actualizarCampo} required>
+                        <option value="Activo">Activo</option>
+                        <option value="Inactivo">Inactivo</option>
+                      </select>
                     </div>
                   </div>
+                </div>
 
-                  {mensaje && (
-                    <p role="alert" aria-live="polite">
-                      {mensaje}
-                    </p>
-                  )}
+                {mensaje && <p role="alert" aria-live="polite">{mensaje}</p>}
 
-                  <div className="form-actions">
-                    <button
-                      type="button"
-                      className="secondary-button"
-                      onClick={cerrarModal}
-                    >
-                      Cancelar
-                    </button>
-
-                    <button type="submit" className="primary-button">
-                      Guardar docente
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </section>
-          </div>,
-          document.body
-        )}
+                <div className="form-actions">
+                  <button type="button" className="secondary-button" onClick={cerrarModal}>
+                    Cancelar
+                  </button>
+                  <button type="submit" className="primary-button">
+                    Guardar docente
+                  </button>
+                </div>
+              </form>
+            </div>
+          </section>
+        </div>,
+        document.body
+      )}
     </main>
   )
 }
