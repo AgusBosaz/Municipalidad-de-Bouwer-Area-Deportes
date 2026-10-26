@@ -2,7 +2,13 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 
 import { useEffect, useState } from 'react'
 import { getCurrentUser } from './services/Auth.js'
-import { clearSession, getSession } from './services/AuthSession'
+import {
+  clearSession,
+  expireSession,
+  getSession,
+  saveSession,
+  SESSION_EXPIRED_EVENT,
+} from './services/AuthSession'
 
 import Layout from './components/layout/Layout.jsx'
 import Login from './pages/Login.jsx'
@@ -24,13 +30,42 @@ function ProtectedLayout() {
   )
 
   useEffect(() => {
+    const handleSessionExpired = () => setStatus('unauthenticated')
+    window.addEventListener(SESSION_EXPIRED_EVENT, handleSessionExpired)
+    return () => window.removeEventListener(SESSION_EXPIRED_EVENT, handleSessionExpired)
+  }, [])
+
+  useEffect(() => {
     if (status !== 'checking') return
 
     let active = true
 
     getCurrentUser()
-      .then(() => {
-        if (active) setStatus('verified')
+      .then((currentUser) => {
+        if (!active) return
+
+        const session = getSession()
+        if (!session) {
+          setStatus('unauthenticated')
+          return
+        }
+
+        saveSession({
+          ...session,
+          userId: currentUser.userId,
+          fullName: currentUser.fullName,
+          dni: currentUser.dni,
+          roles: currentUser.roles,
+          permissions: currentUser.permissions,
+        })
+
+        if (!getSession()) {
+          clearSession()
+          setStatus('unauthenticated')
+          return
+        }
+
+        setStatus('verified')
       })
       .catch((error) => {
         if (!active) return
@@ -45,6 +80,32 @@ function ProtectedLayout() {
 
     return () => {
       active = false
+    }
+  }, [status])
+
+  useEffect(() => {
+    if (status !== 'verified') return
+
+    const session = getSession()
+    if (!session) {
+      expireSession()
+      return
+    }
+
+    const timeout = window.setTimeout(
+      expireSession,
+      Math.max(0, Date.parse(session.expiresAt) - Date.now())
+    )
+    const checkOnReturn = () => {
+      if (document.visibilityState === 'visible' && !getSession()) {
+        expireSession()
+      }
+    }
+    document.addEventListener('visibilitychange', checkOnReturn)
+
+    return () => {
+      window.clearTimeout(timeout)
+      document.removeEventListener('visibilitychange', checkOnReturn)
     }
   }, [status])
 

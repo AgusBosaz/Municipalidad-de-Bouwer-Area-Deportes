@@ -29,6 +29,8 @@ function Login() {
         alert('DNI o contraseña incorrectos.')
       } else if (error.status === 403) {
         alert('El usuario está inactivo.')
+      } else if (error.status === 429) {
+        alert('Demasiados intentos. Esperá unos minutos antes de volver a ingresar.')
       } else {
         alert('No se pudo iniciar sesión. Revisá que la API este funcionando.')
       }

@@ -1,4 +1,5 @@
 const SESSION_KEY = 'bouwer-session'
+export const SESSION_EXPIRED_EVENT = 'bouwer-session-expired'
 
 export function saveSession(session) {
     sessionStorage.setItem(SESSION_KEY, JSON.stringify(session))
@@ -19,7 +20,10 @@ export function getSession() {
             : session.roles?.includes('Instructor')
                 ? 'Instructor'
                 : null
-        if (!role) return null
+        if (!role) {
+            sessionStorage.removeItem(SESSION_KEY)
+            return null
+        }
 
         return {
             ...session,
@@ -34,4 +38,9 @@ export function getSession() {
 
 export function clearSession() {
     sessionStorage.removeItem(SESSION_KEY)
+}
+
+export function expireSession() {
+    clearSession()
+    window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT))
 }
