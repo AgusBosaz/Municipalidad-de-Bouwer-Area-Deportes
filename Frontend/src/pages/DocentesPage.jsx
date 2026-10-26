@@ -62,10 +62,17 @@ function DocentesPage() {
   }
 
   const cerrarModal = () => {
-    setModalOpen(false)
-    setDocenteEnEdicion(null)
-    setMensaje('')
-  }
+  const confirmar = window.confirm
+    (
+      '¿Querés cerrar el formulario? Los cambios sin guardar se perderán.'
+    )
+
+    if (!confirmar) 
+      return
+      setModalOpen(false)
+      setDocenteEnEdicion(null)
+      setMensaje('')
+}
 
   const guardarDocente = (e) => {
     e.preventDefault()
@@ -140,6 +147,29 @@ function DocentesPage() {
       : 'Docente agregado a la lista local correctamente.')
   }
 
+  const darDeBajaDocente = (docente) => {
+    if (docente.estado === 'Inactivo') {
+      alert('Este docente ya se encuentra inactivo.')
+      return
+    }
+
+    const confirmar = window.confirm(
+      `¿Querés dar de baja a ${docente.nombre}?`
+    )
+
+    if (!confirmar) return
+
+    setDocentes((actuales) =>
+      actuales.map((item) =>
+        item.id === docente.id
+          ? { ...item, estado: 'Inactivo' }
+          : item
+      )
+    )
+
+    alert('El docente fue dado de baja correctamente.')
+  }
+
   const docentesFiltrados = docentes.filter((docente) =>
     `${docente.nombre} ${docente.email} ${docente.especialidad}`
       .toLowerCase()
@@ -210,15 +240,10 @@ function DocentesPage() {
                       <button
                         type="button"
                         className="action-button delete"
-                        onClick={() => {
-                          if (window.confirm(`¿Querés eliminar a ${docente.nombre} de la lista local?`)) {
-                            setDocentes((actuales) =>
-                              actuales.filter((item) => item.id !== docente.id)
-                            )
-                          }
-                        }}
+                        onClick={() => darDeBajaDocente(docente)}
+                        disabled={docente.estado === 'Inactivo'}
                       >
-                        Eliminar
+                        {docente.estado === 'Inactivo' ? 'Inactivo' : 'Dar de baja'}
                       </button>
                     </div>
                   </td>
