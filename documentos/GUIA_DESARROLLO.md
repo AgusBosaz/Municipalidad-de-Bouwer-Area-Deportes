@@ -1,4 +1,4 @@
-npm# Guía de desarrollo
+# Guía de desarrollo
 
 Esta guía explica cómo preparar el proyecto y dónde debe trabajar cada integrante. Las decisiones académicas generales se encuentran en [`../context.md`](../context.md).
 
@@ -47,6 +47,8 @@ dotnet tool run dotnet-ef database update --project Backend/Muni-Bouwer.Data/Mun
 ```
 
 Este comando aplica las migraciones compartidas y crea `MuniBouwerDeportes` si todavía no existe.
+
+Mailjet es opcional para usar el resto de la aplicación. Quien necesite probar el recupero de contraseña por correo puede seguir la [guía paso a paso de Mailjet](RECUPERO_PASSWORD.md).
 
 ## 4. Configurar autenticación JWT
 

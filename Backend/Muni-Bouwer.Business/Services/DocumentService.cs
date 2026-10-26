@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Muni_Bouwer.Data.Context;
+using Muni_Bouwer.Entities.DTOs;
 using Muni_Bouwer.Entities.Models;
 
 namespace Muni_Bouwer.Business
@@ -13,26 +14,64 @@ namespace Muni_Bouwer.Business
             _context = context;
         }
 
-        public async Task<IEnumerable<Documentation>> GetByStudentIdAsync(int studentId)
+        public async Task<List<DocumentResponseDto>> GetByStudentIdAsync(int studentId)
         {
             return await _context.Documents
-                .Where(d => d.StudentId == studentId)
+                .AsNoTracking()
+                .Where(document =>
+                    document.StudentId == studentId &&
+                    document.IsActive)
+                .Select(document => new DocumentResponseDto
+                {
+                    Id = document.Id,
+                    StudentId = document.StudentId,
+                    Type = document.Type,
+                    FileUrl = document.FileUrl,
+                    UploadedAt = document.UploadedAt
+                })
                 .ToListAsync();
         }
 
-        public async Task<Documentation> AddDocumentAsync(Documentation document)
+        public async Task<DocumentResponseDto> AddDocumentAsync(
+            int studentId,
+            CreateDocumentDto request)
         {
+            Documentation document = new()
+            {
+                StudentId = studentId,
+                Type = request.Type,
+                FileUrl = request.FileUrl,
+                UploadedAt = DateOnly.FromDateTime(DateTime.Now),
+                IsActive = true
+            };
+
             _context.Documents.Add(document);
             await _context.SaveChangesAsync();
-            return document;
+
+            return new DocumentResponseDto
+            {
+                Id = document.Id,
+                StudentId = document.StudentId,
+                Type = document.Type,
+                FileUrl = document.FileUrl,
+                UploadedAt = document.UploadedAt
+            };
         }
 
-        public async Task<bool> DeleteAsync(int id)
+        public async Task<bool> DeactivateAsync(int studentId, int id)
         {
-            var document = await _context.Documents.FindAsync(id);
-            if (document == null) return false;
+            Documentation? document = await _context.Documents
+                .FirstOrDefaultAsync(item =>
+                    item.Id == id &&
+                    item.StudentId == studentId &&
+                    item.IsActive);
 
-            _context.Documents.Remove(document);
+            if (document is null)
+            {
+                return false;
+            }
+
+            document.IsActive = false;
             await _context.SaveChangesAsync();
             return true;
         }

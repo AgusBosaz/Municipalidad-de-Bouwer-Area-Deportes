@@ -1,10 +1,14 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Muni_Bouwer.Business;
+using Muni_Bouwer.Entities.Authorization;
+using Muni_Bouwer.Entities.DTOs;
 
 namespace Muni_Bouwer.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Policy = PermissionNames.EnrollmentsManage)]
     public class InscriptionsController : ControllerBase
     {
         private readonly EnrollmentService _enrollmentService;
@@ -15,7 +19,8 @@ namespace Muni_Bouwer.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Register([FromBody] RegisterStudentDto dto)
+        public async Task<ActionResult<EnrollmentResponseDto>> Register(
+            [FromBody] RegisterStudentDto dto)
         {
             try
             {
@@ -28,14 +33,14 @@ namespace Muni_Bouwer.Api.Controllers
             }
         }
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<ActionResult<List<EnrollmentResponseDto>>> GetAll()
         {
             var list = await _enrollmentService.GetAllAsync();
             return Ok(list);
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<ActionResult<EnrollmentResponseDto>> GetById(int id)
         {
             var enrollment = await _enrollmentService.GetByIdAsync(id);
             if (enrollment == null)
@@ -48,12 +53,12 @@ namespace Muni_Bouwer.Api.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var deleted = await _enrollmentService.DeleteAsync(id);
+            var deleted = await _enrollmentService.CancelAsync(id);
             if (!deleted)
             {
-                return NotFound(new { message = "Inscripción no encontrada para eliminar." });
+                return NotFound(new { message = "Inscripción activa no encontrada." });
             }
-            return Ok(new { message = "Inscripción eliminada con éxito." });
+            return Ok(new { message = "Inscripción cancelada con éxito." });
         }
     }
 

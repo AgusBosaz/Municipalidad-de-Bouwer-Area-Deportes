@@ -35,6 +35,24 @@ public static class PermissionSeeder
         }
 
         await context.SaveChangesAsync();
+
+        Role? instructorRole = await context.Roles
+            .Include(role => role.Permissions)
+            .FirstOrDefaultAsync(role =>
+                role.Name == RoleNames.Instructor && role.IsActive);
+        Permission? attendancePermission = await context.Permissions
+            .FirstOrDefaultAsync(permission =>
+                permission.Name == PermissionNames.AttendanceRegister &&
+                permission.IsActive);
+
+        if (instructorRole is not null &&
+            attendancePermission is not null &&
+            !instructorRole.Permissions.Any(permission =>
+                permission.Id == attendancePermission.Id))
+        {
+            instructorRole.Permissions.Add(attendancePermission);
+            await context.SaveChangesAsync();
+        }
     }
 
     private static string GetDescription(string permissionName)

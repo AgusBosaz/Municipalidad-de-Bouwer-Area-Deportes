@@ -4,14 +4,15 @@ import '../styles/docentes.css'
 
 function DocentesPage() {
   const [modalOpen, setModalOpen] = useState(false)
+  const [docenteEnEdicion, setDocenteEnEdicion] = useState(null)
   const [busqueda, setBusqueda] = useState('')
   const [mensaje, setMensaje] = useState('')
 
   const [docentes, setDocentes] = useState([
-    { id: 1, nombre: 'Santiago Pérez', email: 'santi@correo.com', especialidad: 'Fútbol', estado: 'Activo' },
-    { id: 2, nombre: 'María Gómez', email: 'maria@correo.com', especialidad: 'Natación', estado: 'Activo' },
-    { id: 3, nombre: 'Lucía Torres', email: 'lucia@correo.com', especialidad: 'Yoga', estado: 'Activo' },
-    { id: 4, nombre: 'Diego Castro', email: 'diego@correo.com', especialidad: 'Básquet', estado: 'Activo' }
+    { id: 1, firstName: 'Santiago', lastName: 'Pérez', nombre: 'Santiago Pérez', dni: '30111222', gender: 'Masculino', phoneNumber: '3511111111', address: 'Bouwer', birthDate: '1990-01-15', email: 'santi@correo.com', specialty: 'Fútbol', especialidad: 'Fútbol', estado: 'Activo' },
+    { id: 2, firstName: 'María', lastName: 'Gómez', nombre: 'María Gómez', dni: '30222333', gender: 'Femenino', phoneNumber: '3512222222', address: 'Bouwer', birthDate: '1991-04-20', email: 'maria@correo.com', specialty: 'Natación', especialidad: 'Natación', estado: 'Activo' },
+    { id: 3, firstName: 'Lucía', lastName: 'Torres', nombre: 'Lucía Torres', dni: '30333444', gender: 'Femenino', phoneNumber: '3513333333', address: 'Bouwer', birthDate: '1992-07-10', email: 'lucia@correo.com', specialty: 'Yoga', especialidad: 'Yoga', estado: 'Activo' },
+    { id: 4, firstName: 'Diego', lastName: 'Castro', nombre: 'Diego Castro', dni: '30444555', gender: 'Masculino', phoneNumber: '3514444444', address: 'Bouwer', birthDate: '1989-11-08', email: 'diego@correo.com', specialty: 'Básquet', especialidad: 'Básquet', estado: 'Activo' }
   ])
 
   const formularioVacio = {
@@ -36,13 +37,33 @@ function DocentesPage() {
   }
 
   const abrirModal = () => {
+    setDocenteEnEdicion(null)
     setForm({ ...formularioVacio })
+    setMensaje('')
+    setModalOpen(true)
+  }
+
+  const abrirEdicion = (docente) => {
+    setDocenteEnEdicion(docente.id)
+    setForm({
+      firstName: docente.firstName,
+      lastName: docente.lastName,
+      dni: docente.dni,
+      gender: docente.gender,
+      phoneNumber: docente.phoneNumber,
+      address: docente.address,
+      birthDate: docente.birthDate,
+      email: docente.email,
+      specialty: docente.specialty,
+      estado: docente.estado
+    })
     setMensaje('')
     setModalOpen(true)
   }
 
   const cerrarModal = () => {
     setModalOpen(false)
+    setDocenteEnEdicion(null)
     setMensaje('')
   }
 
@@ -74,31 +95,49 @@ function DocentesPage() {
       return
     }
 
-    if (docentes.some((d) => d.email.toLowerCase() === email.toLowerCase())) {
+    if (docentes.some((d) =>
+      d.id !== docenteEnEdicion && d.email.toLowerCase() === email.toLowerCase())) {
       setMensaje('Ya existe un docente registrado con ese email.')
       return
     }
 
-    if (docentes.some((d) => d.dni === dni)) {
+    if (docentes.some((d) => d.id !== docenteEnEdicion && d.dni === dni)) {
       setMensaje('Ya existe un docente registrado con ese DNI.')
       return
     }
 
-    setDocentes((actuales) => [
-      ...actuales,
-      {
-        id: Date.now(),
-        nombre: `${nombre} ${apellido}`,
-        dni,
-        email,
-        especialidad: form.specialty,
-        estado: form.estado
-      }
-    ])
+    const datosDocente = {
+      firstName: nombre,
+      lastName: apellido,
+      nombre: `${nombre} ${apellido}`,
+      dni,
+      gender: form.gender,
+      phoneNumber: telefono,
+      address: direccion,
+      birthDate: form.birthDate,
+      email,
+      specialty: form.specialty,
+      especialidad: form.specialty,
+      estado: form.estado
+    }
+
+    if (docenteEnEdicion !== null) {
+      setDocentes((actuales) => actuales.map((docente) =>
+        docente.id === docenteEnEdicion
+          ? { ...docente, ...datosDocente }
+          : docente
+      ))
+    } else {
+      setDocentes((actuales) => [
+        ...actuales,
+        { id: Date.now(), ...datosDocente }
+      ])
+    }
 
     cerrarModal()
-    setForm({ ...formularioVacio })
-    alert('Docente agregado a la lista local correctamente.')
+    alert(docenteEnEdicion !== null
+      ? 'Docente actualizado en la lista local correctamente.'
+      : 'Docente agregado a la lista local correctamente.')
   }
 
   const docentesFiltrados = docentes.filter((docente) =>
@@ -164,7 +203,7 @@ function DocentesPage() {
                       <button
                         type="button"
                         className="action-button edit"
-                        onClick={() => alert('La edición todavía no está implementada.')}
+                        onClick={() => abrirEdicion(docente)}
                       >
                         Editar
                       </button>
@@ -223,8 +262,10 @@ function DocentesPage() {
               <div className="page-top">
                 <div>
                   <span className="page-eyebrow">DOCENTES</span>
-                  <h2 id="docente-modal-title">Nuevo docente</h2>
-                  <p>Completá los datos para registrar un docente.</p>
+                  <h2 id="docente-modal-title">
+                    {docenteEnEdicion !== null ? 'Editar docente' : 'Nuevo docente'}
+                  </h2>
+                  <p>Completá los datos del docente.</p>
                 </div>
               </div>
 
@@ -328,7 +369,7 @@ function DocentesPage() {
                     Cancelar
                   </button>
                   <button type="submit" className="primary-button">
-                    Guardar docente
+                    {docenteEnEdicion !== null ? 'Guardar cambios' : 'Guardar docente'}
                   </button>
                 </div>
               </form>

@@ -1,7 +1,7 @@
 import { useLocation } from 'react-router-dom'
 import '../../styles/layout.css'
 
-function Header() {
+function Header({ isMenuOpen, onMenuClick, session }) {
   const location = useLocation()
 
   const getTitle = () => {
@@ -18,6 +18,10 @@ function Header() {
         return 'Nueva actividad'
       case '/asignaciones':
         return 'Asignaciones'
+      case '/inscribir-alumnos':
+        return 'Inscripciones'
+      case '/asistencia':
+        return 'Asistencia'
       default:
         return 'Dashboard'
     }
@@ -25,6 +29,16 @@ function Header() {
 
   return (
     <header className="header">
+      <button
+        type="button"
+        className="menu-button"
+        aria-label={isMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
+        aria-expanded={isMenuOpen}
+        aria-controls="primary-navigation"
+        onClick={onMenuClick}
+      >
+        ☰
+      </button>
       <div>
         <h1>{getTitle()}</h1>
         <p>Área de Deportes</p>
@@ -37,12 +51,12 @@ function Header() {
 
         <div className="header-user">
           <div className="header-avatar">
-            A
+            {session.name.charAt(0)}
           </div>
 
           <div>
-            <strong>Administrador</strong>
-            <span>Coordinador</span>
+            <strong>{session.name}</strong>
+            <span>{session.role === 'Coordinator' ? 'Coordinador' : 'Docente'}</span>
           </div>
         </div>
       </div>

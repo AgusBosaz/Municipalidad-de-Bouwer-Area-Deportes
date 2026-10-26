@@ -19,6 +19,13 @@ public class InstructorDAL
             .AnyAsync(u => u.Dni == dni && u.Id != excludeId);
     }
 
+    public async Task<bool> ExistsByEmailAsync(string email, int? excludeId = null)
+    {
+        return await _context.Set<User>()
+            .AnyAsync(user => (user is Instructor || user is Coordinator) &&
+                user.Email == email && user.Id != excludeId);
+    }
+
     public async Task<List<Instructor>> GetAllAsync()
     {
         return await _context.Set<Instructor>()

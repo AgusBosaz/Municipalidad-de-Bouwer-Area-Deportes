@@ -5,7 +5,7 @@ public class Enrollment
     public int Id { get; set; }
     public int StudentActivityId { get; set; }
     public DateOnly EnrollmentDate { get; set; }
-    public string Status { get; set; } = string.Empty;
+    public string Status { get; set; } = EnrollmentStatuses.Active;
 
     public StudentActivity StudentActivity { get; set; } = null!;
 }

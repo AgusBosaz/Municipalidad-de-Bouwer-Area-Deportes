@@ -12,6 +12,9 @@ using Muni_Bouwer.Data.DAL;
 using Muni_Bouwer.Data.Seed;
 using Muni_Bouwer.Entities.Authorization;
 using Muni_Bouwer.Entities.Models;
+using Muni_Bouwer.Api.Services;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,7 +53,35 @@ builder.Services.AddScoped<RoleService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<PasswordService>();
+builder.Services.AddScoped<PasswordRecoveryService>();
+builder.Services.AddHttpClient<IRecoveryEmailSender, MailjetRecoveryEmailSender>();
 builder.Services.AddScoped<PermissionService>();
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddPolicy("login", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(5),
+                QueueLimit = 0,
+                AutoReplenishment = true
+            }));
+
+    options.AddPolicy("password-recovery", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 20,
+                Window = TimeSpan.FromMinutes(15),
+                QueueLimit = 0,
+                AutoReplenishment = true
+            }));
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+});
 
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 
@@ -88,15 +119,52 @@ builder.Services
                     .RequestServices
                     .GetRequiredService<BouwerDbContext>();
 
-                bool userIsActive = await dbContext.Users
+                User? currentUser = await dbContext.Users
                     .AsNoTracking()
-                    .AnyAsync(user =>
-                        user.Id == userId &&
-                        user.IsActive);
+                    .Include(user => user.Roles
+                        .Where(role => role.IsActive))
+                    .ThenInclude(role => role.Permissions
+                        .Where(permission => permission.IsActive))
+                    .FirstOrDefaultAsync(user => user.Id == userId);
 
-                if (!userIsActive)
+                if (currentUser is null || !currentUser.IsActive)
                 {
                     context.Fail("El usuario está inactivo.");
+                    return;
+                }
+
+                string? credentialVersionValue = context.Principal!
+                    .FindFirstValue("credential_version");
+                if (!int.TryParse(credentialVersionValue, out int credentialVersion) ||
+                    credentialVersion != currentUser.CredentialVersion)
+                {
+                    context.Fail("La contraseña cambió. Iniciá sesión nuevamente.");
+                    return;
+                }
+
+                HashSet<string> currentRoles = currentUser.Roles
+                    .Select(role => role.Name)
+                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+                HashSet<string> tokenRoles = context.Principal!
+                    .FindAll(ClaimTypes.Role)
+                    .Select(claim => claim.Value)
+                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+                HashSet<string> currentPermissions = currentRoles.Contains(RoleNames.Coordinator)
+                    ? PermissionNames.All.ToHashSet(StringComparer.OrdinalIgnoreCase)
+                    : currentUser.Roles
+                        .SelectMany(role => role.Permissions)
+                        .Select(permission => permission.Name)
+                        .ToHashSet(StringComparer.OrdinalIgnoreCase);
+                HashSet<string> tokenPermissions = context.Principal
+                    .FindAll("permission")
+                    .Select(claim => claim.Value)
+                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+                if (!currentRoles.SetEquals(tokenRoles) ||
+                    !currentPermissions.SetEquals(tokenPermissions))
+                {
+                    context.Fail("Los permisos cambiaron. Iniciá sesión nuevamente.");
                 }
             }
         };
@@ -172,6 +240,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseRouting();
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 

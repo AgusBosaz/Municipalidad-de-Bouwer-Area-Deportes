@@ -1,0 +1,244 @@
+/* Estilos específicos para la sección de Inscripción basados en Figma */
+.inscripcion-container {
+  padding: 2rem;
+  background-color: #f7f7f7;
+  min-height: 100vh;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.inscripcion-header h1 {
+  font-size: 1.875rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 0.25rem;
+}
+
+.inscripcion-header p {
+  color: #6b7280;
+  font-size: 0.95rem;
+  margin-bottom: 2rem;
+}
+
+.inscripcion-card {
+  background-color: white;
+  border-radius: 17px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  border: 1px solid #eee;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.035);
+}
+
+.inscripcion-card h2 {
+  font-size: 1.125rem;
+  font-weight: bold;
+  color: #1f2937;
+  margin-bottom: 1.25rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #4b5563;
+  margin-bottom: 0.35rem;
+  text-transform: uppercase;
+}
+
+.form-group input, .form-group select {
+  width: 100%;
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 0.75rem;
+  padding: 0.65rem 1rem;
+  font-size: 0.875rem;
+  color: #1f2937;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus, .form-group select:focus {
+  border-color: #8b1e41;
+  box-shadow: 0 0 0 2px rgba(139, 30, 65, 0.15);
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.btn-primary {
+  background-color: #9a1b45;
+  color: #ffffff;
+  font-weight: 500;
+  padding: 0.65rem 1.5rem;
+  border-radius: 0.75rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.btn-primary:hover {
+  background-color: #801638;
+}
+
+.btn-secondary {
+  background-color: #ffffff;
+  color: #374151;
+  font-weight: 500;
+  padding: 0.65rem 1.5rem;
+  border-radius: 0.75rem;
+  border: 1px solid #d1d5db;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-secondary:hover {
+  background-color: #f9fafb;
+}
+
+.table-wrapper {
+  background-color: #ffffff;
+  border-radius: 1rem;
+  overflow: auto;
+  border: 1px solid #e5e7eb;
+}
+
+.custom-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.custom-table th {
+  background-color: #f9fafb;
+  padding: 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.custom-table td {
+  padding: 1rem;
+  font-size: 0.875rem;
+  color: #374151;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.custom-table tr:hover {
+  background-color: #f9fafb;
+}
+
+@media (max-width: 700px) {
+  .inscripcion-container {
+    padding: 12px;
+  }
+
+  .inscripcion-header h1 {
+    font-size: 22px;
+    line-height: 1.2;
+  }
+
+  .inscripcion-header p {
+    line-height: 1.45;
+    margin-bottom: 16px;
+  }
+
+  .inscripcion-card {
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  .inscripcion-container .form-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .inscripcion-container .form-group label {
+    font-size: 13px;
+  }
+
+  .inscripcion-container .form-group input,
+  .inscripcion-container .form-group select {
+    min-height: 44px;
+    font-size: 16px;
+  }
+
+  .inscripcion-container .form-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .inscripcion-container .form-actions button {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  .inscripcion-container .table-wrapper {
+  overflow: visible;
+  border: 0;
+  background: transparent;
+}
+
+.inscripcion-container .custom-table,
+.inscripcion-container .custom-table tbody {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+.inscripcion-container .custom-table thead {
+  display: none;
+}
+
+.inscripcion-container .custom-table tr {
+  display: block;
+  margin-bottom: 12px;
+  overflow: hidden;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  background: white;
+}
+
+.inscripcion-container .custom-table td {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 14px;
+  overflow-wrap: anywhere;
+}
+
+.inscripcion-container .custom-table td::before {
+  color: #888;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.inscripcion-container .custom-table td:nth-child(1)::before {
+  content: "Nombre y apellido";
+}
+
+.inscripcion-container .custom-table td:nth-child(2)::before {
+  content: "DNI";
+}
+
+.inscripcion-container .custom-table td:nth-child(3)::before {
+  content: "Actividad";
+}
+
+.inscripcion-container .custom-table td:nth-child(4)::before {
+  content: "Fecha de inscripción";
+}
+}

@@ -1,15 +1,15 @@
 
 import { useState } from 'react'
 import '../styles/actividades.css'
-function CrearActividadPage({ onCancel, onSave }) {
+function CrearActividadPage({ onCancel, onSave, actividadInicial }) {
   const [form, setForm] = useState({
-    nombre: '',
-    categoria: '',
-    horario: '',
-    lugar: '',
-    cupos: '',
-    estado: 'Activa',
-    descripcion: ''
+    nombre: actividadInicial?.nombre ?? '',
+    categoria: actividadInicial?.categoria ?? '',
+    horario: actividadInicial?.horario ?? '',
+    lugar: actividadInicial?.lugar ?? '',
+    cupos: actividadInicial?.cupos ?? '',
+    estado: actividadInicial?.estado ?? 'Activa',
+    descripcion: actividadInicial?.descripcion ?? ''
   })
 
   const handleChange = (e) => {
@@ -51,7 +51,9 @@ function CrearActividadPage({ onCancel, onSave }) {
       <div className="page-top">
         <div>
           <span className="page-eyebrow">ACTIVIDADES</span>
-          <h2 id="activity-modal-title">Nueva actividad</h2>
+          <h2 id="activity-modal-title">
+            {actividadInicial ? 'Editar actividad' : 'Nueva actividad'}
+          </h2>
           <p>Completá los datos para crear una actividad.</p>
         </div>
       </div>
@@ -196,7 +198,7 @@ function CrearActividadPage({ onCancel, onSave }) {
           </button>
 
           <button type="submit" className="primary-button">
-            Guardar actividad
+            {actividadInicial ? 'Guardar cambios' : 'Guardar actividad'}
           </button>
         </div>
       </form>

@@ -1,9 +1,34 @@
 import { NavLink } from 'react-router-dom'
+import {
+  CalendarDays,
+  CircleCheck,
+  ClipboardList,
+  LayoutDashboard,
+  Trophy,
+  UsersRound,
+} from 'lucide-react'
 import '../../styles/layout.css'
 
-function Sidebar() {
+function Sidebar({ isOpen, onNavigate, session, onLogout }) {
+  const links = session.role === 'Coordinator'
+    ? [
+      { to: '/', label: 'Inicio', Icon: LayoutDashboard },
+      { to: '/docentes', label: 'Docentes', Icon: UsersRound },
+      { to: '/actividades', label: 'Actividades', Icon: Trophy },
+      { to: '/asignaciones', label: 'Asignaciones', Icon: CalendarDays },
+      { to: '/inscribir-alumnos', label: 'Inscripciones', Icon: ClipboardList },
+      { to: '/asistencia', label: 'Asistencia', Icon: CircleCheck },
+    ]
+    : [
+      { to: '/docente', label: 'Inicio', Icon: LayoutDashboard },
+      { to: '/mis-actividades', label: 'Mis actividades', Icon: CalendarDays },
+      { to: '/asistencia', label: 'Asistencia', Icon: CircleCheck },
+    ]
   return (
-    <aside className="sidebar">
+    <aside
+      id="primary-navigation"
+      className={`sidebar ${isOpen ? 'sidebar-open' : ''}`}
+    >
 
       <div className="sidebar-brand">
         <div className="sidebar-brand-icon">
@@ -17,76 +42,38 @@ function Sidebar() {
       </div>
 
       <nav className="sidebar-nav">
-
-        <NavLink
-          to="/"
-          end
-          className={({ isActive }) =>
-            isActive ? 'active' : ''
-          }
-        >
-          <span className="sidebar-nav-icon">
-            ⌂
-          </span>
-
-          Inicio
-        </NavLink>
-
-        <NavLink
-          to="/docentes"
-          className={({ isActive }) =>
-            isActive ? 'active' : ''
-          }
-        >
-          <span className="sidebar-nav-icon">
-            ♙
-          </span>
-
-          Docentes
-        </NavLink>
-
-        <NavLink
-          to="/actividades"
-          className={({ isActive }) =>
-            isActive ? 'active' : ''
-          }
-        >
-          <span className="sidebar-nav-icon">
-            ⚽
-          </span>
-
-          Actividades
-        </NavLink>
-
-        <NavLink
-          to="/asignaciones"
-          className={({ isActive }) =>
-            isActive ? 'active' : ''
-          }
-        >
-          <span className="sidebar-nav-icon">
-            ⇄
-          </span>
-
-          Asignaciones
-        </NavLink>
-
+        {links.map(({ to, label, Icon }) => (
+          <NavLink
+            key={to}
+            to={to}
+            end={to === '/' || to === '/docente'}
+            onClick={onNavigate}
+            className={({ isActive }) => isActive ? 'active' : ''}
+          >
+            <span className="sidebar-nav-icon" aria-hidden="true">
+              <Icon size={19} strokeWidth={1.8} />
+            </span>
+            {label}
+          </NavLink>
+        ))}
       </nav>
 
       <div className="sidebar-user">
 
         <div className="sidebar-user-icon">
-          👤
+          {session.name.charAt(0)}
         </div>
 
         <div className="sidebar-user-info">
-          <strong>Coordinador</strong>
-          <span>Rol Coordinador</span>
+          <strong>{session.name}</strong>
+          <span>
+            Rol {session.role === 'Coordinator' ? 'Coordinador' : 'Docente'}
+          </span>
         </div>
 
-        <span className="sidebar-user-arrow">
-          ›
-        </span>
+        <button type="button" className="sidebar-logout" onClick={onLogout}>
+          Salir
+        </button>
 
       </div>
 

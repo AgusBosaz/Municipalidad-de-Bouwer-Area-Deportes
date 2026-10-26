@@ -1,4 +1,5 @@
 .asignaciones-page {
+  padding-top: 38px;
   padding-bottom: 30px;
 }
 
@@ -206,12 +207,42 @@
 }
 
 @media (max-width: 600px) {
+  .assignment-list {
+    padding: 0 16px;
+  }
+
   .assignment-item {
-    align-items: flex-start;
-    padding: 17px 0;
+    display: grid;
+    grid-template-columns: 39px minmax(0, 1fr);
+    align-items: start;
+    gap: 8px 12px;
+    padding: 16px 0;
+  }
+
+  .assignment-avatar {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .assignment-info {
+    grid-column: 2;
+    grid-row: 1;
+    min-width: 0;
+  }
+
+  .assignment-info strong {
+    font-size: 14px;
+  }
+
+  .assignment-info span,
+  .assignment-info small {
+    font-size: 12px;
   }
 
   .assignment-actions {
-    flex-direction: column;
+    grid-column: 2;
+    grid-row: 2;
+    flex-direction: row;
+    justify-content: space-between;
   }
 }

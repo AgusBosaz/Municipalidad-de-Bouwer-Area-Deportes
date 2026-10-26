@@ -13,6 +13,9 @@ public class CreateInstructorDto
     [Required, StringLength(20)]
     public string Dni { get; set; } = string.Empty;
 
+    [Required, EmailAddress, StringLength(254)]
+    public string Email { get; set; } = string.Empty;
+
     [Required, StringLength(30)]
     public string Gender { get; set; } = string.Empty;
 
@@ -27,4 +30,8 @@ public class CreateInstructorDto
 
     [Required, StringLength(100)]
     public string Specialty { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "La contraseña es obligatoria.")]
+    [MinLength(8, ErrorMessage = "La contraseña debe tener al menos 8 caracteres.")]
+    public string Password { get; set; } = string.Empty;
 }

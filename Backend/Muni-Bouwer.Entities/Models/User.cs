@@ -6,6 +6,7 @@ public abstract class User
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
     public string Dni { get; set; } = string.Empty;
+    public string? Email { get; set; }
     public string Gender { get; set; } = string.Empty;
     public string PhoneNumber { get; set; } = string.Empty;
     public string Address { get; set; } = string.Empty;
@@ -14,6 +15,7 @@ public abstract class User
     public DateOnly UpdatedAt { get; set; }
     public bool IsActive { get; set; }
     public string? PasswordHash { get; set; }
+    public int CredentialVersion { get; set; }
 
     public List<Role> Roles { get; set; } = new();
 }
