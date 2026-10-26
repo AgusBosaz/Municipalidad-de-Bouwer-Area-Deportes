@@ -28,4 +28,22 @@ public class StudentAttendanceController : ControllerBase
         var result = await _service.CreateAsync(dto);
         return CreatedAtAction(nameof(GetAll), new { id = result.Id }, result);
     }
+
+    [HttpPut("{id}")]
+    public async Task<ActionResult<StudentAttendanceResponseDto>> Update(int id, [FromBody] StudentAttendanceUpdateDto dto)
+    {
+        var result = await _service.UpdateAsync(id, dto);
+        if (result == null)
+        {
+            return NotFound();
+        }
+        return Ok(result);
+    }
+
+    [HttpGet("instructor/{instructorId}")]
+    public async Task<ActionResult<List<StudentAttendanceResponseDto>>> GetByInstructorId(int instructorId)
+    {
+        var attendances = await _service.GetByInstructorIdAsync(instructorId);
+        return Ok(attendances);
+    }
 }
