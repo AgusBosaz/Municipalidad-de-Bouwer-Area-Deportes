@@ -41,7 +41,7 @@ public class InstructorController : ControllerBase
     {
         var created = await _instructorsService.CreateAsync(dto);
         if (created is null)
-            return Conflict(new { message = "Ya existe un usuario con ese DNI." });
+            return Conflict(new { message = "Ya existe un usuario con ese DNI o email." });
 
         return StatusCode(StatusCodes.Status201Created, created);
     }
@@ -56,6 +56,7 @@ public class InstructorController : ControllerBase
         {
             "notfound" => NotFound(new { message = "Docente no encontrado." }),
             "duplicate" => Conflict(new { message = "Ya existe un usuario con ese DNI." }),
+            "emailduplicate" => Conflict(new { message = "Ya existe un coordinador o docente con ese email." }),
             _ => NoContent()
         };
     }

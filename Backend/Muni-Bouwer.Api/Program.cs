@@ -12,6 +12,9 @@ using Muni_Bouwer.Data.DAL;
 using Muni_Bouwer.Data.Seed;
 using Muni_Bouwer.Entities.Authorization;
 using Muni_Bouwer.Entities.Models;
+using Muni_Bouwer.Api.Services;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,9 +53,37 @@ builder.Services.AddScoped<RoleService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<PasswordService>();
+builder.Services.AddScoped<PasswordRecoveryService>();
+builder.Services.AddHttpClient<IRecoveryEmailSender, MailjetRecoveryEmailSender>();
 builder.Services.AddScoped<PermissionService>();
 builder.Services.AddScoped<StudentAttendanceDal>();
 builder.Services.AddScoped<StudentAttendanceService>();
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddPolicy("login", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(5),
+                QueueLimit = 0,
+                AutoReplenishment = true
+            }));
+
+    options.AddPolicy("password-recovery", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 20,
+                Window = TimeSpan.FromMinutes(15),
+                QueueLimit = 0,
+                AutoReplenishment = true
+            }));
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+});
 
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 
@@ -101,6 +132,15 @@ builder.Services
                 if (currentUser is null || !currentUser.IsActive)
                 {
                     context.Fail("El usuario está inactivo.");
+                    return;
+                }
+
+                string? credentialVersionValue = context.Principal!
+                    .FindFirstValue("credential_version");
+                if (!int.TryParse(credentialVersionValue, out int credentialVersion) ||
+                    credentialVersion != currentUser.CredentialVersion)
+                {
+                    context.Fail("La contraseña cambió. Iniciá sesión nuevamente.");
                     return;
                 }
 
@@ -202,6 +242,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseRouting();
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 

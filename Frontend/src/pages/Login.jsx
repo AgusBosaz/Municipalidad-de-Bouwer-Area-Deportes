@@ -2,7 +2,8 @@ import { useState } from "react";
 import "../styles/Login.css";
 
 import { Link, useNavigate } from 'react-router-dom'
-import { loginDemo } from '../demoAuth'
+import { login as loginWithApi } from '../services/Auth'
+import { saveSession } from "../services/AuthSession";
 import MunicipalBrand from '../components/MunicipalBrand'
 
 function Login() {
@@ -11,22 +12,29 @@ function Login() {
 
   const navigate = useNavigate()
 
-  function ingresar(e) {
+  async function ingresar(e) {
     e.preventDefault()
 
     if (!usuario.trim() || !contrasena.trim()) {
-      alert('Completá todos los campos')
+      alert('Completá DNI y contraseña')
       return
     }
 
-    const session = loginDemo(usuario, contrasena)
-
-    if (!session) {
-      alert('Usuario o contraseña incorrectos')
-      return
+    try {
+      const response = await loginWithApi(usuario.trim(), contrasena)
+      saveSession(response)
+      navigate('/', { replace: true })
+    } catch (error) {
+      if (error.status === 401) {
+        alert('DNI o contraseña incorrectos.')
+      } else if (error.status === 403) {
+        alert('El usuario está inactivo.')
+      } else if (error.status === 429) {
+        alert('Demasiados intentos. Esperá unos minutos antes de volver a ingresar.')
+      } else {
+        alert('No se pudo iniciar sesión. Revisá que la API este funcionando.')
+      }
     }
-
-    navigate('/', { replace: true })
   }
 
   return (
@@ -39,7 +47,7 @@ function Login() {
         <form onSubmit={ingresar}>
           <input
             type="text"
-            placeholder="Usuario"
+            placeholder="DNI"
             value={usuario}
             onChange={(e) => setUsuario(e.target.value)}
           />
