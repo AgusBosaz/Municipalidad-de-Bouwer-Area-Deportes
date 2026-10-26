@@ -4,16 +4,17 @@ import { useEffect, useState } from 'react'
 import { getCurrentUser } from './services/Auth.js'
 import { clearSession, getSession } from './services/AuthSession'
 
-import Layout from './components/layout/Layout'
+import Layout from './components/layout/Layout.jsx'
 import Login from './pages/Login.jsx'
-import RecoverPassword from './pages/RecoverPassword'
-import ResetPassword from './pages/ResetPassword'
-import DashboardPage from './pages/DashboardPage'
-import DocentesPage from './pages/DocentesPage'
-import ActividadesPage from './pages/Actividadespage'
-import AsignacionesPage from './pages/AsignacionesPage'
-import InscripcionAlumnos from './pages/InscripcionAlumnos'
-import AsistenciaPage from './pages/AsistenciaPage'
+import RecoverPassword from './pages/RecoverPassword.jsx'
+import ResetPassword from './pages/ResetPassword.jsx'
+import DashboardPage from './pages/DashboardPage.jsx'
+import DocentesPage from './pages/DocentesPage.jsx'
+import ActividadesPage from './pages/Actividadespage.jsx'
+import AsignacionesPage from './pages/AsignacionesPage.jsx'
+import InscripcionAlumnos from './pages/InscripcionAlumnos.jsx'
+import AsistenciaPage from './pages/AsistenciaPage.jsx'
+import DocenteInicioPage from './pages/DashboardTeacherPage.jsx'
 
 import './styles/App.css'
 
@@ -80,7 +81,7 @@ function CoordinatorOnly({ children }) {
 
 function HomePage() {
   return getSession()?.role === 'Instructor'
-    ? <Navigate to="/asistencia" replace />
+    ? <Navigate to="/docente" replace />
     : <DashboardPage />
 }
 
@@ -88,7 +89,9 @@ function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+
       <Route path="/recuperar-contrasena" element={<RecoverPassword />} />
+      
       <Route path="/restablecer-contrasena" element={<ResetPassword />} />
 
       <Route element={<ProtectedLayout />}>
@@ -98,6 +101,10 @@ function App() {
         <Route
           path="/docentes"
           element={<CoordinatorOnly><DocentesPage /></CoordinatorOnly>}
+        />
+
+        <Route
+        path="/docente" element={<DocenteInicioPage session={getSession()} />}
         />
         <Route
           path="/actividades"

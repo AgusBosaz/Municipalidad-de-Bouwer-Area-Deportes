@@ -20,6 +20,8 @@ function Sidebar({ isOpen, onNavigate, session, onLogout }) {
       { to: '/asistencia', label: 'Asistencia', Icon: CircleCheck },
     ]
     : [
+      { to: '/docente', label: 'Inicio', Icon: LayoutDashboard },
+      { to: '/mis-actividades', label: 'Mis actividades', Icon: CalendarDays },
       { to: '/asistencia', label: 'Asistencia', Icon: CircleCheck },
     ]
   return (
@@ -44,7 +46,7 @@ function Sidebar({ isOpen, onNavigate, session, onLogout }) {
           <NavLink
             key={to}
             to={to}
-            end={to === '/'}
+            end={to === '/' || to === '/docente'}
             onClick={onNavigate}
             className={({ isActive }) => isActive ? 'active' : ''}
           >
