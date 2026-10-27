@@ -21,6 +21,7 @@ import AsignacionesPage from './pages/AsignacionesPage.jsx'
 import InscripcionAlumnos from './pages/InscripcionAlumnos.jsx'
 import AsistenciaPage from './pages/AsistenciaPage.jsx'
 import DocenteInicioPage from './pages/DashboardTeacherPage.jsx'
+import AttendanceHistoryPage from './pages/AttendanceHistoryPage'
 
 import './styles/App.css'
 
@@ -152,7 +153,7 @@ function App() {
       <Route path="/login" element={<Login />} />
 
       <Route path="/recuperar-contrasena" element={<RecoverPassword />} />
-      
+
       <Route path="/restablecer-contrasena" element={<ResetPassword />} />
 
       <Route element={<ProtectedLayout />}>
@@ -165,7 +166,7 @@ function App() {
         />
 
         <Route
-        path="/docente" element={<DocenteInicioPage session={getSession()} />}
+          path="/docente" element={<DocenteInicioPage session={getSession()} />}
         />
         <Route
           path="/actividades"
@@ -178,6 +179,10 @@ function App() {
         <Route
           path="/inscribir-alumnos"
           element={<CoordinatorOnly><InscripcionAlumnos /></CoordinatorOnly>}
+        />
+        <Route
+          path="/attendance-history"
+          element={<AttendanceHistoryPage />}
         />
       </Route>
 
