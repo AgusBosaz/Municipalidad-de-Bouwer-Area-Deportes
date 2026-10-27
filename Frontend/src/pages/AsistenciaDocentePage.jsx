@@ -7,7 +7,7 @@ import {
   UsersRound,
 } from 'lucide-react'
 import '../styles/Asistencia.css'
-import '../styles/Docente.css'
+import '../styles/dashboard-teacher.css'
 
 const actividades = {
   '1': {
@@ -52,7 +52,7 @@ function crearAsistencia(alumnos = []) {
   return inicial
 }
 
-function AsistenciaPage() {
+function AsistenciaDocentePage() {
   const { actividadId } = useParams()
   const navigate = useNavigate()
 
@@ -307,4 +307,4 @@ function AsistenciaPage() {
   )
 }
 
-export default AsistenciaPage
+export default AsistenciaDocentePage
