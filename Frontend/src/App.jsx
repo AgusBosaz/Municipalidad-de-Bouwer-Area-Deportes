@@ -21,6 +21,8 @@ import AsignacionesPage from './pages/AsignacionesPage.jsx'
 import InscripcionAlumnos from './pages/InscripcionAlumnos.jsx'
 import AsistenciaPage from './pages/AsistenciaPage.jsx'
 import DocenteInicioPage from './pages/DashboardTeacherPage.jsx'
+import MisActividadesPage from './pages/MyActivities-Teacher.jsx'
+import AsistenciaDocentePage from './pages/AsistenciaDocentePage.jsx'
 import AttendanceHistoryPage from './pages/AttendanceHistory.jsx'
 
 import './styles/App.css'
@@ -141,6 +143,12 @@ function CoordinatorOnly({ children }) {
     : <Navigate to="/asistencia" replace />
 }
 
+function InstructorOnly({ children }) {
+  return getSession()?.role === 'Instructor'
+    ? children
+    : <Navigate to="/" replace />
+}
+
 function HomePage() {
   return getSession()?.role === 'Instructor'
     ? <Navigate to="/docente" replace />
@@ -158,7 +166,13 @@ function App() {
 
       <Route element={<ProtectedLayout />}>
         <Route path="/" element={<HomePage />} />
-        <Route path="/asistencia" element={<AsistenciaPage />} />
+        <Route
+          path="/asistencia"
+          element={getSession()?.role === 'Instructor'
+            ? <Navigate to="/mis-actividades" replace />
+            : <AsistenciaPage />}
+        />
+        <Route path="/asistencia/:actividadId" element={<AsistenciaDocentePage />} />
 
         <Route
           path="/docentes"
@@ -166,7 +180,12 @@ function App() {
         />
 
         <Route
-          path="/docente" element={<DocenteInicioPage session={getSession()} />}
+          path="/docente"
+          element={<InstructorOnly><DocenteInicioPage session={getSession()} /></InstructorOnly>}
+        />
+        <Route
+          path="/mis-actividades"
+          element={<InstructorOnly><MisActividadesPage /></InstructorOnly>}
         />
         <Route
           path="/actividades"

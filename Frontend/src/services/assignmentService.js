@@ -8,6 +8,10 @@ export function getAssignments(instructorId = null) {
   return apiRequest(`/Assignments${query}`)
 }
 
+export function getMyAssignments() {
+  return apiRequest('/Assignments/mine')
+}
+
 export function assignInstructor(assignment) {
   return apiRequest('/Assignments', {
     method: 'POST',

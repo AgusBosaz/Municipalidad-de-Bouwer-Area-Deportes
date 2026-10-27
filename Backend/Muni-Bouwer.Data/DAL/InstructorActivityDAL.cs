@@ -45,7 +45,7 @@ public class InstructorActivityDAL : IInstructorActivityDAL
     public async Task<List<InstructorActivity>> GetAllAsync(int? instructorId)
     {
         IQueryable<InstructorActivity> query = _context.Set<InstructorActivity>()
-            .Where(ia => ia.IsActive)
+            .Where(ia => ia.IsActive && ia.Activity.IsActive)
             .Include(ia => ia.Instructor)
             .Include(ia => ia.Activity);
 

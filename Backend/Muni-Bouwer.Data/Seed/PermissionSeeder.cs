@@ -40,17 +40,29 @@ public static class PermissionSeeder
             .Include(role => role.Permissions)
             .FirstOrDefaultAsync(role =>
                 role.Name == RoleNames.Instructor && role.IsActive);
-        Permission? attendancePermission = await context.Permissions
-            .FirstOrDefaultAsync(permission =>
-                permission.Name == PermissionNames.AttendanceRegister &&
-                permission.IsActive);
+        string[] instructorPermissionNames =
+        [
+            PermissionNames.StudentsRead,
+            PermissionNames.AttendanceRead,
+            PermissionNames.AttendanceRegister
+        ];
+        List<Permission> instructorPermissions = await context.Permissions
+            .Where(permission =>
+                instructorPermissionNames.Contains(permission.Name) &&
+                permission.IsActive)
+            .ToListAsync();
 
-        if (instructorRole is not null &&
-            attendancePermission is not null &&
-            !instructorRole.Permissions.Any(permission =>
-                permission.Id == attendancePermission.Id))
+        if (instructorRole is not null)
         {
-            instructorRole.Permissions.Add(attendancePermission);
+            foreach (Permission permission in instructorPermissions)
+            {
+                if (!instructorRole.Permissions.Any(existing =>
+                    existing.Id == permission.Id))
+                {
+                    instructorRole.Permissions.Add(permission);
+                }
+            }
+
             await context.SaveChangesAsync();
         }
     }

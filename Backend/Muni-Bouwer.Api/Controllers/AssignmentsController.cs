@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Muni_Bouwer.Business.Services;
@@ -21,6 +22,17 @@ public class AssignmentsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<List<AssignmentResponseDto>>> GetAll([FromQuery] int? instructorId)
     {
+        return Ok(await _assignmentService.GetAllAsync(instructorId));
+    }
+
+    [Authorize(Policy = PermissionNames.AttendanceRead)]
+    [HttpGet("mine")]
+    public async Task<ActionResult<List<AssignmentResponseDto>>> GetMine()
+    {
+        if (!User.IsInRole(RoleNames.Instructor) ||
+            !int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out int instructorId))
+            return Forbid();
+
         return Ok(await _assignmentService.GetAllAsync(instructorId));
     }
 

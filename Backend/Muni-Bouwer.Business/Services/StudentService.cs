@@ -16,15 +16,15 @@ public class StudentService
         _roleDAL = roleDAL;
     }
 
-    public async Task<List<StudentResponseDto>> GetAllAsync()
+    public async Task<List<StudentResponseDto>> GetAllAsync(int? instructorId = null)
     {
-        List<Student> students = await _studentDAL.GetAllAsync();
+        List<Student> students = await _studentDAL.GetAllAsync(instructorId);
         return students.Select(ToResponseDto).ToList();
     }
 
-    public async Task<StudentResponseDto?> GetByIdAsync(int id)
+    public async Task<StudentResponseDto?> GetByIdAsync(int id, int? instructorId = null)
     {
-        Student? student = await _studentDAL.GetByIdAsync(id);
+        Student? student = await _studentDAL.GetByIdAsync(id, instructorId);
         return student is null ? null : ToResponseDto(student);
     }
 
