@@ -52,22 +52,54 @@ function ActividadesPage() {
   }
 
   const guardarActividad = (datosActividad) => {
-    if (actividadEnEdicion !== null) {
+  if (actividadEnEdicion !== null) {
+    setActividades((actuales) =>
+      actuales.map((actividad) =>
+        actividad.id === actividadEnEdicion.id
+          ? { ...actividad, ...datosActividad }
+          : actividad
+      )
+    )
+
+    alert('La actividad fue actualizada correctamente.')
+  } else {
+    setActividades((actuales) => [
+      ...actuales,
+      {
+        ...datosActividad,
+        id: Date.now(),
+        estado: datosActividad.estado || 'Activa'
+      }
+    ])
+
+    alert('La actividad fue creada correctamente.')
+  }
+
+  setModalOpen(false)
+  setActividadEnEdicion(null)
+}
+
+    const darDeBajaActividad = (actividad) => {
+      if (actividad.estado === 'Inactiva') {
+        alert('Esta actividad ya se encuentra inactiva.')
+        return
+      }
+
+      const confirmar = window.confirm(
+        `¿Querés dar de baja la actividad "${actividad.nombre}"?`
+      )
+
+      if (!confirmar) return
+
       setActividades((actuales) =>
-        actuales.map((actividad) =>
-          actividad.id === actividadEnEdicion.id
-            ? { ...actividad, ...datosActividad }
-            : actividad
+        actuales.map((item) =>
+          item.id === actividad.id
+            ? { ...item, estado: 'Inactiva' }
+            : item
         )
       )
-    } else {
-      setActividades((actuales) => [
-        ...actuales,
-        {
-          ...datosActividad,
-          id: Date.now()
-        }
-      ])
+
+      alert('La actividad fue dada de baja correctamente.')
     }
 
     setModalOpen(false)
@@ -154,20 +186,30 @@ function ActividadesPage() {
                         type="button"
                         className="action-button delete"
                         onClick={() => {
+                          if (actividad.estado === 'Inactiva') {
+                            alert('Esta actividad ya se encuentra inactiva.')
+                            return
+                          }
+
                           const confirmar = window.confirm(
-                            '¿Querés eliminar esta actividad de la lista local?'
+                            `¿Querés dar de baja la actividad "${actividad.nombre}"?`
                           )
 
-                          if (confirmar) {
-                            setActividades((actuales) =>
-                              actuales.filter(
-                                (item) => item.id !== actividad.id
-                              )
+                          if (!confirmar) return
+
+                          setActividades((actuales) =>
+                            actuales.map((item) =>
+                              item.id === actividad.id
+                                ? { ...item, estado: 'Inactiva' }
+                                : item
                             )
-                          }
+                          )
+
+                          alert('La actividad fue dada de baja correctamente.')
                         }}
+                        disabled={actividad.estado === 'Inactiva'}
                       >
-                        Eliminar
+                        {actividad.estado === 'Inactiva' ? 'Inactiva' : 'Dar de baja'}
                       </button>
                     </div>
                   </td>
@@ -222,6 +264,5 @@ function ActividadesPage() {
         )}
     </main>
   )
-}
 
 export default ActividadesPage
