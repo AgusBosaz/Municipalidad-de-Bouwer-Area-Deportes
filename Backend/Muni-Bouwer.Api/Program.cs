@@ -22,6 +22,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddScoped<IActivityDAL, ActivityDAL>();
 builder.Services.AddScoped<IActivityService, ActivityService>();
+builder.Services.AddScoped<IInstructorActivityDAL, InstructorActivityDAL>();
+builder.Services.AddScoped<IAssignmentService, AssignmentService>();
 
 string jwtKey = builder.Configuration["Jwt:Key"]
     ?? throw new InvalidOperationException("JWT key is not configured.");

@@ -84,6 +84,10 @@ public class BouwerDbContext : DbContext
             .HasDefaultValue(true);
 
         modelBuilder.Entity<InstructorActivity>()
+            .Property(assignment => assignment.IsActive)
+            .HasDefaultValue(true);
+
+        modelBuilder.Entity<InstructorActivity>()
             .HasOne(assignment => assignment.Instructor)
             .WithMany(instructor => instructor.InstructorActivities)
             .HasForeignKey(assignment => assignment.InstructorId);
