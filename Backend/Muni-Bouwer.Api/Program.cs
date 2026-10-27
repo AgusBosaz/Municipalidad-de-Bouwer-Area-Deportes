@@ -58,6 +58,8 @@ builder.Services.AddScoped<PasswordService>();
 builder.Services.AddScoped<PasswordRecoveryService>();
 builder.Services.AddHttpClient<IRecoveryEmailSender, MailjetRecoveryEmailSender>();
 builder.Services.AddScoped<PermissionService>();
+builder.Services.AddScoped<StudentAttendanceDal>();
+builder.Services.AddScoped<StudentAttendanceService>();
 
 builder.Services.AddRateLimiter(options =>
 {
