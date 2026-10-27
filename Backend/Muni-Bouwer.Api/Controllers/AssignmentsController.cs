@@ -1,5 +1,7 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Muni_Bouwer.Business.Services;
+using Muni_Bouwer.Entities.Authorization;
 using Muni_Bouwer.Entities.DTOs;
 
 namespace Muni_Bouwer.Api.Controllers;
@@ -15,12 +17,14 @@ public class AssignmentsController : ControllerBase
         _assignmentService = assignmentService;
     }
 
+    [Authorize(Policy = PermissionNames.ActivitiesRead)]
     [HttpGet]
     public async Task<ActionResult<List<AssignmentResponseDto>>> GetAll([FromQuery] int? instructorId)
     {
         return Ok(await _assignmentService.GetAllAsync(instructorId));
     }
 
+    [Authorize(Policy = PermissionNames.ActivitiesManage)]
     [HttpPost]
     public async Task<IActionResult> Assign(AssignInstructorDto dto)
     {
@@ -35,6 +39,7 @@ public class AssignmentsController : ControllerBase
         };
     }
 
+    [Authorize(Policy = PermissionNames.ActivitiesManage)]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Unassign(int id)
     {

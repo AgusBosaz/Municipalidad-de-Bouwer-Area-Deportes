@@ -32,18 +32,20 @@ public class InstructorActivityDAL : IInstructorActivityDAL
     public async Task<Activity?> GetActivityAsync(int activityId)
     {
         return await _context.Set<Activity>()
-            .FirstOrDefaultAsync(a => a.Id == activityId);
+            .FirstOrDefaultAsync(a => a.Id == activityId && a.IsActive);
     }
 
     public async Task<bool> ExistsAsync(int instructorId, int activityId)
     {
         return await _context.Set<InstructorActivity>()
-            .AnyAsync(ia => ia.InstructorId == instructorId && ia.ActivityId == activityId);
+            .AnyAsync(ia => ia.InstructorId == instructorId &&
+                ia.ActivityId == activityId && ia.IsActive);
     }
 
     public async Task<List<InstructorActivity>> GetAllAsync(int? instructorId)
     {
         IQueryable<InstructorActivity> query = _context.Set<InstructorActivity>()
+            .Where(ia => ia.IsActive)
             .Include(ia => ia.Instructor)
             .Include(ia => ia.Activity);
 
@@ -62,11 +64,12 @@ public class InstructorActivityDAL : IInstructorActivityDAL
 
     public async Task<bool> DeleteAsync(int id)
     {
-        var existing = await _context.Set<InstructorActivity>().FindAsync(id);
+        var existing = await _context.Set<InstructorActivity>()
+            .FirstOrDefaultAsync(ia => ia.Id == id && ia.IsActive);
         if (existing is null)
             return false;
 
-        _context.Set<InstructorActivity>().Remove(existing);
+        existing.IsActive = false;
         await _context.SaveChangesAsync();
         return true;
     }

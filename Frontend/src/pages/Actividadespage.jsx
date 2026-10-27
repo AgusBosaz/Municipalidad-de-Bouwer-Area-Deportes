@@ -102,9 +102,6 @@ function ActividadesPage() {
       alert('La actividad fue dada de baja correctamente.')
     }
 
-    setModalOpen(false)
-  }
-
   const actividadesFiltradas = actividades.filter((actividad) =>
     actividad.nombre.toLowerCase().includes(busqueda.toLowerCase())
   )
@@ -185,28 +182,7 @@ function ActividadesPage() {
                       <button
                         type="button"
                         className="action-button delete"
-                        onClick={() => {
-                          if (actividad.estado === 'Inactiva') {
-                            alert('Esta actividad ya se encuentra inactiva.')
-                            return
-                          }
-
-                          const confirmar = window.confirm(
-                            `¿Querés dar de baja la actividad "${actividad.nombre}"?`
-                          )
-
-                          if (!confirmar) return
-
-                          setActividades((actuales) =>
-                            actuales.map((item) =>
-                              item.id === actividad.id
-                                ? { ...item, estado: 'Inactiva' }
-                                : item
-                            )
-                          )
-
-                          alert('La actividad fue dada de baja correctamente.')
-                        }}
+                        onClick={() => darDeBajaActividad(actividad)}
                         disabled={actividad.estado === 'Inactiva'}
                       >
                         {actividad.estado === 'Inactiva' ? 'Inactiva' : 'Dar de baja'}
@@ -264,5 +240,6 @@ function ActividadesPage() {
         )}
     </main>
   )
+}
 
 export default ActividadesPage

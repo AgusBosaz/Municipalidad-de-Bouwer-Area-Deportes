@@ -21,7 +21,7 @@ import AsignacionesPage from './pages/AsignacionesPage.jsx'
 import InscripcionAlumnos from './pages/InscripcionAlumnos.jsx'
 import AsistenciaPage from './pages/AsistenciaPage.jsx'
 import DocenteInicioPage from './pages/DashboardTeacherPage.jsx'
-import AttendanceHistoryPage from './pages/AttendanceHistoryPage'
+import AttendanceHistoryPage from './pages/AttendanceHistory.jsx'
 
 import './styles/App.css'
 
