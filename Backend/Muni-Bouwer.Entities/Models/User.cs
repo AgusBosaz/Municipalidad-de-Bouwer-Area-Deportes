@@ -16,6 +16,7 @@ public abstract class User
     public bool IsActive { get; set; }
     public string? PasswordHash { get; set; }
     public int CredentialVersion { get; set; }
+    public bool MustChangePassword { get; set; }
 
     public List<Role> Roles { get; set; } = new();
 }

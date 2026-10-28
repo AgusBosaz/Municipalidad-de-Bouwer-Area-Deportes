@@ -1,19 +1,48 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { getInstructors, CreateInstructor, UpdateInstructor, DeleteInstructor } from '../services/instructor-controller'
 import '../styles/docentes.css'
+
+function toDocenteView(docente) {
+  return {
+    ...docente,
+    email: docente.email ?? '',
+    nombre: `${docente.firstName} ${docente.lastName}`,
+    especialidad: docente.specialty,
+    estado: docente.isActive ? 'Activo' : 'Inactivo',
+  }
+}
 
 function DocentesPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [docenteEnEdicion, setDocenteEnEdicion] = useState(null)
   const [busqueda, setBusqueda] = useState('')
   const [mensaje, setMensaje] = useState('')
+  const [credencialNueva, setCredencialNueva] = useState(null)
+  const [guardando, setGuardando] = useState(false)
 
-  const [docentes, setDocentes] = useState([
-    { id: 1, firstName: 'Santiago', lastName: 'Pérez', nombre: 'Santiago Pérez', dni: '30111222', gender: 'Masculino', phoneNumber: '3511111111', address: 'Bouwer', birthDate: '1990-01-15', email: 'santi@correo.com', specialty: 'Fútbol', especialidad: 'Fútbol', estado: 'Activo' },
-    { id: 2, firstName: 'María', lastName: 'Gómez', nombre: 'María Gómez', dni: '30222333', gender: 'Femenino', phoneNumber: '3512222222', address: 'Bouwer', birthDate: '1991-04-20', email: 'maria@correo.com', specialty: 'Natación', especialidad: 'Natación', estado: 'Activo' },
-    { id: 3, firstName: 'Lucía', lastName: 'Torres', nombre: 'Lucía Torres', dni: '30333444', gender: 'Femenino', phoneNumber: '3513333333', address: 'Bouwer', birthDate: '1992-07-10', email: 'lucia@correo.com', specialty: 'Yoga', especialidad: 'Yoga', estado: 'Activo' },
-    { id: 4, firstName: 'Diego', lastName: 'Castro', nombre: 'Diego Castro', dni: '30444555', gender: 'Masculino', phoneNumber: '3514444444', address: 'Bouwer', birthDate: '1989-11-08', email: 'diego@correo.com', specialty: 'Básquet', especialidad: 'Básquet', estado: 'Activo' }
-  ])
+  const [docentes, setDocentes] = useState([])
+  const [cargando, setCargando] = useState(true)
+  const [errorCarga, setErrorCarga] = useState('')
+
+  useEffect(() => {
+    let active = true
+
+    getInstructors()
+      .then((result) => {
+        if (active) setDocentes(result.map(toDocenteView))
+      })
+      .catch(() => {
+        if (active) setErrorCarga('No se pudieron cargar los docentes.')
+      })
+      .finally(() => {
+        if (active) setCargando(false)
+      })
+
+    return () => {
+      active = false
+    }
+  }, [])
 
   const formularioVacio = {
     firstName: '',
@@ -62,19 +91,19 @@ function DocentesPage() {
   }
 
   const cerrarModal = () => {
-  const confirmar = window.confirm
-    (
-      '¿Querés cerrar el formulario? Los cambios sin guardar se perderán.'
-    )
+    const confirmar = window.confirm
+      (
+        '¿Querés cerrar el formulario? Los cambios sin guardar se perderán.'
+      )
 
-    if (!confirmar) 
+    if (!confirmar)
       return
-      setModalOpen(false)
-      setDocenteEnEdicion(null)
-      setMensaje('')
-}
+    setModalOpen(false)
+    setDocenteEnEdicion(null)
+    setMensaje('')
+  }
 
-  const guardarDocente = (e) => {
+  const guardarDocente = async (e) => {
     e.preventDefault()
 
     const nombre = form.firstName.trim()
@@ -116,7 +145,6 @@ function DocentesPage() {
     const datosDocente = {
       firstName: nombre,
       lastName: apellido,
-      nombre: `${nombre} ${apellido}`,
       dni,
       gender: form.gender,
       phoneNumber: telefono,
@@ -124,50 +152,56 @@ function DocentesPage() {
       birthDate: form.birthDate,
       email,
       specialty: form.specialty,
-      especialidad: form.specialty,
-      estado: form.estado
     }
 
-    if (docenteEnEdicion !== null) {
-      setDocentes((actuales) => actuales.map((docente) =>
-        docente.id === docenteEnEdicion
-          ? { ...docente, ...datosDocente }
-          : docente
-      ))
-    } else {
-      setDocentes((actuales) => [
-        ...actuales,
-        { id: Date.now(), ...datosDocente }
-      ])
-    }
+    setGuardando(true)
+    setMensaje('')
 
-    cerrarModal()
-    alert(docenteEnEdicion !== null
-      ? 'Docente actualizado en la lista local correctamente.'
-      : 'Docente agregado a la lista local correctamente.')
+    try {
+      if (docenteEnEdicion !== null) {
+        await UpdateInstructor(docenteEnEdicion, datosDocente)
+        setDocentes((actuales) => actuales.map((docente) =>
+          docente.id === docenteEnEdicion
+            ? toDocenteView({ ...docente, ...datosDocente })
+            : docente
+        ))
+        window.alert('Docente actualizado correctamente.')
+      } else {
+        const result = await CreateInstructor(datosDocente)
+        setDocentes((actuales) => [
+          ...actuales,
+          toDocenteView(result.instructor),
+        ])
+        setCredencialNueva(result)
+      }
+
+      setModalOpen(false)
+      setDocenteEnEdicion(null)
+      setForm({ ...formularioVacio })
+    } catch (error) {
+      setMensaje(error.status === 409
+        ? 'Ya existe un usuario con ese DNI o email.'
+        : 'No se pudo guardar el docente. Intentá nuevamente.')
+    } finally {
+      setGuardando(false)
+    }
   }
 
-  const darDeBajaDocente = (docente) => {
-    if (docente.estado === 'Inactivo') {
-      alert('Este docente ya se encuentra inactivo.')
-      return
-    }
-
+  const darDeBajaDocente = async (docente) => {
     const confirmar = window.confirm(
       `¿Querés dar de baja a ${docente.nombre}?`
     )
-
     if (!confirmar) return
 
-    setDocentes((actuales) =>
-      actuales.map((item) =>
-        item.id === docente.id
-          ? { ...item, estado: 'Inactivo' }
-          : item
+    try {
+      await DeleteInstructor(docente.id)
+      setDocentes((actuales) =>
+        actuales.filter((item) => item.id !== docente.id)
       )
-    )
-
-    alert('El docente fue dado de baja correctamente.')
+      window.alert('El docente fue dado de baja correctamente.')
+    } catch {
+      window.alert('No se pudo dar de baja al docente. Intentá nuevamente.')
+    }
   }
 
   const docentesFiltrados = docentes.filter((docente) =>
@@ -205,6 +239,8 @@ function DocentesPage() {
             <p>Listado de docentes del Área de Deportes.</p>
           </div>
         </div>
+        {cargando && <p role="status">Cargando docentes...</p>}
+        {errorCarga && <p role="alert">{errorCarga}</p>}
 
         <div className="table-container">
           <table>
@@ -249,7 +285,7 @@ function DocentesPage() {
                   </td>
                 </tr>
               ))}
-              {docentesFiltrados.length === 0 && (
+              {!cargando && !errorCarga && docentesFiltrados.length === 0 && (
                 <tr>
                   <td colSpan="5" className="docentes-empty">
                     No se encontraron docentes.
@@ -376,14 +412,6 @@ function DocentesPage() {
                         <option value="Otra">Otra</option>
                       </select>
                     </div>
-
-                    <div className="form-group">
-                      <label htmlFor="docente-estado">Estado *</label>
-                      <select id="docente-estado" name="estado" value={form.estado} onChange={actualizarCampo} required>
-                        <option value="Activo">Activo</option>
-                        <option value="Inactivo">Inactivo</option>
-                      </select>
-                    </div>
                   </div>
                 </div>
 
@@ -393,11 +421,51 @@ function DocentesPage() {
                   <button type="button" className="secondary-button" onClick={cerrarModal}>
                     Cancelar
                   </button>
-                  <button type="submit" className="primary-button">
+                  <button type="submit" className="primary-button" disabled={guardando}>
                     {docenteEnEdicion !== null ? 'Guardar cambios' : 'Guardar docente'}
                   </button>
                 </div>
               </form>
+            </div>
+          </section>
+        </div>,
+        document.body
+      )}
+      {credencialNueva && createPortal(
+        <div className="docente-modal-overlay">
+          <section
+            className="docente-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="temp-password-title"
+          >
+            <div className="docente-modal-content">
+              <h2 id="temp-password-title">Docente creado</h2>
+              <p>
+                Guardá esta contraseña temporal y entregásela al docente.
+                No se volverá a mostrar.
+              </p>
+
+              <div className="form-group">
+                <label htmlFor="temp-password">Contraseña temporal</label>
+                <input
+                  id="temp-password"
+                  type="text"
+                  readOnly
+                  value={credencialNueva.temporaryPassword}
+                  onFocus={(event) => event.target.select()}
+                />
+              </div>
+
+              <div className="form-actions">
+                <button
+                  type="button"
+                  className="primary-button"
+                  onClick={() => setCredencialNueva(null)}
+                >
+                  Ya la guardé
+                </button>
+              </div>
             </div>
           </section>
         </div>,

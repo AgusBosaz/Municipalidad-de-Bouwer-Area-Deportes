@@ -64,6 +64,28 @@ public class AuthService
         return CreateSuccessfulResult(user);
     }
 
+    public async Task<bool> ChangeInitialPasswordAsync(int userId, string newPassword)
+    {
+        User? user = await _userDal.GetByIdAsync(userId);
+
+        if (user is null || !user.IsActive || user is Student ||
+            !user.MustChangePassword ||
+            string.IsNullOrWhiteSpace(user.PasswordHash))
+            return false;
+
+        if (_passwordService.VerifyPassword(
+            user, user.PasswordHash, newPassword))
+            return false;
+
+        user.PasswordHash = _passwordService.HashPassword(user, newPassword);
+        user.MustChangePassword = false;
+        user.CredentialVersion++;
+        user.UpdatedAt = DateOnly.FromDateTime(DateTime.UtcNow);
+
+        await _userDal.SaveChangesAsync();
+        return true;
+    }
+
     private LoginResultDto CreateSuccessfulResult(User user)
     {
         string key = _configuration["Jwt:Key"]
@@ -140,6 +162,7 @@ public class AuthService
                 Token = serializedToken,
                 ExpiresAt = expiresAt,
                 UserId = user.Id,
+                MustChangePassword = user.MustChangePassword,
                 FullName = $"{user.FirstName} {user.LastName}",
                 Roles = user.Roles
                     .Select(role => role.Name)

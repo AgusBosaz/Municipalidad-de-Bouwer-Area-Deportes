@@ -12,6 +12,7 @@ import {
 
 import Layout from './components/layout/Layout.jsx'
 import Login from './pages/Login.jsx'
+import ChangeInitialPassword from './pages/ChangeInitialPassword.jsx'
 import RecoverPassword from './pages/RecoverPassword.jsx'
 import ResetPassword from './pages/ResetPassword.jsx'
 import DashboardPage from './pages/DashboardPage.jsx'
@@ -28,9 +29,12 @@ import AttendanceHistoryPage from './pages/AttendanceHistory.jsx'
 import './styles/App.css'
 
 function ProtectedLayout() {
-  const [status, setStatus] = useState(
-    () => getSession() ? 'checking' : 'unauthenticated'
-  )
+  const [status, setStatus] = useState(() => {
+    const session = getSession()
+    return session?.mustChangePassword
+      ? 'password-change'
+      : session ? 'checking' : 'unauthenticated'
+  })
 
   useEffect(() => {
     const handleSessionExpired = () => setStatus('unauthenticated')
@@ -39,6 +43,7 @@ function ProtectedLayout() {
   }, [])
 
   useEffect(() => {
+
     if (status !== 'checking') return
 
     let active = true
@@ -112,6 +117,10 @@ function ProtectedLayout() {
     }
   }, [status])
 
+  if (status === 'password-change') {
+    return <Navigate to="/cambiar-contrasena-inicial" replace />
+  }
+
   if (status === 'checking') {
     return <p role="status">Validando sesión...</p>
   }
@@ -159,6 +168,9 @@ function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+
+      <Route
+        path="/cambiar-contrasena-inicial" element={<ChangeInitialPassword />} />
 
       <Route path="/recuperar-contrasena" element={<RecoverPassword />} />
 

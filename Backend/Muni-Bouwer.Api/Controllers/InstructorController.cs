@@ -37,7 +37,7 @@ public class InstructorController : ControllerBase
 
     [Authorize(Policy = PermissionNames.InstructorsManage)]
     [HttpPost("CreateInstructor")]
-    public async Task<ActionResult<InstructorResponseDto>> CreateInstructor(CreateInstructorDto dto)
+    public async Task<ActionResult<CreateInstructorResponseDto>> CreateInstructor(CreateInstructorDto dto)
     {
         var created = await _instructorsService.CreateAsync(dto);
         if (created is null)
