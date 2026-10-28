@@ -21,6 +21,7 @@ import ActividadesPage from './pages/Actividadespage.jsx'
 import AsignacionesPage from './pages/AsignacionesPage.jsx'
 import InscripcionAlumnos from './pages/InscripcionAlumnos.jsx'
 import AsistenciaPage from './pages/AsistenciaPage.jsx'
+import ActividadesInicio from './pages/ActividadesInicio.jsx'
 import DocenteInicioPage from './pages/DashboardTeacherPage.jsx'
 import MisActividadesPage from './pages/MyActivities-Teacher.jsx'
 import AsistenciaDocentePage from './pages/AsistenciaDocentePage.jsx'
@@ -167,6 +168,7 @@ function HomePage() {
 function App() {
   return (
     <Routes>
+      <Route path="/actividades-inicio" element={<ActividadesInicio />} />
       <Route path="/login" element={<Login />} />
 
       <Route
