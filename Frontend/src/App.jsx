@@ -14,6 +14,7 @@ import ActividadesPage from './pages/Actividadespage'
 import AsignacionesPage from './pages/AsignacionesPage'
 import InscripcionAlumnos from './pages/InscripcionAlumnos'
 import AsistenciaPage from './pages/AsistenciaPage'
+import ActividadesInicio from './pages/ActividadesInicio'
 
 import './styles/App.css'
 
@@ -87,6 +88,7 @@ function HomePage() {
 function App() {
   return (
     <Routes>
+      <Route path="/actividades-inicio" element={<ActividadesInicio />} />
       <Route path="/login" element={<Login />} />
       <Route path="/recuperar-contrasena" element={<RecoverPassword />} />
       <Route path="/restablecer-contrasena" element={<ResetPassword />} />
