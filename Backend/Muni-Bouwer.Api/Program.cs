@@ -169,6 +169,18 @@ builder.Services
                     !currentPermissions.SetEquals(tokenPermissions))
                 {
                     context.Fail("Los permisos cambiaron. Iniciá sesión nuevamente.");
+                    return;
+                }
+
+                if (currentUser.MustChangePassword &&
+                    !(HttpMethods.IsPost(context.HttpContext.Request.Method) &&
+                    string.Equals(
+                        context.HttpContext.Request.Path.Value,
+                        "/api/Auth/change-initial-password",
+                        StringComparison.OrdinalIgnoreCase)))
+                {
+                    context.Fail("Debés cambiar la contraseña antes de usar la aplicación.");
+                    return;
                 }
             }
         };

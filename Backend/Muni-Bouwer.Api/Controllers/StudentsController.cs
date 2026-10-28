@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Muni_Bouwer.Business.Services;
@@ -21,7 +22,10 @@ public class StudentsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<List<StudentResponseDto>>> GetAll()
     {
-        var students = await _studentService.GetAllAsync();
+        if (!TryGetInstructorScope(out int? instructorId))
+            return Forbid();
+
+        var students = await _studentService.GetAllAsync(instructorId);
 
         return Ok(students);
     }
@@ -30,7 +34,10 @@ public class StudentsController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<StudentResponseDto>> GetById(int id)
     {
-        var student = await _studentService.GetByIdAsync(id);
+        if (!TryGetInstructorScope(out int? instructorId))
+            return Forbid();
+
+        var student = await _studentService.GetByIdAsync(id, instructorId);
 
         if (student == null)
         {
@@ -78,5 +85,19 @@ public class StudentsController : ControllerBase
         }
 
         return NoContent();
+    }
+
+    private bool TryGetInstructorScope(out int? instructorId)
+    {
+        instructorId = null;
+        if (User.IsInRole(RoleNames.Coordinator))
+            return true;
+
+        if (!User.IsInRole(RoleNames.Instructor) ||
+            !int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out int id))
+            return false;
+
+        instructorId = id;
+        return true;
     }
 }

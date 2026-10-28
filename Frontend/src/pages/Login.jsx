@@ -23,6 +23,12 @@ function Login() {
     try {
       const response = await loginWithApi(usuario.trim(), contrasena)
       saveSession(response)
+
+      if (response.mustChangePassword) {
+        navigate('/cambiar-contrasena-inicial', { replace: true })
+        return
+      }
+
       navigate('/', { replace: true })
     } catch (error) {
       if (error.status === 401) {

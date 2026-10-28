@@ -21,3 +21,9 @@ export function UpdateInstructor(id, instructor) {
     body: JSON.stringify(instructor),
   })
 }
+
+export function DeleteInstructor(id) {
+  return apiRequest(`/Instructor/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+  })
+}

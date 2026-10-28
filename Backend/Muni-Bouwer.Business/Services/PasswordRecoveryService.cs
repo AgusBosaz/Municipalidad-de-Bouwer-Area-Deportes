@@ -115,6 +115,7 @@ public class PasswordRecoveryService
             return false;
 
         user.PasswordHash = _passwordService.HashPassword(user, newPassword);
+        user.MustChangePassword = false;
         user.CredentialVersion++;
         user.UpdatedAt = DateOnly.FromDateTime(now);
         await _context.SaveChangesAsync();

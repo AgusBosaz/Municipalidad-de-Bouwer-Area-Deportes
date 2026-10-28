@@ -1,6 +1,7 @@
 using Muni_Bouwer.Data.DAL;
 using Muni_Bouwer.Entities.DTOs;
 using Muni_Bouwer.Entities.Models;
+using System.Security.Cryptography;
 using Muni_Bouwer.Entities.Authorization;
 
 namespace Muni_Bouwer.Business.Services;
@@ -31,7 +32,7 @@ public class InstructorService
         return instructor is null ? null : ToResponseDto(instructor);
     }
 
-    public async Task<InstructorResponseDto?> CreateAsync(CreateInstructorDto dto)
+    public async Task<CreateInstructorResponseDto?> CreateAsync(CreateInstructorDto dto)
     {
         if (await _instructorDAL.ExistsByDniAsync(dto.Dni))
             return null;
@@ -51,12 +52,17 @@ public class InstructorService
 
         var now = DateOnly.FromDateTime(DateTime.UtcNow);
 
+        string temporaryPassword = Convert.ToBase64String(RandomNumberGenerator.GetBytes(18))
+            .Replace('+', '-')
+            .Replace('/', '_');
+
         var instructor = new Instructor
         {
             FirstName = dto.FirstName,
             LastName = dto.LastName,
             Dni = dto.Dni,
             Email = email,
+            MustChangePassword = true,
             Gender = dto.Gender,
             PhoneNumber = dto.PhoneNumber,
             Address = dto.Address,
@@ -67,12 +73,16 @@ public class InstructorService
             IsActive = true
         };
 
-        instructor.PasswordHash = _passwordService.HashPassword(instructor, dto.Password);
+        instructor.PasswordHash = _passwordService.HashPassword(instructor, temporaryPassword);
 
         instructor.Roles.Add(instructorRole);
 
         var created = await _instructorDAL.AddAsync(instructor);
-        return ToResponseDto(created);
+        return new CreateInstructorResponseDto
+        {
+            Instructor = ToResponseDto(created),
+            TemporaryPassword = temporaryPassword
+        };
     }
 
     public async Task<string?> UpdateAsync(int id, UpdateInstructorDto dto)

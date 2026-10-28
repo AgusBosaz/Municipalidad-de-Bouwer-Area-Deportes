@@ -85,6 +85,26 @@ public class AuthController : ControllerBase
     }
 
     [Authorize]
+    [HttpPost("change-initial-password")]
+    public async Task<IActionResult> ChangeInitialPassword(
+    ChangeInitialPasswordDto request)
+    {
+        if (!int.TryParse(
+            User.FindFirstValue(ClaimTypes.NameIdentifier), out int userId))
+            return Unauthorized();
+
+        bool changed = await _authService.ChangeInitialPasswordAsync(
+            userId, request.NewPassword);
+
+        return changed
+            ? NoContent()
+            : BadRequest(new
+            {
+                message = "No se pudo cambiar la contraseña. Usá una distinta de la temporal."
+            });
+    }
+
+    [Authorize]
     [HttpGet("me")]
     public ActionResult<CurrentUserDto> GetCurrentUser()
     {
