@@ -130,6 +130,11 @@ namespace Muni_Bouwer.Data.Migrations
                     b.Property<int>("InstructorId")
                         .HasColumnType("int");
 
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
                     b.HasKey("Id");
 
                     b.HasIndex("ActivityId");
@@ -376,6 +381,9 @@ namespace Muni_Bouwer.Data.Migrations
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("MustChangePassword")
+                        .HasColumnType("bit");
 
                     b.Property<string>("PasswordHash")
                         .HasColumnType("nvarchar(max)");

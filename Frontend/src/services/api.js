@@ -1,7 +1,7 @@
 // path starts with '/', without including /api.
 // For POST or PUT, pass body: JSON.stringify(data) in options.
 
-import { getSession } from "./AuthSession"
+import { expireSession, getSession } from "./AuthSession"
 
 export async function apiRequest(path, options = {}) {
   const headers = new Headers(options.headers)
@@ -25,6 +25,10 @@ export async function apiRequest(path, options = {}) {
   const response = await fetch(`/api${path}`, { ...options, headers })
 
   if (!response.ok) {
+    if (response.status === 401 && token && !publicAuthPaths.includes(path) &&
+        getSession()?.token === token) {
+      expireSession()
+    }
     const details = await response.text()
     const error = new Error(details || `HTTP error ${response.status}`)
     error.status = response.status

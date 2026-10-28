@@ -1,12 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import {
-  CalendarDays,
-  CircleCheck,
-  ClipboardList,
-  LayoutDashboard,
-  Trophy,
-  UsersRound,
-} from 'lucide-react'
+import { CalendarDays, CircleCheck, ClipboardList, LayoutDashboard, Trophy, UsersRound,} from 'lucide-react'
 import '../../styles/layout.css'
 
 function Sidebar({ isOpen, onNavigate, session, onLogout }) {
@@ -18,8 +11,11 @@ function Sidebar({ isOpen, onNavigate, session, onLogout }) {
       { to: '/asignaciones', label: 'Asignaciones', Icon: CalendarDays },
       { to: '/inscribir-alumnos', label: 'Inscripciones', Icon: ClipboardList },
       { to: '/asistencia', label: 'Asistencia', Icon: CircleCheck },
+      { to: '/attendance-history', label: 'Historial de asistencia', Icon: ClipboardList },
     ]
     : [
+      { to: '/docente', label: 'Inicio', Icon: LayoutDashboard },
+      { to: '/mis-actividades', label: 'Mis actividades', Icon: CalendarDays },
       { to: '/asistencia', label: 'Asistencia', Icon: CircleCheck },
     ]
   return (
@@ -44,7 +40,7 @@ function Sidebar({ isOpen, onNavigate, session, onLogout }) {
           <NavLink
             key={to}
             to={to}
-            end={to === '/'}
+            end={to === '/' || to === '/docente'}
             onClick={onNavigate}
             className={({ isActive }) => isActive ? 'active' : ''}
           >

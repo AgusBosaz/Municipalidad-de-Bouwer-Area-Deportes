@@ -30,8 +30,4 @@ public class CreateInstructorDto
 
     [Required, StringLength(100)]
     public string Specialty { get; set; } = string.Empty;
-
-    [Required(ErrorMessage = "La contraseña es obligatoria.")]
-    [MinLength(8, ErrorMessage = "La contraseña debe tener al menos 8 caracteres.")]
-    public string Password { get; set; } = string.Empty;
 }

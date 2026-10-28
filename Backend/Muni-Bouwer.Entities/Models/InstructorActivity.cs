@@ -5,6 +5,7 @@ public class InstructorActivity
     public int Id { get; set; }
     public int InstructorId { get; set; }
     public int ActivityId { get; set; }
+    public bool IsActive { get; set; } = true;
 
     public Instructor Instructor { get; set; } = null!;
     public Activity Activity { get; set; } = null!;

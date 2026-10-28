@@ -52,26 +52,55 @@ function ActividadesPage() {
   }
 
   const guardarActividad = (datosActividad) => {
-    if (actividadEnEdicion !== null) {
+  if (actividadEnEdicion !== null) {
+    setActividades((actuales) =>
+      actuales.map((actividad) =>
+        actividad.id === actividadEnEdicion.id
+          ? { ...actividad, ...datosActividad }
+          : actividad
+      )
+    )
+
+    alert('La actividad fue actualizada correctamente.')
+  } else {
+    setActividades((actuales) => [
+      ...actuales,
+      {
+        ...datosActividad,
+        id: Date.now(),
+        estado: datosActividad.estado || 'Activa'
+      }
+    ])
+
+    alert('La actividad fue creada correctamente.')
+  }
+
+  setModalOpen(false)
+  setActividadEnEdicion(null)
+}
+
+    const darDeBajaActividad = (actividad) => {
+      if (actividad.estado === 'Inactiva') {
+        alert('Esta actividad ya se encuentra inactiva.')
+        return
+      }
+
+      const confirmar = window.confirm(
+        `¿Querés dar de baja la actividad "${actividad.nombre}"?`
+      )
+
+      if (!confirmar) return
+
       setActividades((actuales) =>
-        actuales.map((actividad) =>
-          actividad.id === actividadEnEdicion.id
-            ? { ...actividad, ...datosActividad }
-            : actividad
+        actuales.map((item) =>
+          item.id === actividad.id
+            ? { ...item, estado: 'Inactiva' }
+            : item
         )
       )
-    } else {
-      setActividades((actuales) => [
-        ...actuales,
-        {
-          ...datosActividad,
-          id: Date.now()
-        }
-      ])
-    }
 
-    setModalOpen(false)
-  }
+      alert('La actividad fue dada de baja correctamente.')
+    }
 
   const actividadesFiltradas = actividades.filter((actividad) =>
     actividad.nombre.toLowerCase().includes(busqueda.toLowerCase())
@@ -153,21 +182,10 @@ function ActividadesPage() {
                       <button
                         type="button"
                         className="action-button delete"
-                        onClick={() => {
-                          const confirmar = window.confirm(
-                            '¿Querés eliminar esta actividad de la lista local?'
-                          )
-
-                          if (confirmar) {
-                            setActividades((actuales) =>
-                              actuales.filter(
-                                (item) => item.id !== actividad.id
-                              )
-                            )
-                          }
-                        }}
+                        onClick={() => darDeBajaActividad(actividad)}
+                        disabled={actividad.estado === 'Inactiva'}
                       >
-                        Eliminar
+                        {actividad.estado === 'Inactiva' ? 'Inactiva' : 'Dar de baja'}
                       </button>
                     </div>
                   </td>

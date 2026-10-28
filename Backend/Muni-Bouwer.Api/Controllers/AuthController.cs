@@ -50,6 +50,7 @@ public class AuthController : ControllerBase
     }
 
     [AllowAnonymous]
+    [EnableRateLimiting("login")]
     [HttpPost("login")]
     public async Task<ActionResult<LoginResponseDto>> Login(LoginRequestDto request)
     {
@@ -81,6 +82,26 @@ public class AuthController : ControllerBase
                     message = "Ocurrió un error inesperado."
                 })
         };
+    }
+
+    [Authorize]
+    [HttpPost("change-initial-password")]
+    public async Task<IActionResult> ChangeInitialPassword(
+    ChangeInitialPasswordDto request)
+    {
+        if (!int.TryParse(
+            User.FindFirstValue(ClaimTypes.NameIdentifier), out int userId))
+            return Unauthorized();
+
+        bool changed = await _authService.ChangeInitialPasswordAsync(
+            userId, request.NewPassword);
+
+        return changed
+            ? NoContent()
+            : BadRequest(new
+            {
+                message = "No se pudo cambiar la contraseña. Usá una distinta de la temporal."
+            });
     }
 
     [Authorize]

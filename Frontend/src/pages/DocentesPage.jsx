@@ -1,152 +1,207 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { getInstructors, CreateInstructor, UpdateInstructor, DeleteInstructor } from '../services/instructor-controller'
 import '../styles/docentes.css'
+
+function toDocenteView(docente) {
+  return {
+    ...docente,
+    email: docente.email ?? '',
+    nombre: `${docente.firstName} ${docente.lastName}`,
+    especialidad: docente.specialty,
+    estado: docente.isActive ? 'Activo' : 'Inactivo',
+  }
+}
 
 function DocentesPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [docenteEnEdicion, setDocenteEnEdicion] = useState(null)
   const [busqueda, setBusqueda] = useState('')
+  const [mensaje, setMensaje] = useState('')
+  const [credencialNueva, setCredencialNueva] = useState(null)
+  const [guardando, setGuardando] = useState(false)
 
-  const [docentes, setDocentes] = useState([
-    {
-      id: 1,
-      nombre: 'Santiago Pérez',
-      email: 'santi@correo.com',
-      especialidad: 'Fútbol',
-      estado: 'Activo'
-    },
-    {
-      id: 2,
-      nombre: 'María Gómez',
-      email: 'maria@correo.com',
-      especialidad: 'Natación',
-      estado: 'Activo'
-    },
-    {
-      id: 3,
-      nombre: 'Lucía Torres',
-      email: 'lucia@correo.com',
-      especialidad: 'Yoga',
-      estado: 'Activo'
-    },
-    {
-      id: 4,
-      nombre: 'Diego Castro',
-      email: 'diego@correo.com',
-      especialidad: 'Básquet',
-      estado: 'Activo'
+  const [docentes, setDocentes] = useState([])
+  const [cargando, setCargando] = useState(true)
+  const [errorCarga, setErrorCarga] = useState('')
+
+  useEffect(() => {
+    let active = true
+
+    getInstructors()
+      .then((result) => {
+        if (active) setDocentes(result.map(toDocenteView))
+      })
+      .catch(() => {
+        if (active) setErrorCarga('No se pudieron cargar los docentes.')
+      })
+      .finally(() => {
+        if (active) setCargando(false)
+      })
+
+    return () => {
+      active = false
     }
-  ])
+  }, [])
 
-  const [form, setForm] = useState({
-    nombre: '',
+  const formularioVacio = {
+    firstName: '',
+    lastName: '',
+    dni: '',
+    gender: '',
+    phoneNumber: '',
+    address: '',
+    birthDate: '',
     email: '',
-    especialidad: '',
+    specialty: '',
     estado: 'Activo'
-  })
+  }
+
+  const [form, setForm] = useState(formularioVacio)
 
   const actualizarCampo = (e) => {
     const { name, value } = e.target
-
-    setForm((actual) => ({
-      ...actual,
-      [name]: value
-    }))
+    setForm((actual) => ({ ...actual, [name]: value }))
+    setMensaje('')
   }
 
   const abrirModal = () => {
     setDocenteEnEdicion(null)
-    setForm({
-      nombre: '',
-      email: '',
-      especialidad: '',
-      estado: 'Activo'
-    })
+    setForm({ ...formularioVacio })
+    setMensaje('')
     setModalOpen(true)
   }
 
   const abrirEdicion = (docente) => {
     setDocenteEnEdicion(docente.id)
     setForm({
-      nombre: docente.nombre,
+      firstName: docente.firstName,
+      lastName: docente.lastName,
+      dni: docente.dni,
+      gender: docente.gender,
+      phoneNumber: docente.phoneNumber,
+      address: docente.address,
+      birthDate: docente.birthDate,
       email: docente.email,
-      especialidad: docente.especialidad,
+      specialty: docente.specialty,
       estado: docente.estado
     })
+    setMensaje('')
     setModalOpen(true)
   }
 
   const cerrarModal = () => {
+    const confirmar = window.confirm
+      (
+        '¿Querés cerrar el formulario? Los cambios sin guardar se perderán.'
+      )
+
+    if (!confirmar)
+      return
     setModalOpen(false)
+    setDocenteEnEdicion(null)
+    setMensaje('')
   }
 
-  const guardarDocente = (e) => {
+  const guardarDocente = async (e) => {
     e.preventDefault()
 
-    const nombre = form.nombre.trim()
+    const nombre = form.firstName.trim()
+    const apellido = form.lastName.trim()
+    const dni = form.dni.trim()
     const email = form.email.trim()
+    const telefono = form.phoneNumber.trim()
+    const direccion = form.address.trim()
 
-    if (!nombre) {
-      alert('Ingresá el nombre del docente.')
+    if (
+      !nombre || !apellido || !dni || !email || !telefono ||
+      !direccion || !form.birthDate || !form.gender || !form.specialty
+    ) {
+      setMensaje('Completá todos los campos obligatorios.')
       return
     }
 
-    if (!email) {
-      alert('Ingresá el email del docente.')
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setMensaje('Ingresá un email válido.')
       return
     }
 
-    const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
-    if (!emailValido.test(email)) {
-      alert('Ingresá un email válido.')
+    if (new Date(`${form.birthDate}T00:00:00`) > new Date()) {
+      setMensaje('La fecha de nacimiento no puede ser futura.')
       return
     }
 
-    const emailExistente = docentes.some(
-      (docente) =>
-        docente.id !== docenteEnEdicion &&
-        docente.email.toLowerCase() === email.toLowerCase()
-    )
-
-    if (emailExistente) {
-      alert('Ya existe un docente registrado con ese email.')
+    if (docentes.some((d) =>
+      d.id !== docenteEnEdicion && d.email.toLowerCase() === email.toLowerCase())) {
+      setMensaje('Ya existe un docente registrado con ese email.')
       return
     }
 
-    if (!form.especialidad) {
-      alert('Seleccioná una especialidad.')
+    if (docentes.some((d) => d.id !== docenteEnEdicion && d.dni === dni)) {
+      setMensaje('Ya existe un docente registrado con ese DNI.')
       return
     }
 
-    if (docenteEnEdicion !== null) {
-      setDocentes((actuales) =>
-        actuales.map((docente) =>
+    const datosDocente = {
+      firstName: nombre,
+      lastName: apellido,
+      dni,
+      gender: form.gender,
+      phoneNumber: telefono,
+      address: direccion,
+      birthDate: form.birthDate,
+      email,
+      specialty: form.specialty,
+    }
+
+    setGuardando(true)
+    setMensaje('')
+
+    try {
+      if (docenteEnEdicion !== null) {
+        await UpdateInstructor(docenteEnEdicion, datosDocente)
+        setDocentes((actuales) => actuales.map((docente) =>
           docente.id === docenteEnEdicion
-            ? {
-              ...docente,
-              nombre,
-              email,
-              especialidad: form.especialidad,
-              estado: form.estado
-            }
+            ? toDocenteView({ ...docente, ...datosDocente })
             : docente
-        )
-      )
-    } else {
-      setDocentes((actuales) => [
-        ...actuales,
-        {
-          id: Date.now(),
-          nombre,
-          email,
-          especialidad: form.especialidad,
-          estado: form.estado
-        }
-      ])
-    }
+        ))
+        window.alert('Docente actualizado correctamente.')
+      } else {
+        const result = await CreateInstructor(datosDocente)
+        setDocentes((actuales) => [
+          ...actuales,
+          toDocenteView(result.instructor),
+        ])
+        setCredencialNueva(result)
+      }
 
-    cerrarModal()
+      setModalOpen(false)
+      setDocenteEnEdicion(null)
+      setForm({ ...formularioVacio })
+    } catch (error) {
+      setMensaje(error.status === 409
+        ? 'Ya existe un usuario con ese DNI o email.'
+        : 'No se pudo guardar el docente. Intentá nuevamente.')
+    } finally {
+      setGuardando(false)
+    }
+  }
+
+  const darDeBajaDocente = async (docente) => {
+    const confirmar = window.confirm(
+      `¿Querés dar de baja a ${docente.nombre}?`
+    )
+    if (!confirmar) return
+
+    try {
+      await DeleteInstructor(docente.id)
+      setDocentes((actuales) =>
+        actuales.filter((item) => item.id !== docente.id)
+      )
+      window.alert('El docente fue dado de baja correctamente.')
+    } catch {
+      window.alert('No se pudo dar de baja al docente. Intentá nuevamente.')
+    }
   }
 
   const docentesFiltrados = docentes.filter((docente) =>
@@ -171,12 +226,7 @@ function DocentesPage() {
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
           />
-
-          <button
-            type="button"
-            className="primary-button"
-            onClick={abrirModal}
-          >
+          <button type="button" className="primary-button" onClick={abrirModal}>
             + Nuevo
           </button>
         </div>
@@ -189,6 +239,8 @@ function DocentesPage() {
             <p>Listado de docentes del Área de Deportes.</p>
           </div>
         </div>
+        {cargando && <p role="status">Cargando docentes...</p>}
+        {errorCarga && <p role="alert">{errorCarga}</p>}
 
         <div className="table-container">
           <table>
@@ -201,25 +253,17 @@ function DocentesPage() {
                 <th>Acciones</th>
               </tr>
             </thead>
-
             <tbody>
               {docentesFiltrados.map((docente) => (
                 <tr key={docente.id}>
                   <td>{docente.nombre}</td>
                   <td>{docente.email}</td>
                   <td>{docente.especialidad}</td>
-
                   <td>
-                    <span
-                      className={`status-badge ${docente.estado === 'Activo'
-                        ? 'status-active'
-                        : 'status-inactive'
-                        }`}
-                    >
+                    <span className={`status-badge ${docente.estado === 'Activo' ? 'status-active' : 'status-inactive'}`}>
                       {docente.estado}
                     </span>
                   </td>
-
                   <td>
                     <div className="table-actions">
                       <button
@@ -229,32 +273,19 @@ function DocentesPage() {
                       >
                         Editar
                       </button>
-
                       <button
                         type="button"
                         className="action-button delete"
-                        onClick={() => {
-                          const confirmar = window.confirm(
-                            `¿Querés eliminar a ${docente.nombre} de la lista local?`
-                          )
-
-                          if (confirmar) {
-                            setDocentes((actuales) =>
-                              actuales.filter(
-                                (item) => item.id !== docente.id
-                              )
-                            )
-                          }
-                        }}
+                        onClick={() => darDeBajaDocente(docente)}
+                        disabled={docente.estado === 'Inactivo'}
                       >
-                        Eliminar
+                        {docente.estado === 'Inactivo' ? 'Inactivo' : 'Dar de baja'}
                       </button>
                     </div>
                   </td>
                 </tr>
               ))}
-
-              {docentesFiltrados.length === 0 && (
+              {!cargando && !errorCarga && docentesFiltrados.length === 0 && (
                 <tr>
                   <td colSpan="5" className="docentes-empty">
                     No se encontraron docentes.
@@ -266,146 +297,180 @@ function DocentesPage() {
         </div>
       </section>
 
-      {modalOpen &&
-        createPortal(
-          <div
-            className="docente-modal-overlay"
-            onMouseDown={(e) => {
-              if (e.target === e.currentTarget) {
-                cerrarModal()
-              }
-            }}
+      {modalOpen && createPortal(
+        <div
+          className="docente-modal-overlay"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) cerrarModal()
+          }}
+        >
+          <section
+            className="docente-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="docente-modal-title"
           >
-            <section
-              className="docente-modal"
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="docente-modal-title"
+            <button
+              type="button"
+              className="docente-modal-close"
+              aria-label="Cerrar"
+              onClick={cerrarModal}
             >
-              <button
-                type="button"
-                className="docente-modal-close"
-                aria-label="Cerrar"
-                onClick={cerrarModal}
-              >
-                ×
-              </button>
+              ×
+            </button>
 
-              <div className="docente-modal-content">
-                <div className="page-top">
-                  <div>
-                    <span className="page-eyebrow">DOCENTES</span>
-                    <h2 id="docente-modal-title">
-                      {docenteEnEdicion !== null ? 'Editar docente' : 'Nuevo docente'}
-                    </h2>
-                    <p>Completá los datos para registrar un docente.</p>
+            <div className="docente-modal-content">
+              <div className="page-top">
+                <div>
+                  <span className="page-eyebrow">DOCENTES</span>
+                  <h2 id="docente-modal-title">
+                    {docenteEnEdicion !== null ? 'Editar docente' : 'Nuevo docente'}
+                  </h2>
+                  <p>Completá los datos del docente.</p>
+                </div>
+              </div>
+
+              <form onSubmit={guardarDocente}>
+                <div className="form-section">
+                  <div className="form-section-title">
+                    <span>01</span>
+                    <div>
+                      <h3>Información personal</h3>
+                      <p>Datos principales del docente.</p>
+                    </div>
+                  </div>
+
+                  <div className="form-grid">
+                    <div className="form-group">
+                      <label htmlFor="docente-nombre">Nombre *</label>
+                      <input id="docente-nombre" name="firstName" value={form.firstName} onChange={actualizarCampo} maxLength={100} required />
+                    </div>
+
+                    <div className="form-group">
+                      <label htmlFor="docente-apellido">Apellido *</label>
+                      <input id="docente-apellido" name="lastName" value={form.lastName} onChange={actualizarCampo} maxLength={100} required />
+                    </div>
+
+                    <div className="form-group">
+                      <label htmlFor="docente-dni">DNI *</label>
+                      <input id="docente-dni" name="dni" value={form.dni} onChange={actualizarCampo} maxLength={20} required />
+                    </div>
+
+                    <div className="form-group">
+                      <label htmlFor="docente-genero">Género *</label>
+                      <select id="docente-genero" name="gender" value={form.gender} onChange={actualizarCampo} required>
+                        <option value="">Seleccionar</option>
+                        <option value="Femenino">Femenino</option>
+                        <option value="Masculino">Masculino</option>
+                        <option value="Otro">Otro</option>
+                        <option value="Prefiero no decirlo">Prefiero no decirlo</option>
+                      </select>
+                    </div>
+
+                    <div className="form-group">
+                      <label htmlFor="docente-fecha">Fecha de nacimiento *</label>
+                      <input id="docente-fecha" type="date" name="birthDate" value={form.birthDate} onChange={actualizarCampo} max={new Date().toISOString().split('T')[0]} required />
+                    </div>
+
+                    <div className="form-group">
+                      <label htmlFor="docente-telefono">Teléfono *</label>
+                      <input id="docente-telefono" type="tel" name="phoneNumber" value={form.phoneNumber} onChange={actualizarCampo} maxLength={30} required />
+                    </div>
+
+                    <div className="form-group form-group-full">
+                      <label htmlFor="docente-direccion">Dirección *</label>
+                      <input id="docente-direccion" name="address" value={form.address} onChange={actualizarCampo} maxLength={200} required />
+                    </div>
                   </div>
                 </div>
 
-                <form onSubmit={guardarDocente}>
-                  <div className="form-section">
-                    <div className="form-section-title">
-                      <span>01</span>
-
-                      <div>
-                        <h3>Información del docente</h3>
-                        <p>Datos principales del docente.</p>
-                      </div>
-                    </div>
-
-                    <div className="form-grid">
-                      <div className="form-group form-group-full">
-                        <label htmlFor="docente-nombre">
-                          Nombre completo
-                        </label>
-
-                        <input
-                          id="docente-nombre"
-                          type="text"
-                          name="nombre"
-                          value={form.nombre}
-                          onChange={actualizarCampo}
-                          placeholder="Ej. Juan Pérez"
-                          maxLength={100}
-                          required
-                        />
-                      </div>
-
-                      <div className="form-group form-group-full">
-                        <label htmlFor="docente-email">Email</label>
-
-                        <input
-                          id="docente-email"
-                          type="email"
-                          name="email"
-                          value={form.email}
-                          onChange={actualizarCampo}
-                          placeholder="Ej. juan@correo.com"
-                          maxLength={150}
-                          required
-                        />
-                      </div>
-
-                      <div className="form-group">
-                        <label htmlFor="docente-especialidad">
-                          Especialidad
-                        </label>
-
-                        <select
-                          id="docente-especialidad"
-                          name="especialidad"
-                          value={form.especialidad}
-                          onChange={actualizarCampo}
-                          required
-                        >
-                          <option value="">
-                            Seleccionar especialidad
-                          </option>
-                          <option value="Fútbol">Fútbol</option>
-                          <option value="Natación">Natación</option>
-                          <option value="Yoga">Yoga</option>
-                          <option value="Básquet">Básquet</option>
-                          <option value="Vóley">Vóley</option>
-                          <option value="Gimnasia">Gimnasia</option>
-                          <option value="Otra">Otra</option>
-                        </select>
-                      </div>
-
-                      <div className="form-group">
-                        <label htmlFor="docente-estado">Estado</label>
-
-                        <select
-                          id="docente-estado"
-                          name="estado"
-                          value={form.estado}
-                          onChange={actualizarCampo}
-                        >
-                          <option value="Activo">Activo</option>
-                          <option value="Inactivo">Inactivo</option>
-                        </select>
-                      </div>
+                <div className="form-section">
+                  <div className="form-section-title">
+                    <span>02</span>
+                    <div>
+                      <h3>Contacto y acceso</h3>
+                      <p>Email y especialidad del docente.</p>
                     </div>
                   </div>
 
-                  <div className="form-actions">
-                    <button
-                      type="button"
-                      className="secondary-button"
-                      onClick={cerrarModal}
-                    >
-                      Cancelar
-                    </button>
+                  <div className="form-grid">
+                    <div className="form-group form-group-full">
+                      <label htmlFor="docente-email">Email *</label>
+                      <input id="docente-email" type="email" name="email" value={form.email} onChange={actualizarCampo} maxLength={150} required />
+                    </div>
 
-                    <button type="submit" className="primary-button">
-                      {docenteEnEdicion !== null ? 'Guardar cambios' : 'Guardar docente'}
-                    </button>
+                    <div className="form-group">
+                      <label htmlFor="docente-especialidad">Especialidad *</label>
+                      <select id="docente-especialidad" name="specialty" value={form.specialty} onChange={actualizarCampo} required>
+                        <option value="">Seleccionar especialidad</option>
+                        <option value="Fútbol">Fútbol</option>
+                        <option value="Natación">Natación</option>
+                        <option value="Yoga">Yoga</option>
+                        <option value="Básquet">Básquet</option>
+                        <option value="Vóley">Vóley</option>
+                        <option value="Gimnasia">Gimnasia</option>
+                        <option value="Otra">Otra</option>
+                      </select>
+                    </div>
                   </div>
-                </form>
+                </div>
+
+                {mensaje && <p role="alert" aria-live="polite">{mensaje}</p>}
+
+                <div className="form-actions">
+                  <button type="button" className="secondary-button" onClick={cerrarModal}>
+                    Cancelar
+                  </button>
+                  <button type="submit" className="primary-button" disabled={guardando}>
+                    {docenteEnEdicion !== null ? 'Guardar cambios' : 'Guardar docente'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </section>
+        </div>,
+        document.body
+      )}
+      {credencialNueva && createPortal(
+        <div className="docente-modal-overlay">
+          <section
+            className="docente-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="temp-password-title"
+          >
+            <div className="docente-modal-content">
+              <h2 id="temp-password-title">Docente creado</h2>
+              <p>
+                Guardá esta contraseña temporal y entregásela al docente.
+                No se volverá a mostrar.
+              </p>
+
+              <div className="form-group">
+                <label htmlFor="temp-password">Contraseña temporal</label>
+                <input
+                  id="temp-password"
+                  type="text"
+                  readOnly
+                  value={credencialNueva.temporaryPassword}
+                  onFocus={(event) => event.target.select()}
+                />
               </div>
-            </section>
-          </div>,
-          document.body
-        )}
+
+              <div className="form-actions">
+                <button
+                  type="button"
+                  className="primary-button"
+                  onClick={() => setCredencialNueva(null)}
+                >
+                  Ya la guardé
+                </button>
+              </div>
+            </div>
+          </section>
+        </div>,
+        document.body
+      )}
     </main>
   )
 }
