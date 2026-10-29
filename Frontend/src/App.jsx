@@ -14,6 +14,7 @@ import ActividadesPage from './pages/Actividadespage'
 import AsignacionesPage from './pages/AsignacionesPage'
 import InscripcionAlumnos from './pages/InscripcionAlumnos'
 import AsistenciaPage from './pages/AsistenciaPage'
+import AlumnosPage from './pages/AlumnosPage'
 
 import './styles/App.css'
 
@@ -110,6 +111,10 @@ function App() {
         <Route
           path="/inscribir-alumnos"
           element={<CoordinatorOnly><InscripcionAlumnos /></CoordinatorOnly>}
+        />
+        <Route
+          path="/alumnos"
+          element={<CoordinatorOnly><AlumnosPage /></CoordinatorOnly>}
         />
       </Route>
 

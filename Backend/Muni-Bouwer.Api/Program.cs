@@ -20,6 +20,15 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
+// Configuración de CORS para permitir solicitudes desde el Frontend (React)
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend",
+        policy => policy.WithOrigins("http://localhost:5173")
+                        .AllowAnyHeader()
+                        .AllowAnyMethod());
+});
+
 builder.Services.AddScoped<IActivityDAL, ActivityDAL>();
 builder.Services.AddScoped<IActivityService, ActivityService>();
 
@@ -228,6 +237,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Habilitar CORS antes del enrutamiento y la autenticación
+app.UseCors("AllowFrontend");
 
 app.UseRouting();
 app.UseRateLimiter();

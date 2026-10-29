@@ -3,6 +3,7 @@ import {
   CalendarDays,
   CircleCheck,
   ClipboardList,
+  GraduationCap,
   LayoutDashboard,
   Trophy,
   UsersRound,
@@ -12,22 +13,23 @@ import '../../styles/layout.css'
 function Sidebar({ isOpen, onNavigate, session, onLogout }) {
   const links = session.role === 'Coordinator'
     ? [
-      { to: '/', label: 'Inicio', Icon: LayoutDashboard },
-      { to: '/docentes', label: 'Docentes', Icon: UsersRound },
-      { to: '/actividades', label: 'Actividades', Icon: Trophy },
-      { to: '/asignaciones', label: 'Asignaciones', Icon: CalendarDays },
-      { to: '/inscribir-alumnos', label: 'Inscripciones', Icon: ClipboardList },
-      { to: '/asistencia', label: 'Asistencia', Icon: CircleCheck },
-    ]
+        { to: '/', label: 'Inicio', Icon: LayoutDashboard },
+        { to: '/docentes', label: 'Docentes', Icon: UsersRound },
+        { to: '/actividades', label: 'Actividades', Icon: Trophy },
+        { to: '/asignaciones', label: 'Asignaciones', Icon: CalendarDays },
+        { to: '/inscribir-alumnos', label: 'Inscripciones', Icon: ClipboardList },
+        { to: '/alumnos', label: 'Alumnos', Icon: GraduationCap },
+        { to: '/asistencia', label: 'Asistencia', Icon: CircleCheck },
+      ]
     : [
-      { to: '/asistencia', label: 'Asistencia', Icon: CircleCheck },
-    ]
+        { to: '/asistencia', label: 'Asistencia', Icon: CircleCheck },
+      ]
+
   return (
     <aside
       id="primary-navigation"
       className={`sidebar ${isOpen ? 'sidebar-open' : ''}`}
     >
-
       <div className="sidebar-brand">
         <div className="sidebar-brand-icon">
           AD
@@ -57,7 +59,6 @@ function Sidebar({ isOpen, onNavigate, session, onLogout }) {
       </nav>
 
       <div className="sidebar-user">
-
         <div className="sidebar-user-icon">
           {session.name.charAt(0)}
         </div>
@@ -72,9 +73,7 @@ function Sidebar({ isOpen, onNavigate, session, onLogout }) {
         <button type="button" className="sidebar-logout" onClick={onLogout}>
           Salir
         </button>
-
       </div>
-
     </aside>
   )
 }
