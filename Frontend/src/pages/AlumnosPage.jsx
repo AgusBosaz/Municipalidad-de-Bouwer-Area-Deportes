@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { apiRequest } from '../services/api'
 import { getStudents } from '../services/studentService'
+import { getSession } from '../services/AuthSession'
 import '../styles/alumnos.css'
 
 const emptyRecord = { diseases: '', cus: '', observations: '' }
 
-function StudentDetails({ student, onBack }) {
+function StudentDetails({ student, onBack, canManage }) {
   const [tab, setTab] = useState('medical')
   const [record, setRecord] = useState(emptyRecord)
   const [recordReady, setRecordReady] = useState(false)
@@ -33,13 +34,15 @@ function StudentDetails({ student, onBack }) {
         if (error.status === 404) setRecordReady(true)
         else setMessage('No se pudo cargar la ficha médica. Volvé a seleccionar el alumno para reintentar.')
       })
-    apiRequest(`${base}/documents`)
-      .then((data) => { if (active) setDocuments(data) })
-      .catch(() => {
-        if (active) setMessage('No se pudieron cargar los documentos. Volvé a seleccionar el alumno para reintentar.')
-      })
+    if (canManage) {
+      apiRequest(`${base}/documents`)
+        .then((data) => { if (active) setDocuments(data) })
+        .catch(() => {
+          if (active) setMessage('No se pudieron cargar los documentos. Volvé a seleccionar el alumno para reintentar.')
+        })
+    }
     return () => { active = false }
-  }, [base])
+  }, [base, canManage])
 
   async function saveRecord(event) {
     event.preventDefault()
@@ -109,22 +112,60 @@ function StudentDetails({ student, onBack }) {
       <h2>{student.lastName}, {student.firstName}</h2>
       <p>DNI: {student.dni}</p>
       <div className="alumnos-tabs">
-        <button type="button" aria-pressed={tab === 'medical'} onClick={() => { setTab('medical'); setMessage('') }}>Ficha médica</button>
-        <button type="button" aria-pressed={tab === 'documents'} onClick={() => { setTab('documents'); setMessage('') }}>Documentación</button>
+        <button
+          type="button"
+          aria-pressed={tab === 'medical'}
+          onClick={() => { setTab('medical'); setMessage('') }}
+        >
+          Ficha médica
+        </button>
+
+        {canManage && (
+          <button
+            type="button"
+            aria-pressed={tab === 'documents'}
+            onClick={() => { setTab('documents'); setMessage('') }}
+          >
+            Documentación
+          </button>
+        )}
       </div>
       {message && <p role="status" className="alumnos-message">{message}</p>}
       {tab === 'medical' ? (
         <form className="alumnos-form" onSubmit={saveRecord}>
           <label>Enfermedades o condiciones
-            <textarea value={record.diseases} onChange={(e) => setRecord({ ...record, diseases: e.target.value })} disabled={!recordReady || busy} />
+            <textarea
+              value={record.diseases}
+              onChange={(e) => setRecord({ ...record, diseases: e.target.value })}
+              disabled={!recordReady || busy}
+              readOnly={!canManage}
+            />
           </label>
           <label>CUS
-            <input value={record.cus} onChange={(e) => setRecord({ ...record, cus: e.target.value })} disabled={!recordReady || busy} />
+            <input
+              value={record.cus}
+              onChange={(e) => setRecord({ ...record, cus: e.target.value })}
+              disabled={!recordReady || busy}
+              readOnly={!canManage}
+            />
           </label>
           <label>Observaciones
-            <textarea value={record.observations} onChange={(e) => setRecord({ ...record, observations: e.target.value })} disabled={!recordReady || busy} />
+            <textarea
+              value={record.observations}
+              onChange={(e) => setRecord({ ...record, observations: e.target.value })}
+              disabled={!recordReady || busy}
+              readOnly={!canManage}
+            />
           </label>
-          <button type="submit" className="alumnos-primary" disabled={!recordReady || busy}>Guardar ficha médica</button>
+          {canManage && (
+            <button
+              type="submit"
+              className="alumnos-primary"
+              disabled={!recordReady || busy}
+            >
+              Guardar ficha médica
+            </button>
+          )}
         </form>
       ) : (
         <>
@@ -161,6 +202,7 @@ function StudentDetails({ student, onBack }) {
 }
 
 export default function AlumnosPage() {
+  const canManage = getSession()?.role === 'Coordinator'
   const [students, setStudents] = useState([])
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState(null)
@@ -183,7 +225,7 @@ export default function AlumnosPage() {
 
   return (
     <div className="alumnos-page">
-      {selected ? <StudentDetails key={selected.id} student={selected} onBack={() => setSelected(null)} /> : (
+      {selected ? <StudentDetails key={selected.id} student={selected} onBack={() => setSelected(null)} canManage={canManage} /> : (
         <>
           <h1>Alumnos y fichas médicas</h1>
           <p>Seleccioná un alumno para consultar su ficha y documentación.</p>

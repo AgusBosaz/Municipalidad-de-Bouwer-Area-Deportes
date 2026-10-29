@@ -216,7 +216,7 @@ function App() {
         {/* --- RUTA DE ALUMNOS AGREGADA --- */}
         <Route
           path="/alumnos"
-          element={<CoordinatorOnly><AlumnosPage /></CoordinatorOnly>}
+          element={<AlumnosPage />}
         />
         <Route
           path="/attendance-history"

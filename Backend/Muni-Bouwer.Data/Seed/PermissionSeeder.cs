@@ -44,7 +44,8 @@ public static class PermissionSeeder
         [
             PermissionNames.StudentsRead,
             PermissionNames.AttendanceRead,
-            PermissionNames.AttendanceRegister
+            PermissionNames.AttendanceRegister,
+            PermissionNames.MedicalRecordsRead
         ];
         List<Permission> instructorPermissions = await context.Permissions
             .Where(permission =>
