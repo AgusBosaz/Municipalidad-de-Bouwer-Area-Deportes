@@ -5,7 +5,7 @@ import '../../styles/layout.css'
 function Sidebar({ isOpen, onNavigate, session, onLogout }) {
   const links = session.role === 'Coordinator'
     ? [
-      { to: '/', label: 'Inicio', Icon: LayoutDashboard },
+      { to: '/inicio', label: 'Inicio', Icon: LayoutDashboard },
       { to: '/docentes', label: 'Docentes', Icon: UsersRound },
       { to: '/actividades', label: 'Actividades', Icon: Trophy },
       { to: '/asignaciones', label: 'Asignaciones', Icon: CalendarDays },

@@ -175,7 +175,7 @@ function ActividadesInicio() {
               <option value="Básquet">Básquet</option>
               <option value="Natación">Natación</option>
               <option value="Vóley">Vóley</option>
-              <option value="Vóley">Actividad Física</option>
+              <option value="Actividad Física">Actividad Física</option>
             </select>
           </div>
         </div>

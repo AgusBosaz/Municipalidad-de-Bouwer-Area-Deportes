@@ -29,7 +29,7 @@ function Login() {
         return
       }
 
-      navigate('/', { replace: true })
+      navigate('/inicio', { replace: true })
     } catch (error) {
       if (error.status === 401) {
         alert('DNI o contraseña incorrectos.')
