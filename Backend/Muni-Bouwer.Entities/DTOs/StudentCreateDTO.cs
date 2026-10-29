@@ -15,6 +15,7 @@ public class StudentCreateDTO : IValidatableObject
 
     [Required(ErrorMessage = "El DNI es obligatorio.")]
     [StringLength(20, MinimumLength = 7, ErrorMessage = "El DNI debe tener entre 7 y 20 caracteres.")]
+    [RegularExpression(@"^[0-9]+$", ErrorMessage = "El DNI debe contener solo números.")]
     public string Dni { get; set; } = string.Empty;
 
     [EmailAddress(ErrorMessage = "El email no tiene un formato válido.")]
