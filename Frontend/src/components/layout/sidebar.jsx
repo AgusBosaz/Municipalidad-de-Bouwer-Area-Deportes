@@ -20,8 +20,11 @@ function Sidebar({ isOpen, onNavigate, session, onLogout }) {
         { to: '/inscribir-alumnos', label: 'Inscripciones', Icon: ClipboardList },
         { to: '/alumnos', label: 'Alumnos', Icon: GraduationCap },
         { to: '/asistencia', label: 'Asistencia', Icon: CircleCheck },
+        { to: '/attendance-history', label: 'Historial de asistencia', Icon: ClipboardList },
       ]
     : [
+        { to: '/docente', label: 'Inicio', Icon: LayoutDashboard },
+        { to: '/mis-actividades', label: 'Mis actividades', Icon: CalendarDays },
         { to: '/asistencia', label: 'Asistencia', Icon: CircleCheck },
       ]
 

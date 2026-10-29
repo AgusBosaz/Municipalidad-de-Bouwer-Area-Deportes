@@ -184,7 +184,7 @@ export default function InscripcionAlumnos() {
   };
 
   return (
-    <div className="inscripcion-container" style={{ padding: '2.5rem', maxWidth: '1200px', margin: '0 auto' }}>
+    <div className="inscripcion-container" style={{ maxWidth: '1200px', margin: '0 auto' }}>
       <div className="inscripcion-header">
         <h1>Inscripción de Alumnos</h1>
         <p>Complete el formulario para incorporar un participante a una actividad deportiva.</p>
@@ -323,7 +323,7 @@ export default function InscripcionAlumnos() {
               </div>
             </>
           ) : (
-            <div className="form-group" style={{ gridColumn: 'span 2' }}>
+            <div className="form-group" style={{ gridColumn: '1 / -1' }}>
               <label htmlFor="estudianteExistente">Alumno registrado</label>
               <select
                 id="estudianteExistente"
@@ -341,7 +341,7 @@ export default function InscripcionAlumnos() {
             </div>
           )}
 
-          <div className="form-group" style={{ gridColumn: 'span 2' }}>
+          <div className="form-group" style={{ gridColumn: '1 / -1' }}>
             <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: '600', color: '#475569' }}>ACTIVIDAD DEPORTIVA</label>
             <select
               name="actividadId"
@@ -377,10 +377,10 @@ export default function InscripcionAlumnos() {
       </div>
 
       {/* Sección de la Tabla */}
-      <div className="inscripcion-card" style={{ background: '#ffffff', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.05)', padding: '2.5rem', marginTop: '2rem' }}>
+      <div className="inscripcion-card" style={{ background: '#ffffff', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.05)', marginTop: '2rem' }}>
         <h2 style={{ fontSize: '1.2rem', color: '#1e293b', marginBottom: '1.5rem' }}>Últimos Alumnos Inscriptos Recientemente</h2>
         {errorInscripciones && <p role="alert" style={{ color: '#ef4444', marginBottom: '1rem' }}>{errorInscripciones}</p>}
-        <div className="table-wrapper" style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>
+        <div className="table-wrapper">
           <table className="custom-table" style={{ width: '100%', borderCollapse: 'collapse', background: '#fff' }}>
             <thead>
               <tr style={{ background: '#f8fafc', textAlign: 'left', borderBottom: '1px solid #e2e8f0' }}>

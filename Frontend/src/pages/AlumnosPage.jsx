@@ -1,448 +1,209 @@
-import { useState, useEffect } from 'react'
-import { FileText, Stethoscope, Search, Plus, Trash2, CheckCircle2, AlertCircle, User, ShieldAlert, ArrowLeft } from 'lucide-react'
-import '../styles/layout.css'
+import { useEffect, useState } from 'react'
+import { apiRequest } from '../services/api'
+import { getStudents } from '../services/studentService'
+import '../styles/alumnos.css'
 
-function AlumnosPage() {
-  const [students, setStudents] = useState([])
-  const [filteredStudents, setFilteredStudents] = useState([])
-  const [searchQuery, setSearchQuery] = useState('')
-  const [selectedStudent, setSelectedStudent] = useState(null)
-  
-  // Pestaña activa dentro del detalle: 'medical' o 'documents'
-  const [activeTab, setActiveTab] = useState('medical')
+const emptyRecord = { diseases: '', cus: '', observations: '' }
 
-  // Estados de Documentación General
-  const [documents, setDocuments] = useState([])
-  const [docName, setDocName] = useState('')
-  const [docDescription, setDocDescription] = useState('')
+function StudentDetails({ student, onBack }) {
+  const [tab, setTab] = useState('medical')
+  const [record, setRecord] = useState(emptyRecord)
+  const [recordReady, setRecordReady] = useState(false)
+  const [documents, setDocuments] = useState(null)
+  const [documentType, setDocumentType] = useState('')
+  const [fileUrl, setFileUrl] = useState('')
+  const [message, setMessage] = useState('')
+  const [busy, setBusy] = useState(false)
+  const base = `/students/${student.id}`
 
-  // Estados de Ficha Médica
-  const [medicalForm, setMedicalForm] = useState({
-    bloodType: '',
-    allergies: '',
-    medicalConditions: '',
-    emergencyContactName: '',
-    emergencyContactPhone: '',
-    observations: ''
-  })
-
-  const [message, setMessage] = useState({ type: '', text: '' })
-  const [loading, setLoading] = useState(true)
-
-  // Cargar todos los alumnos al iniciar la página
   useEffect(() => {
-    fetchAllStudents()
-  }, [])
-
-  const fetchAllStudents = async () => {
-    setLoading(true)
-    try {
-      const res = await fetch('/api/students')
-      if (res.ok) {
-        const data = await res.json()
-        const list = Array.isArray(data) ? data : data.items || []
-        setStudents(list)
-        setFilteredStudents(list)
-      }
-    } catch (err) {
-      console.error('Error al cargar alumnos:', err)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  // Filtrar alumnos en tiempo real
-  const handleSearchChange = (e) => {
-    const query = e.target.value
-    setSearchQuery(query)
-    if (!query.trim()) {
-      setFilteredStudents(students)
-    } else {
-      const lower = query.toLowerCase()
-      setFilteredStudents(
-        students.filter(
-          (st) =>
-            st.lastName?.toLowerCase().includes(lower) ||
-            st.firstName?.toLowerCase().includes(lower) ||
-            st.dni?.includes(query)
-        )
-      )
-    }
-  }
-
-  // Seleccionar alumno y cargar sus datos asociados
-  const handleSelectStudent = async (student) => {
-    setSelectedStudent(student)
-    setMessage({ type: '', text: '' })
-    const studentId = student.id || student.studentId
-    await fetchStudentDocuments(studentId)
-    await fetchMedicalRecord(studentId)
-  }
-
-  const fetchStudentDocuments = async (studentId) => {
-    try {
-      const res = await fetch(`/api/students/${studentId}/documents`)
-      if (res.ok) {
-        const data = await res.json()
-        setDocuments(data)
-      }
-    } catch (err) {
-      console.error(err)
-    }
-  }
-
-  const fetchMedicalRecord = async (studentId) => {
-    try {
-      const res = await fetch(`/api/students/${studentId}/medical-record`)
-      if (res.ok) {
-        const data = await res.json()
-        setMedicalForm({
-          bloodType: data.bloodType || '',
-          allergies: data.allergies || '',
-          medicalConditions: data.medicalConditions || '',
-          emergencyContactName: data.emergencyContactName || '',
-          emergencyContactPhone: data.emergencyContactPhone || '',
-          observations: data.observations || ''
+    let active = true
+    apiRequest(`${base}/medical-record`)
+      .then((data) => {
+        if (!active) return
+        setRecord({
+          diseases: data.diseases ?? '',
+          cus: data.cus ?? '',
+          observations: data.observations ?? '',
         })
-      } else {
-        setMedicalForm({
-          bloodType: '',
-          allergies: '',
-          medicalConditions: '',
-          emergencyContactName: '',
-          emergencyContactPhone: '',
-          observations: ''
-        })
-      }
-    } catch (err) {
-      console.error(err)
-    }
-  }
-
-  const handleAddDocument = async (e) => {
-    e.preventDefault()
-    if (!docName.trim() || !selectedStudent) return
-
-    const studentId = selectedStudent.id || selectedStudent.studentId
-    try {
-      const res = await fetch(`/api/students/${studentId}/documents`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: docName, description: docDescription })
+        setRecordReady(true)
       })
-
-      if (res.ok) {
-        setMessage({ type: 'success', text: 'Documento registrado con éxito.' })
-        setDocName('')
-        setDocDescription('')
-        await fetchStudentDocuments(studentId)
-      } else {
-        const errData = await res.json()
-        setMessage({ type: 'error', text: errData.message || 'Error al registrar documento.' })
-      }
-    } catch (error) {
-      setMessage({ type: 'error', text: 'Error de conexión.' })
-    }
-  }
-
-  const handleDeleteDocument = async (docId) => {
-    const studentId = selectedStudent.id || selectedStudent.studentId
-    try {
-      const res = await fetch(`/api/students/${studentId}/documents/${docId}`, {
-        method: 'DELETE'
+      .catch((error) => {
+        if (!active) return
+        if (error.status === 404) setRecordReady(true)
+        else setMessage('No se pudo cargar la ficha médica. Volvé a seleccionar el alumno para reintentar.')
       })
-      if (res.ok) {
-        setMessage({ type: 'success', text: 'Documento eliminado.' })
-        await fetchStudentDocuments(studentId)
-      }
-    } catch (error) {
-      setMessage({ type: 'error', text: 'No se pudo eliminar el documento.' })
-    }
-  }
+    apiRequest(`${base}/documents`)
+      .then((data) => { if (active) setDocuments(data) })
+      .catch(() => {
+        if (active) setMessage('No se pudieron cargar los documentos. Volvé a seleccionar el alumno para reintentar.')
+      })
+    return () => { active = false }
+  }, [base])
 
-  const handleSaveMedicalRecord = async (e) => {
-    e.preventDefault()
-    if (!selectedStudent) return
-
-    const studentId = selectedStudent.id || selectedStudent.studentId
+  async function saveRecord(event) {
+    event.preventDefault()
+    if (!recordReady || busy) return
+    setBusy(true)
+    setMessage('')
     try {
-      const res = await fetch(`/api/students/${studentId}/medical-record`, {
+      await apiRequest(`${base}/medical-record`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(medicalForm)
+        body: JSON.stringify(record),
       })
+      setMessage('Ficha médica guardada correctamente.')
+    } catch {
+      setMessage('No se pudo guardar la ficha médica.')
+    } finally {
+      setBusy(false)
+    }
+  }
 
-      if (res.ok) {
-        setMessage({ type: 'success', text: 'Ficha médica guardada con éxito.' })
-        await fetchMedicalRecord(studentId)
-      } else {
-        const errData = await res.json()
-        setMessage({ type: 'error', text: errData.message || 'Error al guardar ficha médica.' })
-      }
-    } catch (error) {
-      setMessage({ type: 'error', text: 'Error de conexión.' })
+  async function addDocument(event) {
+    event.preventDefault()
+    if (busy || !documentType.trim() || !fileUrl.trim()) return
+    let url
+    try {
+      url = new URL(fileUrl.trim())
+      if (!['http:', 'https:'].includes(url.protocol)) throw new Error()
+    } catch {
+      setMessage('Ingresá un enlace que comience con http:// o https://.')
+      return
+    }
+    setBusy(true)
+    setMessage('')
+    try {
+      const result = await apiRequest(`${base}/documents`, {
+        method: 'POST',
+        body: JSON.stringify({ type: documentType.trim(), fileUrl: url.href }),
+      })
+      setDocuments((current) => [...current, result.data])
+      setDocumentType('')
+      setFileUrl('')
+      setMessage('Documento registrado correctamente.')
+    } catch {
+      setMessage('No se pudo registrar el documento.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function deleteDocument(id) {
+    if (busy || !window.confirm('¿Querés dar de baja este documento?')) return
+    setBusy(true)
+    setMessage('')
+    try {
+      await apiRequest(`${base}/documents/${id}`, { method: 'DELETE' })
+      setDocuments((current) => current.filter((document) => document.id !== id))
+      setMessage('Documento dado de baja.')
+    } catch {
+      setMessage('No se pudo dar de baja el documento.')
+    } finally {
+      setBusy(false)
     }
   }
 
   return (
-    <div style={{ padding: '2.5rem', maxWidth: '1200px', margin: '0 auto', fontFamily: 'Inter, system-ui, sans-serif' }}>
-      
-      {!selectedStudent ? (
+    <section className="alumnos-card">
+      <button type="button" className="alumnos-secondary" onClick={onBack}>← Volver al listado</button>
+      <h2>{student.lastName}, {student.firstName}</h2>
+      <p>DNI: {student.dni}</p>
+      <div className="alumnos-tabs">
+        <button type="button" aria-pressed={tab === 'medical'} onClick={() => { setTab('medical'); setMessage('') }}>Ficha médica</button>
+        <button type="button" aria-pressed={tab === 'documents'} onClick={() => { setTab('documents'); setMessage('') }}>Documentación</button>
+      </div>
+      {message && <p role="status" className="alumnos-message">{message}</p>}
+      {tab === 'medical' ? (
+        <form className="alumnos-form" onSubmit={saveRecord}>
+          <label>Enfermedades o condiciones
+            <textarea value={record.diseases} onChange={(e) => setRecord({ ...record, diseases: e.target.value })} disabled={!recordReady || busy} />
+          </label>
+          <label>CUS
+            <input value={record.cus} onChange={(e) => setRecord({ ...record, cus: e.target.value })} disabled={!recordReady || busy} />
+          </label>
+          <label>Observaciones
+            <textarea value={record.observations} onChange={(e) => setRecord({ ...record, observations: e.target.value })} disabled={!recordReady || busy} />
+          </label>
+          <button type="submit" className="alumnos-primary" disabled={!recordReady || busy}>Guardar ficha médica</button>
+        </form>
+      ) : (
         <>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-            <div>
-              <h2 style={{ color: '#881337', fontSize: '1.8rem', fontWeight: 'bold', marginBottom: '0.3rem' }}>
-                Gestión de Alumnos y Fichas Médicas
-              </h2>
-              <p style={{ color: '#64748b', fontSize: '0.95rem' }}>
-                Seleccione un alumno del listado para consultar o registrar su ficha médica y documentación.
-              </p>
-            </div>
-          </div>
-
-          <div style={{ position: 'relative', marginBottom: '1.5rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '9999px', padding: '0.6rem 1.2rem', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
-              <Search size={20} style={{ color: '#94a3b8', marginRight: '0.8rem' }} />
-              <input
-                type="text"
-                placeholder="Filtrar por DNI o Apellido del alumno..."
-                value={searchQuery}
-                onChange={handleSearchChange}
-                style={{ border: 'none', outline: 'none', width: '100%', fontSize: '1rem', background: 'transparent' }}
-              />
-            </div>
-          </div>
-
-          {loading ? (
-            <p style={{ textAlign: 'center', color: '#64748b', padding: '2rem' }}>Cargando alumnos...</p>
-          ) : filteredStudents.length === 0 ? (
-            <p style={{ textAlign: 'center', color: '#64748b', padding: '2rem' }}>No se encontraron alumnos registrados.</p>
+          <p>Registrá el tipo de documento y un enlace donde ya esté disponible.</p>
+          <form className="alumnos-form" onSubmit={addDocument}>
+            <label>Tipo de documento
+              <input required value={documentType} onChange={(e) => setDocumentType(e.target.value)} placeholder="Ej. Apto físico" />
+            </label>
+            <label>Enlace del documento
+              <input required type="url" value={fileUrl} onChange={(e) => setFileUrl(e.target.value)} placeholder="https://..." />
+            </label>
+            <button type="submit" className="alumnos-primary" disabled={documents === null || busy}>Registrar documento</button>
+          </form>
+          <h3>Documentos registrados</h3>
+          {documents === null ? <p>Los documentos no están disponibles.</p> : documents.length === 0 ? (
+            <p>No hay documentos registrados para este alumno.</p>
           ) : (
-            <div style={{ background: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ background: '#f8fafc', textAlign: 'left', borderBottom: '1px solid #e2e8f0' }}>
-                    <th style={{ padding: '1rem 1.2rem', color: '#475569', fontSize: '0.85rem', fontWeight: '600' }}>ALUMNO</th>
-                    <th style={{ padding: '1rem 1.2rem', color: '#475569', fontSize: '0.85rem', fontWeight: '600' }}>DNI</th>
-                    <th style={{ padding: '1rem 1.2rem', color: '#475569', fontSize: '0.85rem', fontWeight: '600' }}>EMAIL / TELÉFONO</th>
-                    <th style={{ padding: '1rem 1.2rem', color: '#475569', fontSize: '0.85rem', fontWeight: '600', textAlign: 'right' }}>ACCIONES</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredStudents.map((st) => (
-                    <tr key={st.id || st.studentId} style={{ borderBottom: '1px solid #f1f5f9', transition: 'background 0.2s' }}>
-                      <td style={{ padding: '1rem 1.2rem', fontWeight: '600', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-                        <div style={{ background: '#f1f5f9', padding: '0.5rem', borderRadius: '50%', color: '#881337' }}>
-                          <User size={16} />
-                        </div>
-                        {st.lastName}, {st.firstName}
-                      </td>
-                      <td style={{ padding: '1rem 1.2rem', color: '#475569' }}>{st.dni}</td>
-                      <td style={{ padding: '1rem 1.2rem', color: '#64748b' }}>{st.email || st.phoneNumber || '-'}</td>
-                      <td style={{ padding: '1rem 1.2rem', textAlign: 'right' }}>
-                        <button
-                          onClick={() => handleSelectStudent(st)}
-                          style={{ background: '#881337', color: '#fff', border: 'none', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer', fontWeight: '500', fontSize: '0.85rem' }}
-                        >
-                          Ver Ficha y Legajo
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <ul className="alumnos-documents">
+              {documents.map((document) => (
+                <li key={document.id}>
+                  <span>{document.type}</span>
+                  <span>{document.fileUrl && /^https?:\/\//i.test(document.fileUrl)
+                    ? <a href={document.fileUrl} target="_blank" rel="noopener noreferrer">Abrir enlace</a>
+                    : 'Enlace no disponible'}</span>
+                  <button type="button" className="alumnos-secondary" disabled={busy} onClick={() => deleteDocument(document.id)}>Dar de baja</button>
+                </li>
+              ))}
+            </ul>
           )}
         </>
-      ) : (
+      )}
+    </section>
+  )
+}
 
-        <div style={{ background: '#ffffff', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.05)', overflow: 'hidden' }}>
-          
-          <div style={{ background: '#f8fafc', padding: '1.5rem 2rem', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1.2rem' }}>
-              <button
-                onClick={() => setSelectedStudent(null)}
-                style={{ background: 'transparent', border: '1px solid #cbd5e1', padding: '0.5rem', borderRadius: '8px', color: '#475569', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                title="Volver al listado"
-              >
-                <ArrowLeft size={20} />
-              </button>
-              <div>
-                <h3 style={{ margin: 0, fontSize: '1.4rem', color: '#1e293b' }}>
-                  {selectedStudent.lastName}, {selectedStudent.firstName}
-                </h3>
-                <span style={{ color: '#64748b', fontSize: '0.9rem' }}>DNI: {selectedStudent.dni}</span>
-              </div>
-            </div>
-          </div>
+export default function AlumnosPage() {
+  const [students, setStudents] = useState([])
+  const [search, setSearch] = useState('')
+  const [selected, setSelected] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
-          {message.text && (
-            <div style={{ margin: '1.5rem 2rem 0', padding: '0.9rem 1.2rem', borderRadius: '8px', background: message.type === 'error' ? '#fef2f2' : '#f0fdf4', color: message.type === 'error' ? '#991b1b' : '#166534', display: 'flex', alignItems: 'center', gap: '0.6rem', border: `1px solid ${message.type === 'error' ? '#fca5a5' : '#bbf7d0'}` }}>
-              {message.type === 'error' ? <AlertCircle size={18} /> : <CheckCircle2 size={18} />}
-              {message.text}
-            </div>
+  useEffect(() => {
+    let active = true
+    getStudents()
+      .then((data) => { if (active) setStudents(data) })
+      .catch(() => { if (active) setError('No se pudieron cargar los alumnos.') })
+      .finally(() => { if (active) setLoading(false) })
+    return () => { active = false }
+  }, [])
+
+  const query = search.trim().toLowerCase()
+  const filtered = students.filter((student) =>
+    `${student.firstName} ${student.lastName} ${student.dni}`.toLowerCase().includes(query)
+  )
+
+  return (
+    <div className="alumnos-page">
+      {selected ? <StudentDetails key={selected.id} student={selected} onBack={() => setSelected(null)} /> : (
+        <>
+          <h1>Alumnos y fichas médicas</h1>
+          <p>Seleccioná un alumno para consultar su ficha y documentación.</p>
+          <label className="alumnos-search">Buscar alumno
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Nombre, apellido o DNI" />
+          </label>
+          {loading ? <p>Cargando alumnos...</p> : error ? <p role="alert">{error}</p> : filtered.length === 0 ? (
+            <p>No se encontraron alumnos.</p>
+          ) : (
+            <ul className="alumnos-list">
+              {filtered.map((student) => (
+                <li key={student.id}>
+                  <div><strong>{student.lastName}, {student.firstName}</strong><p>DNI: {student.dni}</p></div>
+                  <button type="button" className="alumnos-primary" onClick={() => setSelected(student)}>Ver ficha y legajo</button>
+                </li>
+              ))}
+            </ul>
           )}
-
-          <div style={{ display: 'flex', gap: '2rem', padding: '0 2rem', borderBottom: '1px solid #e2e8f0', marginTop: '1rem' }}>
-            <button
-              type="button"
-              onClick={() => setActiveTab('medical')}
-              style={{ padding: '1rem 0', background: 'none', border: 'none', borderBottom: activeTab === 'medical' ? '3px solid #881337' : '3px solid transparent', color: activeTab === 'medical' ? '#881337' : '#64748b', fontWeight: activeTab === 'medical' ? 'bold' : '500', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1rem' }}
-            >
-              <Stethoscope size={18} /> Ficha Médica
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('documents')}
-              style={{ padding: '1rem 0', background: 'none', border: 'none', borderBottom: activeTab === 'documents' ? '3px solid #881337' : '3px solid transparent', color: activeTab === 'documents' ? '#881337' : '#64748b', fontWeight: activeTab === 'documents' ? 'bold' : '500', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1rem' }}
-            >
-              <FileText size={18} /> Documentación General
-            </button>
-          </div>
-
-          {activeTab === 'medical' && (
-            <div style={{ padding: '2rem' }}>
-              <form onSubmit={handleSaveMedicalRecord} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.2rem' }}>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: '600', color: '#475569' }}>GRUPO SANGUÍNEO</label>
-                  <input
-                    type="text"
-                    value={medicalForm.bloodType}
-                    onChange={(e) => setMedicalForm({ ...medicalForm, bloodType: e.target.value })}
-                    placeholder="Ej. A Rh Positivo (+)"
-                    style={{ width: '100%', padding: '0.7rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.95rem' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: '600', color: '#475569' }}>ALERGIAS CONOCIDAS</label>
-                  <input
-                    type="text"
-                    value={medicalForm.allergies}
-                    onChange={(e) => setMedicalForm({ ...medicalForm, allergies: e.target.value })}
-                    placeholder="Ej. Penicilina, Picaduras de Abeja"
-                    style={{ width: '100%', padding: '0.7rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.95rem' }}
-                  />
-                </div>
-                <div style={{ gridColumn: 'span 2' }}>
-                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: '600', color: '#475569' }}>CONDICIONES O ENFERMEDADES CRÓNICAS</label>
-                  <textarea
-                    value={medicalForm.medicalConditions}
-                    onChange={(e) => setMedicalForm({ ...medicalForm, medicalConditions: e.target.value })}
-                    rows={2}
-                    placeholder="Ej. Asma Leve (Trae aerosol preventivo a clases)"
-                    style={{ width: '100%', padding: '0.7rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.95rem' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: '600', color: '#475569' }}>CONTACTO DE EMERGENCIA (NOMBRE)</label>
-                  <input
-                    type="text"
-                    value={medicalForm.emergencyContactName}
-                    onChange={(e) => setMedicalForm({ ...medicalForm, emergencyContactName: e.target.value })}
-                    placeholder="Ej. María Luz Gómez (Madre)"
-                    style={{ width: '100%', padding: '0.7rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.95rem' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: '600', color: '#475569' }}>TELÉFONO DE EMERGENCIA</label>
-                  <input
-                    type="text"
-                    value={medicalForm.emergencyContactPhone}
-                    onChange={(e) => setMedicalForm({ ...medicalForm, emergencyContactPhone: e.target.value })}
-                    placeholder="Ej. 153-998811"
-                    style={{ width: '100%', padding: '0.7rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.95rem' }}
-                  />
-                </div>
-                <div style={{ gridColumn: 'span 2' }}>
-                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: '600', color: '#475569' }}>OBSERVACIONES DE DOCENCIA</label>
-                  <textarea
-                    value={medicalForm.observations}
-                    onChange={(e) => setMedicalForm({ ...medicalForm, observations: e.target.value })}
-                    rows={2}
-                    placeholder="Ej. Autorizado a retirarse solo de la instalación."
-                    style={{ width: '100%', padding: '0.7rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.95rem' }}
-                  />
-                </div>
-                <div style={{ gridColumn: 'span 2', marginTop: '1rem', display: 'flex', justifyContent: 'flex-end' }}>
-                  <button type="submit" style={{ background: '#881337', color: '#fff', border: 'none', padding: '0.8rem 2rem', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '1rem' }}>
-                    Guardar Ficha Médica
-                  </button>
-                </div>
-              </form>
-            </div>
-          )}
-
-          {activeTab === 'documents' && (
-            <div style={{ padding: '2rem' }}>
-              <h4 style={{ color: '#1e293b', marginBottom: '1rem', fontSize: '1.1rem' }}>Registrar Nuevo Documento</h4>
-              
-              <form onSubmit={handleAddDocument} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '1rem', marginBottom: '2rem', background: '#f8fafc', padding: '1.2rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-                <input
-                  type="text"
-                  placeholder="Nombre (ej. Fotocopia de DNI, Apto físico)"
-                  value={docName}
-                  onChange={(e) => setDocName(e.target.value)}
-                  required
-                  style={{ padding: '0.7rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.95rem', background: '#fff' }}
-                />
-                <input
-                  type="text"
-                  placeholder="Descripción u observaciones opcionales"
-                  value={docDescription}
-                  onChange={(e) => setDocDescription(e.target.value)}
-                  style={{ padding: '0.7rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.95rem', background: '#fff' }}
-                />
-                <button type="submit" style={{ background: '#881337', color: '#fff', border: 'none', padding: '0.7rem 1.4rem', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', fontWeight: '600' }}>
-                  <Plus size={18} /> Registrar
-                </button>
-              </form>
-
-              <h4 style={{ color: '#1e293b', marginBottom: '1rem', fontSize: '1.1rem' }}>Documentos Registrados en el Legajo</h4>
-              {documents.length === 0 ? (
-                <p style={{ color: '#64748b', fontStyle: 'italic', background: '#f8fafc', padding: '1.5rem', borderRadius: '8px', textAlign: 'center' }}>
-                  No hay documentos registrados para este alumno.
-                </p>
-              ) : (
-                <div style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>
-                  <table style={{ width: '100%', background: '#fff', borderCollapse: 'collapse' }}>
-                    <thead>
-                      <tr style={{ background: '#f8fafc', textAlign: 'left', borderBottom: '1px solid #e2e8f0' }}>
-                        <th style={{ padding: '0.9rem 1.2rem', color: '#475569', fontSize: '0.85rem', fontWeight: '600' }}>DOCUMENTO</th>
-                        <th style={{ padding: '0.9rem 1.2rem', color: '#475569', fontSize: '0.85rem', fontWeight: '600' }}>DESCRIPCIÓN</th>
-                        <th style={{ padding: '0.9rem 1.2rem', color: '#475569', fontSize: '0.85rem', fontWeight: '600', textAlign: 'right' }}>ACCIONES</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {documents.map((doc) => (
-                        <tr key={doc.id || doc.documentId} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                          <td style={{ padding: '1rem 1.2rem', fontWeight: '500', color: '#1e293b' }}>{doc.name}</td>
-                          <td style={{ padding: '1rem 1.2rem', color: '#64748b' }}>{doc.description || 'Sin observaciones'}</td>
-                          <td style={{ padding: '1rem 1.2rem', textAlign: 'right' }}>
-                            <button
-                              onClick={() => handleDeleteDocument(doc.id || doc.documentId)}
-                              style={{ background: '#fef2f2', border: '1px solid #fca5a5', color: '#991b1b', padding: '0.4rem 0.8rem', borderRadius: '6px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.85rem', fontWeight: '500' }}
-                            >
-                              <Trash2 size={14} /> Eliminar
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          )}
-
-          <div style={{ background: '#f8fafc', padding: '1rem 2rem', borderTop: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '0.6rem', color: '#64748b', fontSize: '0.85rem' }}>
-            <ShieldAlert size={16} />
-            <span>La información registrada se sincroniza de forma segura con el legajo del alumno en el Área de Deportes.</span>
-          </div>
-
-        </div>
+        </>
       )}
     </div>
   )
 }
-
-export default AlumnosPage
