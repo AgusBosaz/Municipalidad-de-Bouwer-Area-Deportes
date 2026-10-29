@@ -46,7 +46,7 @@ function Sidebar({ isOpen, onNavigate, session, onLogout }) {
           <NavLink
             key={to}
             to={to}
-            end={to === '/'}
+            end={to === '/' || to === '/docente'}
             onClick={onNavigate}
             className={({ isActive }) => isActive ? 'active' : ''}
           >

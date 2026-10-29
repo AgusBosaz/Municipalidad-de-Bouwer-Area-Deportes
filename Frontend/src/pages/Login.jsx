@@ -23,12 +23,20 @@ function Login() {
     try {
       const response = await loginWithApi(usuario.trim(), contrasena)
       saveSession(response)
+
+      if (response.mustChangePassword) {
+        navigate('/cambiar-contrasena-inicial', { replace: true })
+        return
+      }
+
       navigate('/', { replace: true })
     } catch (error) {
       if (error.status === 401) {
         alert('DNI o contraseña incorrectos.')
       } else if (error.status === 403) {
         alert('El usuario está inactivo.')
+      } else if (error.status === 429) {
+        alert('Demasiados intentos. Esperá unos minutos antes de volver a ingresar.')
       } else {
         alert('No se pudo iniciar sesión. Revisá que la API este funcionando.')
       }

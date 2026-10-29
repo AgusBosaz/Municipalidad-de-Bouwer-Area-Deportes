@@ -2,26 +2,47 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 
 import { useEffect, useState } from 'react'
 import { getCurrentUser } from './services/Auth.js'
-import { clearSession, getSession } from './services/AuthSession'
+import {
+  clearSession,
+  expireSession,
+  getSession,
+  saveSession,
+  SESSION_EXPIRED_EVENT,
+} from './services/AuthSession'
 
-import Layout from './components/layout/Layout'
+import Layout from './components/layout/Layout.jsx'
 import Login from './pages/Login.jsx'
+import ChangeInitialPassword from './pages/ChangeInitialPassword.jsx'
 import RecoverPassword from './pages/RecoverPassword'
 import ResetPassword from './pages/ResetPassword'
-import DashboardPage from './pages/DashboardPage'
-import DocentesPage from './pages/DocentesPage'
-import ActividadesPage from './pages/Actividadespage'
-import AsignacionesPage from './pages/AsignacionesPage'
-import InscripcionAlumnos from './pages/InscripcionAlumnos'
-import AsistenciaPage from './pages/AsistenciaPage'
+import DashboardPage from './pages/DashboardPage.jsx'
+import DocentesPage from './pages/DocentesPage.jsx'
+import ActividadesPage from './pages/Actividadespage.jsx'
+import AsignacionesPage from './pages/AsignacionesPage.jsx'
+import InscripcionAlumnos from './pages/InscripcionAlumnos.jsx'
+import AsistenciaPage from './pages/AsistenciaPage.jsx'
+import ActividadesInicio from './pages/ActividadesInicio.jsx'
+import DocenteInicioPage from './pages/DashboardTeacherPage.jsx'
+import MisActividadesPage from './pages/MyActivities-Teacher.jsx'
+import AsistenciaDocentePage from './pages/AsistenciaDocentePage.jsx'
+import AttendanceHistoryPage from './pages/AttendanceHistory.jsx'
 import AlumnosPage from './pages/AlumnosPage'
 
 import './styles/App.css'
 
 function ProtectedLayout() {
-  const [status, setStatus] = useState(
-    () => getSession() ? 'checking' : 'unauthenticated'
-  )
+  const [status, setStatus] = useState(() => {
+    const session = getSession()
+    return session?.mustChangePassword
+      ? 'password-change'
+      : session ? 'checking' : 'unauthenticated'
+  })
+
+  useEffect(() => {
+    const handleSessionExpired = () => setStatus('unauthenticated')
+    window.addEventListener(SESSION_EXPIRED_EVENT, handleSessionExpired)
+    return () => window.removeEventListener(SESSION_EXPIRED_EVENT, handleSessionExpired)
+  }, [])
 
   useEffect(() => {
     if (status !== 'checking') return
@@ -29,8 +50,31 @@ function ProtectedLayout() {
     let active = true
 
     getCurrentUser()
-      .then(() => {
-        if (active) setStatus('verified')
+      .then((currentUser) => {
+        if (!active) return
+
+        const session = getSession()
+        if (!session) {
+          setStatus('unauthenticated')
+          return
+        }
+
+        saveSession({
+          ...session,
+          userId: currentUser.userId,
+          fullName: currentUser.fullName,
+          dni: currentUser.dni,
+          roles: currentUser.roles,
+          permissions: currentUser.permissions,
+        })
+
+        if (!getSession()) {
+          clearSession()
+          setStatus('unauthenticated')
+          return
+        }
+
+        setStatus('verified')
       })
       .catch((error) => {
         if (!active) return
@@ -47,6 +91,36 @@ function ProtectedLayout() {
       active = false
     }
   }, [status])
+
+  useEffect(() => {
+    if (status !== 'verified') return
+
+    const session = getSession()
+    if (!session) {
+      expireSession()
+      return
+    }
+
+    const timeout = window.setTimeout(
+      expireSession,
+      Math.max(0, Date.parse(session.expiresAt) - Date.now())
+    )
+    const checkOnReturn = () => {
+      if (document.visibilityState === 'visible' && !getSession()) {
+        expireSession()
+      }
+    }
+    document.addEventListener('visibilitychange', checkOnReturn)
+
+    return () => {
+      window.clearTimeout(timeout)
+      document.removeEventListener('visibilitychange', checkOnReturn)
+    }
+  }, [status])
+
+  if (status === 'password-change') {
+    return <Navigate to="/cambiar-contrasena-inicial" replace />
+  }
 
   if (status === 'checking') {
     return <p role="status">Validando sesión...</p>
@@ -79,26 +153,53 @@ function CoordinatorOnly({ children }) {
     : <Navigate to="/asistencia" replace />
 }
 
+function InstructorOnly({ children }) {
+  return getSession()?.role === 'Instructor'
+    ? children
+    : <Navigate to="/" replace />
+}
+
 function HomePage() {
   return getSession()?.role === 'Instructor'
-    ? <Navigate to="/asistencia" replace />
+    ? <Navigate to="/docente" replace />
     : <DashboardPage />
 }
 
 function App() {
   return (
     <Routes>
+      <Route path="/actividades-inicio" element={<ActividadesInicio />} />
       <Route path="/login" element={<Login />} />
+
+      <Route
+        path="/cambiar-contrasena-inicial" element={<ChangeInitialPassword />} />
+
       <Route path="/recuperar-contrasena" element={<RecoverPassword />} />
+
       <Route path="/restablecer-contrasena" element={<ResetPassword />} />
 
       <Route element={<ProtectedLayout />}>
         <Route path="/" element={<HomePage />} />
-        <Route path="/asistencia" element={<AsistenciaPage />} />
+        <Route
+          path="/asistencia"
+          element={getSession()?.role === 'Instructor'
+            ? <Navigate to="/mis-actividades" replace />
+            : <AsistenciaPage />}
+        />
+        <Route path="/asistencia/:actividadId" element={<AsistenciaDocentePage />} />
 
         <Route
           path="/docentes"
           element={<CoordinatorOnly><DocentesPage /></CoordinatorOnly>}
+        />
+
+        <Route
+          path="/docente"
+          element={<InstructorOnly><DocenteInicioPage session={getSession()} /></InstructorOnly>}
+        />
+        <Route
+          path="/mis-actividades"
+          element={<InstructorOnly><MisActividadesPage /></InstructorOnly>}
         />
         <Route
           path="/actividades"
@@ -112,9 +213,14 @@ function App() {
           path="/inscribir-alumnos"
           element={<CoordinatorOnly><InscripcionAlumnos /></CoordinatorOnly>}
         />
+        {/* --- RUTA DE ALUMNOS AGREGADA --- */}
         <Route
           path="/alumnos"
           element={<CoordinatorOnly><AlumnosPage /></CoordinatorOnly>}
+        />
+        <Route
+          path="/attendance-history"
+          element={<AttendanceHistoryPage />}
         />
       </Route>
 

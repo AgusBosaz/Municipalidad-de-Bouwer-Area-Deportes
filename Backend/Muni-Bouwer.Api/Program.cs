@@ -31,6 +31,8 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddScoped<IActivityDAL, ActivityDAL>();
 builder.Services.AddScoped<IActivityService, ActivityService>();
+builder.Services.AddScoped<IInstructorActivityDAL, InstructorActivityDAL>();
+builder.Services.AddScoped<IAssignmentService, AssignmentService>();
 
 string jwtKey = builder.Configuration["Jwt:Key"]
     ?? throw new InvalidOperationException("JWT key is not configured.");
@@ -65,9 +67,22 @@ builder.Services.AddScoped<PasswordService>();
 builder.Services.AddScoped<PasswordRecoveryService>();
 builder.Services.AddHttpClient<IRecoveryEmailSender, MailjetRecoveryEmailSender>();
 builder.Services.AddScoped<PermissionService>();
+builder.Services.AddScoped<StudentAttendanceDal>();
+builder.Services.AddScoped<StudentAttendanceService>();
 
 builder.Services.AddRateLimiter(options =>
 {
+    options.AddPolicy("login", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(5),
+                QueueLimit = 0,
+                AutoReplenishment = true
+            }));
+
     options.AddPolicy("password-recovery", context =>
         RateLimitPartition.GetFixedWindowLimiter(
             context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
@@ -163,6 +178,18 @@ builder.Services
                     !currentPermissions.SetEquals(tokenPermissions))
                 {
                     context.Fail("Los permisos cambiaron. Iniciá sesión nuevamente.");
+                    return;
+                }
+
+                if (currentUser.MustChangePassword &&
+                    !(HttpMethods.IsPost(context.HttpContext.Request.Method) &&
+                    string.Equals(
+                        context.HttpContext.Request.Path.Value,
+                        "/api/Auth/change-initial-password",
+                        StringComparison.OrdinalIgnoreCase)))
+                {
+                    context.Fail("Debés cambiar la contraseña antes de usar la aplicación.");
+                    return;
                 }
             }
         };

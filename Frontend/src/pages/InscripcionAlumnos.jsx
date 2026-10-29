@@ -1,55 +1,87 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { getActivities } from '../services/activityService';
+import { createStudent, getStudents } from '../services/studentService';
+import { registerStudent, getInscriptions } from '../services/inscriptionService';
 import '../styles/inscripcion.css';
 
 export default function InscripcionAlumnos() {
+  const [actividades, setActividades] = useState([]);
+  const [errorActividades, setErrorActividades] = useState('');
+  const [guardando, setGuardando] = useState(false);
+
   const [formData, setFormData] = useState({
     nombre: '',
     apellido: '',
     dni: '',
     fechaNacimiento: '',
-    contactoTutor: '',
+    genero: '',
+    telefono: '',
+    direccion: '',
+    contactoEmergenciaNombre: '',
+    contactoEmergenciaTelefono: '',
     actividadId: ''
   });
 
-  const [activities, setActivities] = useState([]);
-  const [loading, setLoading] = useState(false);
-
-  const [alumnos, setAlumnos] = useState([
-    { nombre: 'Alan Gómez', dni: '45.123.882', actividad: 'Fútbol Infantil', fecha: 'Hoy, 10:24' },
-    { nombre: 'Sofía Martínez', dni: '44.912.443', actividad: 'Ajedrez Inicial', fecha: 'Ayer, 16:15' },
-    { nombre: 'Bruno López', dni: '45.981.012', actividad: 'Fútbol Infantil', fecha: 'Ayer, 14:00' }
-  ]);
+  const [alumnos, setAlumnos] = useState([]);
+  const [versionInscripciones, setVersionInscripciones] = useState(0);
+  const [errorInscripciones, setErrorInscripciones] = useState('');
+  const [estudiantes, setEstudiantes] = useState([]);
+  const [modoInscripcion, setModoInscripcion] = useState('nuevo');
+  const [estudianteSeleccionadoId, setEstudianteSeleccionadoId] = useState('');
 
   useEffect(() => {
-    fetchActivities();
+    let active = true;
+
+    getActivities()
+      .then((data) => {
+        if (active) setActividades(data);
+      })
+      .catch(() => {
+        if (active) setErrorActividades('No se pudieron cargar las actividades.');
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
-  const fetchActivities = async () => {
-    try {
-      // Usamos la ruta exacta basada en tu ActivityController.cs
-      const response = await fetch('http://localhost:5218/api/Activity');
-      if (response.ok) {
-        const data = await response.json();
-        const list = Array.isArray(data) ? data : data.items || [];
-        if (list.length > 0) {
-          setActivities(list);
-          setFormData(prev => ({ ...prev, actividadId: list[0].id || list[0].activityId }));
-          return;
-        }
-      }
-    } catch (error) {
-      console.warn('No se pudo conectar con la API de actividades:', error);
-    }
+  useEffect(() => {
+    let active = true;
 
-    // Opciones de respaldo por si acaso
-    const fallbackActivities = [
-      { id: 1, name: 'Fútbol Infantil (Lunes y Miércoles)' },
-      { id: 2, name: 'Ajedrez Inicial' },
-      { id: 3, name: 'Básquet Juvenil' }
-    ];
-    setActivities(fallbackActivities);
-    setFormData(prev => ({ ...prev, actividadId: fallbackActivities[0].id }));
-  };
+    Promise.all([getInscriptions(), getStudents()])
+      .then(([inscripciones, estudiantesList]) => {
+        if (!active) return;
+        setErrorInscripciones('');
+
+        setEstudiantes(estudiantesList);
+
+        const estudiantePorId = new Map(
+          estudiantesList.map((estudiante) => [estudiante.id, estudiante])
+        );
+
+        const filas = [...inscripciones]
+          .sort((a, b) =>
+            b.enrollmentDate.localeCompare(a.enrollmentDate) || b.id - a.id
+          )
+          .map((inscripcion) => ({
+            id: inscripcion.id,
+            nombre: inscripcion.studentName,
+            dni: estudiantePorId.get(inscripcion.studentId)?.dni ?? '—',
+            actividad: inscripcion.activityName,
+            fecha: new Date(`${inscripcion.enrollmentDate}T00:00:00`)
+              .toLocaleDateString('es-AR'),
+          }));
+
+        setAlumnos(filas);
+      })
+      .catch(() => {
+        if (active) setErrorInscripciones('No se pudieron cargar las inscripciones.');
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [versionInscripciones]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -57,66 +89,81 @@ export default function InscripcionAlumnos() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.nombre || !formData.apellido || !formData.dni || !formData.actividadId) {
-      alert('Por favor complete los campos obligatorios y seleccione una actividad.');
-      return;
-    }
+    if (guardando) return;
 
-    setLoading(true);
-
+    const actividadId = Number(formData.actividadId);
     const alumnoData = {
-      firstName: formData.nombre,
-      lastName: formData.apellido,
-      dni: formData.dni,
-      birthDate: formData.fechaNacimiento ? new Date(formData.fechaNacimiento).toISOString() : null,
-      emergencyContact: formData.contactoTutor,
-      activityId: parseInt(formData.actividadId)
+      firstName: formData.nombre.trim(),
+      lastName: formData.apellido.trim(),
+      dni: formData.dni.replace(/\D/g, ''),
+      birthDate: formData.fechaNacimiento,
+      gender: formData.genero,
+      phoneNumber: formData.telefono.trim(),
+      address: formData.direccion.trim(),
+      emergencyContactName: formData.contactoEmergenciaNombre.trim(),
+      emergencyContactPhoneNumber: formData.contactoEmergenciaTelefono.trim(),
     };
 
-    const token = localStorage.getItem('token');
+    const datosNuevoIncompletos =
+      !alumnoData.firstName ||
+      !alumnoData.lastName ||
+      !alumnoData.dni ||
+      !alumnoData.birthDate ||
+      !alumnoData.emergencyContactName ||
+      !alumnoData.emergencyContactPhoneNumber;
+
+    if (
+      !actividadId ||
+      (modoInscripcion === 'nuevo' && datosNuevoIncompletos) ||
+      (modoInscripcion === 'existente' && !estudianteSeleccionadoId)
+    ) {
+      alert('Completá los datos necesarios y seleccioná una actividad.');
+      return;
+    }
+    setGuardando(true);
+
+    let alumnoCreado = null;
 
     try {
-      // Usamos la ruta exacta basada en tu InscriptionsController.cs
-      const response = await fetch('http://localhost:5218/api/Inscriptions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify(alumnoData),
-      });
-
-      if (response.ok) {
-        alert('¡Alumno inscripto con éxito en la base de datos!');
-        
-        const selectedAct = activities.find(a => (a.id || a.activityId) == formData.actividadId);
-        const actividadNombre = selectedAct ? (selectedAct.name || selectedAct.title) : 'Actividad Deportiva';
-
-        const nuevoAlumno = {
-          nombre: `${formData.nombre} ${formData.apellido}`,
-          dni: formData.dni,
-          actividad: actividadNombre,
-          fecha: 'Hoy, ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        };
-        
-        setAlumnos([nuevoAlumno, ...alumnos]);
-        handleClear();
+      if (modoInscripcion === 'nuevo') {
+        alumnoCreado = await createStudent(alumnoData);
+        await registerStudent(alumnoCreado.id, actividadId);
       } else {
-        const textError = await response.text();
-        let errorMsg = 'Hubo un error al registrar el alumno en el servidor.';
-        try {
-          const jsonError = JSON.parse(textError);
-          errorMsg = jsonError.message || errorMsg;
-        } catch {
-          if (textError) errorMsg = textError;
-        }
-        alert(errorMsg);
+        await registerStudent(Number(estudianteSeleccionadoId), actividadId);
       }
+
+      setVersionInscripciones((version) => version + 1);
+
+      alert(modoInscripcion === 'nuevo'
+        ? 'Alumno creado e inscripto correctamente.'
+        : 'Alumno inscripto correctamente.');
+      handleClear();
     } catch (error) {
-      console.error('Error de red al conectar con la API:', error);
-      alert('No se pudo conectar con el backend. Asegúrate de que la API esté corriendo.');
+      let mensajeApi = '';
+
+      try {
+        mensajeApi = JSON.parse(error.message).message ?? '';
+      } catch {
+        mensajeApi = '';
+      }
+
+      if (alumnoCreado) {
+        alert(
+          `El alumno se creó con ID ${alumnoCreado.id}, pero no se pudo inscribir.\n` +
+          (mensajeApi ? `Motivo: ${mensajeApi}\n` : '') +
+          'No repitas el alta: seleccioná “Alumno existente” para completar la inscripción.'
+        );
+      } else if (modoInscripcion === 'nuevo' && error.status === 409) {
+        alert('Ya existe un usuario con ese DNI. Buscalo en “Alumno existente”.');
+      } else {
+        alert(mensajeApi || (
+          modoInscripcion === 'existente'
+            ? 'No se pudo inscribir al alumno en la actividad.'
+            : 'No se pudo crear el alumno. Intentá nuevamente.'
+        ));
+      }
     } finally {
-      setLoading(false);
+      setGuardando(false);
     }
   };
 
@@ -126,117 +173,213 @@ export default function InscripcionAlumnos() {
       apellido: '',
       dni: '',
       fechaNacimiento: '',
-      contactoTutor: '',
-      actividadId: activities.length > 0 ? (activities[0].id || activities[0].activityId) : ''
+      genero: '',
+      telefono: '',
+      direccion: '',
+      contactoEmergenciaNombre: '',
+      contactoEmergenciaTelefono: '',
+      actividadId: ''
     });
+    setEstudianteSeleccionadoId('');
   };
 
   return (
     <div className="inscripcion-container" style={{ padding: '2.5rem', maxWidth: '1200px', margin: '0 auto' }}>
       <div className="inscripcion-header">
-        <h1 style={{ color: '#881337', fontSize: '1.8rem', fontWeight: 'bold', marginBottom: '0.3rem' }}>
-          Inscripción de Alumnos Nuevos
-        </h1>
-        <p style={{ color: '#64748b', fontSize: '0.95rem', marginBottom: '2rem' }}>
-          Complete el formulario para incorporar un participante a una actividad deportiva.
-        </p>
+        <h1>Inscripción de Alumnos</h1>
+        <p>Complete el formulario para incorporar un participante a una actividad deportiva.</p>
       </div>
 
-      <div className="inscripcion-card" style={{ background: '#ffffff', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.05)', padding: '2.5rem', marginBottom: '3rem' }}>
-        <h2 style={{ fontSize: '1.2rem', color: '#1e293b', marginBottom: '1.5rem', borderBottom: '1px solid #f1f5f9', paddingBottom: '0.8rem' }}>
-          Datos Generales del Alumno
+      {/* Tarjeta del Formulario */}
+      <div className="inscripcion-card">
+        <h2>
+          {modoInscripcion === 'nuevo'
+            ? 'Datos generales del alumno'
+            : 'Inscribir alumno registrado'}
         </h2>
-        
-        <form onSubmit={handleSubmit} className="form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-          <div className="form-group">
-            <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: '600', color: '#475569' }}>NOMBRE</label>
-            <input
-              type="text"
-              name="nombre"
-              value={formData.nombre}
-              onChange={handleChange}
-              placeholder="ej. Alan"
-              required
-              style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.95rem' }}
-            />
-          </div>
-          <div className="form-group">
-            <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: '600', color: '#475569' }}>APELLIDO</label>
-            <input
-              type="text"
-              name="apellido"
-              value={formData.apellido}
-              onChange={handleChange}
-              placeholder="ej. Gómez"
-              required
-              style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.95rem' }}
-            />
-          </div>
-          <div className="form-group">
-            <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: '600', color: '#475569' }}>DNI / DOCUMENTO</label>
-            <input
-              type="text"
-              name="dni"
-              value={formData.dni}
-              onChange={handleChange}
-              placeholder="ej. 45.123.882"
-              required
-              style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.95rem' }}
-            />
-          </div>
-          <div className="form-group">
-            <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: '600', color: '#475569' }}>FECHA DE NACIMIENTO</label>
-            <input
-              type="date"
-              name="fechaNacimiento"
-              value={formData.fechaNacimiento}
-              onChange={handleChange}
-              style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.95rem' }}
-            />
-          </div>
-          <div className="form-group">
-            <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: '600', color: '#475569' }}>CONTACTO DE TUTOR (MADRE/PADRE)</label>
-            <input
-              type="text"
-              name="contactoTutor"
-              value={formData.contactoTutor}
-              onChange={handleChange}
-              placeholder="ej. María Gómez (153-998811)"
-              style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.95rem' }}
-            />
-          </div>
-          <div className="form-group">
+
+        <div className="form-actions" role="group" aria-label="Tipo de inscripción" style={{ marginBottom: '1.5rem' }}>
+          <button
+            type="button"
+            className={modoInscripcion === 'nuevo' ? 'btn-primary' : 'btn-secondary'}
+            aria-pressed={modoInscripcion === 'nuevo'}
+            onClick={() => setModoInscripcion('nuevo')}
+          >
+            Alumno nuevo
+          </button>
+
+          <button
+            type="button"
+            className={modoInscripcion === 'existente' ? 'btn-primary' : 'btn-secondary'}
+            aria-pressed={modoInscripcion === 'existente'}
+            onClick={() => setModoInscripcion('existente')}
+          >
+            Alumno existente
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="form-grid">
+          {modoInscripcion === 'nuevo' ? (
+            <>
+              <div className="form-group">
+                <label>Nombre</label>
+                <input
+                  type="text"
+                  name="nombre"
+                  value={formData.nombre}
+                  onChange={handleChange}
+                  placeholder="ej. Alan"
+                />
+              </div>
+              <div className="form-group">
+                <label>Apellido</label>
+                <input
+                  type="text"
+                  name="apellido"
+                  value={formData.apellido}
+                  onChange={handleChange}
+                  placeholder="ej. Gómez"
+                />
+              </div>
+              <div className="form-group">
+                <label>DNI / Documento</label>
+                <input
+                  type="text"
+                  name="dni"
+                  value={formData.dni}
+                  onChange={handleChange}
+                  placeholder="ej. 45.123.882"
+                />
+              </div>
+              <div className="form-group">
+                <label>Fecha de Nacimiento</label>
+                <input
+                  type="date"
+                  name="fechaNacimiento"
+                  value={formData.fechaNacimiento}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="genero">Género</label>
+                <select
+                  id="genero"
+                  name="genero"
+                  value={formData.genero}
+                  onChange={handleChange}
+                >
+                  <option value="">Seleccionar género</option>
+                  <option value="Femenino">Femenino</option>
+                  <option value="Masculino">Masculino</option>
+                  <option value="Otro">Otro</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="telefono">Teléfono del alumno</label>
+                <input
+                  id="telefono"
+                  type="tel"
+                  name="telefono"
+                  value={formData.telefono}
+                  onChange={handleChange}
+                  placeholder="ej. 3511234567"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="direccion">Dirección</label>
+                <input
+                  id="direccion"
+                  type="text"
+                  name="direccion"
+                  value={formData.direccion}
+                  onChange={handleChange}
+                  placeholder="ej. San Martín 123"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="contactoEmergenciaNombre">Nombre del contacto de emergencia</label>
+                <input
+                  id="contactoEmergenciaNombre"
+                  type="text"
+                  name="contactoEmergenciaNombre"
+                  value={formData.contactoEmergenciaNombre}
+                  onChange={handleChange}
+                  placeholder="ej. María Gómez"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="contactoEmergenciaTelefono">Teléfono del contacto de emergencia</label>
+                <input
+                  id="contactoEmergenciaTelefono"
+                  type="tel"
+                  name="contactoEmergenciaTelefono"
+                  value={formData.contactoEmergenciaTelefono}
+                  onChange={handleChange}
+                  placeholder="ej. 153998811"
+                />
+              </div>
+            </>
+          ) : (
+            <div className="form-group" style={{ gridColumn: 'span 2' }}>
+              <label htmlFor="estudianteExistente">Alumno registrado</label>
+              <select
+                id="estudianteExistente"
+                value={estudianteSeleccionadoId}
+                onChange={(e) => setEstudianteSeleccionadoId(e.target.value)}
+                style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+              >
+                <option value="">Seleccionar alumno</option>
+                {estudiantes.map((estudiante) => (
+                  <option key={estudiante.id} value={estudiante.id}>
+                    {estudiante.firstName} {estudiante.lastName} — DNI {estudiante.dni}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          <div className="form-group" style={{ gridColumn: 'span 2' }}>
             <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: '600', color: '#475569' }}>ACTIVIDAD DEPORTIVA</label>
             <select
               name="actividadId"
               value={formData.actividadId}
               onChange={handleChange}
               required
-              style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.95rem', background: '#fff' }}
+              style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
             >
-              <option value="">Seleccione una actividad...</option>
-              {activities.map((act) => (
-                <option key={act.id || act.activityId} value={act.id || act.activityId}>
-                  {act.name || act.title}
+              <option value="">Seleccionar actividad</option>
+              {actividades.map((actividad) => (
+                <option key={actividad.id} value={actividad.id}>
+                  {actividad.name}
                 </option>
               ))}
             </select>
+            {errorActividades && <p role="alert" style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '0.3rem' }}>{errorActividades}</p>}
           </div>
         </form>
 
+        {/* Botones de acción limpios y únicos */}
         <div className="form-actions" style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '2rem' }}>
-          <button onClick={handleClear} type="button" style={{ background: 'transparent', border: '1px solid #cbd5e1', color: '#475569', padding: '0.8rem 1.5rem', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' }}>
+          <button onClick={handleClear} type="button" className="btn-secondary">
             Limpiar Formulario
           </button>
-          <button onClick={handleSubmit} type="button" disabled={loading} style={{ background: '#881337', color: '#fff', border: 'none', padding: '0.8rem 2rem', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' }}>
-            {loading ? 'Registrando...' : 'Registrar e Inscribir Alumno'}
+          <button onClick={handleSubmit} type="button" className="btn-primary" disabled={guardando}>
+            {guardando
+              ? 'Guardando...'
+              : modoInscripcion === 'nuevo'
+                ? 'Registrar e Inscribir Alumno'
+                : 'Inscribir Alumno'}
           </button>
         </div>
       </div>
 
-      <div className="inscripcion-card" style={{ background: '#ffffff', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.05)', padding: '2.5rem' }}>
+      {/* Sección de la Tabla */}
+      <div className="inscripcion-card" style={{ background: '#ffffff', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.05)', padding: '2.5rem', marginTop: '2rem' }}>
         <h2 style={{ fontSize: '1.2rem', color: '#1e293b', marginBottom: '1.5rem' }}>Últimos Alumnos Inscriptos Recientemente</h2>
-        
+        {errorInscripciones && <p role="alert" style={{ color: '#ef4444', marginBottom: '1rem' }}>{errorInscripciones}</p>}
         <div className="table-wrapper" style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>
           <table className="custom-table" style={{ width: '100%', borderCollapse: 'collapse', background: '#fff' }}>
             <thead>
@@ -248,14 +391,22 @@ export default function InscripcionAlumnos() {
               </tr>
             </thead>
             <tbody>
-              {alumnos.map((alumno, index) => (
-                <tr key={index} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                  <td style={{ padding: '1rem 1.2rem', fontWeight: 500, color: '#111827' }}>{alumno.nombre}</td>
-                  <td style={{ padding: '1rem 1.2rem', color: '#64748b' }}>{alumno.dni}</td>
-                  <td style={{ padding: '1rem 1.2rem', color: '#475569' }}>{alumno.actividad}</td>
-                  <td style={{ padding: '1rem 1.2rem', color: '#6b7280' }}>{alumno.fecha}</td>
+              {alumnos.length === 0 ? (
+                <tr>
+                  <td colSpan="4" style={{ padding: '1.5rem', textAlign: 'center', color: '#64748b', fontStyle: 'italic' }}>
+                    No hay inscripciones registradas.
+                  </td>
                 </tr>
-              ))}
+              ) : (
+                alumnos.map((alumno) => (
+                  <tr key={alumno.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                    <td style={{ padding: '1rem 1.2rem', fontWeight: 500, color: '#111827' }}>{alumno.nombre}</td>
+                    <td style={{ padding: '1rem 1.2rem', color: '#64748b' }}>{alumno.dni}</td>
+                    <td style={{ padding: '1rem 1.2rem', color: '#475569' }}>{alumno.actividad}</td>
+                    <td style={{ padding: '1rem 1.2rem', color: '#6b7280' }}>{alumno.fecha}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
