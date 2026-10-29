@@ -156,7 +156,7 @@ function CoordinatorOnly({ children }) {
 function InstructorOnly({ children }) {
   return getSession()?.role === 'Instructor'
     ? children
-    : <Navigate to="/" replace />
+    : <Navigate to="/inicio" replace />
 }
 
 function HomePage() {
@@ -168,7 +168,7 @@ function HomePage() {
 function App() {
   return (
     <Routes>
-      <Route path="/actividades-inicio" element={<ActividadesInicio />} />
+      <Route path="/" element={<ActividadesInicio />} />
       <Route path="/login" element={<Login />} />
 
       <Route
@@ -179,7 +179,7 @@ function App() {
       <Route path="/restablecer-contrasena" element={<ResetPassword />} />
 
       <Route element={<ProtectedLayout />}>
-        <Route path="/" element={<HomePage />} />
+        <Route path="/inicio" element={<HomePage />} />
         <Route
           path="/asistencia"
           element={getSession()?.role === 'Instructor'
@@ -216,7 +216,7 @@ function App() {
         {/* --- RUTA DE ALUMNOS AGREGADA --- */}
         <Route
           path="/alumnos"
-          element={<CoordinatorOnly><AlumnosPage /></CoordinatorOnly>}
+          element={<AlumnosPage />}
         />
         <Route
           path="/attendance-history"
