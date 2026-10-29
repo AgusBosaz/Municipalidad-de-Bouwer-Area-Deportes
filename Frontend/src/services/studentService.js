@@ -1,4 +1,4 @@
-import { apiRequest } from './api'
+import {apiRequest} from './api'
 
 export function createStudent(student) {
   return apiRequest('/Students', {

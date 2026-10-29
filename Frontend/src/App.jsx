@@ -13,8 +13,8 @@ import {
 import Layout from './components/layout/Layout.jsx'
 import Login from './pages/Login.jsx'
 import ChangeInitialPassword from './pages/ChangeInitialPassword.jsx'
-import RecoverPassword from './pages/RecoverPassword.jsx'
-import ResetPassword from './pages/ResetPassword.jsx'
+import RecoverPassword from './pages/RecoverPassword'
+import ResetPassword from './pages/ResetPassword'
 import DashboardPage from './pages/DashboardPage.jsx'
 import DocentesPage from './pages/DocentesPage.jsx'
 import ActividadesPage from './pages/Actividadespage.jsx'
@@ -26,6 +26,7 @@ import DocenteInicioPage from './pages/DashboardTeacherPage.jsx'
 import MisActividadesPage from './pages/MyActivities-Teacher.jsx'
 import AsistenciaDocentePage from './pages/AsistenciaDocentePage.jsx'
 import AttendanceHistoryPage from './pages/AttendanceHistory.jsx'
+import AlumnosPage from './pages/AlumnosPage'
 
 import './styles/App.css'
 
@@ -44,7 +45,6 @@ function ProtectedLayout() {
   }, [])
 
   useEffect(() => {
-
     if (status !== 'checking') return
 
     let active = true
@@ -212,6 +212,11 @@ function App() {
         <Route
           path="/inscribir-alumnos"
           element={<CoordinatorOnly><InscripcionAlumnos /></CoordinatorOnly>}
+        />
+        {/* --- RUTA DE ALUMNOS AGREGADA --- */}
+        <Route
+          path="/alumnos"
+          element={<CoordinatorOnly><AlumnosPage /></CoordinatorOnly>}
         />
         <Route
           path="/attendance-history"
