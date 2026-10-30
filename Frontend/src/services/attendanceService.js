@@ -16,3 +16,7 @@ export function saveActivityAttendance(activityId, date, entries) {
     body: JSON.stringify({ date, entries }),
   })
 }
+
+export function getAttendanceHistory() {
+  return apiRequest('/StudentAttendance/history')
+}

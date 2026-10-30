@@ -19,6 +19,12 @@ public class StudentAttendanceService
         return list.Select(ToResponseDto).ToList();
     }
 
+    public async Task<List<AttendanceHistoryDto>> GetHistoryAsync(
+        int? instructorId = null)
+    {
+        return await _dal.GetHistoryAsync(instructorId);
+    }
+
     public async Task<StudentAttendanceResponseDto?> GetByIdAsync(int id)
     {
         var attendance = await _dal.GetByIdAsync(id);

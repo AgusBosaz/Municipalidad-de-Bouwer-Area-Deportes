@@ -1,32 +1,65 @@
 import { Link } from 'react-router-dom'
 import { ArrowRight, CalendarDays, Trophy, UsersRound } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { getActivities } from '../services/activityService'
+import { getSession } from '../services/AuthSession'
+import { getAssignments } from '../services/assignmentService'
 
 import '../styles/dashboard.css'
 
 function DashboardPage() {
+  const [actividades, setActividades] = useState([])
+  const [cargando, setCargando] = useState(true)
+  const [error, setError] = useState('')
+  const nombreCompleto = getSession()?.name?.trim() || ''
+  const nombre = nombreCompleto.split(/\s+/)[0] || 'Coordinador'
+  const [asignaciones, setAsignaciones] = useState([])
+  const [cargandoAsignaciones, setCargandoAsignaciones] = useState(true)
+  const [errorAsignaciones, setErrorAsignaciones] = useState('')
+
+  useEffect(() => {
+    let active = true
+
+    getActivities()
+      .then((data) => {
+        if (active) setActividades(data)
+      })
+      .catch(() => {
+        if (active) setError('No se pudieron cargar las actividades.')
+      })
+      .finally(() => {
+        if (active) setCargando(false)
+      })
+
+    return () => {
+      active = false
+    }
+  }, [])
+
+  useEffect(() => {
+    let active = true
+
+    getAssignments()
+      .then((data) => {
+        if (active) setAsignaciones(data)
+      })
+      .catch(() => {
+        if (active) setErrorAsignaciones('No se pudieron cargar los docentes.')
+      })
+      .finally(() => {
+        if (active) setCargandoAsignaciones(false)
+      })
+
+    return () => {
+      active = false
+    }
+  }, [])
   return (
     <main className="dashboard">
 
-      <header className="dashboard-topbar">
-        <div className="dashboard-search">
-          <span>⌕</span>
-
-          <input
-            type="text"
-            placeholder="Buscar"
-          />
-        </div>
-
-        <div className="dashboard-profile">
-          <div className="dashboard-profile-icon">
-            👤
-          </div>
-        </div>
-      </header>
-
       <section className="dashboard-header">
         <h1>
-          Hola, Coordinador
+          Hola, {nombre}
         </h1>
 
         <p>
@@ -114,11 +147,11 @@ function DashboardPage() {
         <div className="dashboard-total-card">
           <div>
             <h2>
-              Total de actividades
+              Actividades activas
             </h2>
 
             <strong>
-              12
+              {cargando ? '...' : error ? '—' : actividades.length}
             </strong>
           </div>
 
@@ -134,11 +167,11 @@ function DashboardPage() {
         <div className="dashboard-section-header">
           <div>
             <h2>
-              Actividades Recientes
+              Actividades activas
             </h2>
 
             <p>
-              Últimas actividades registradas
+              Algunas actividades del Área de Deportes
             </p>
           </div>
 
@@ -148,97 +181,48 @@ function DashboardPage() {
         </div>
 
         <div className="dashboard-recent-card">
-
           <div className="dashboard-recent-head">
-            <span>
-              Actividad
-            </span>
-
-            <span>
-              Docente
-            </span>
-
-            <span>
-              Horario
-            </span>
-
-            <span>
-              Acción
-            </span>
+            <span>Actividad</span>
+            <span>Docente</span>
+            <span>Horario</span>
+            <span>Acción</span>
           </div>
 
-          <div className="dashboard-recent-row">
-            <span>
-              Fútbol Infantil
-            </span>
+          {cargando ? (
+            <p role="status">Cargando actividades...</p>
+          ) : error ? (
+            <p role="alert">{error}</p>
+          ) : actividades.length === 0 ? (
+            <p>No hay actividades activas.</p>
+          ) : (
+            actividades.slice(0, 4).map((actividad) => (
+              <div className="dashboard-recent-row" key={actividad.id}>
+                <span>{actividad.name}</span>
 
-            <span>
-              Santiago Pérez
-            </span>
+                <span>
+                  {cargandoAsignaciones
+                    ? 'Cargando...'
+                    : errorAsignaciones
+                      ? 'No disponible'
+                      : asignaciones
+                        .filter((item) => item.activityId === actividad.id)
+                        .map((item) => item.instructorName)
+                        .join(', ') || 'Sin docente asignado'}
+                </span>
 
-            <span>
-              Lun 16:00
-            </span>
+                <span>
+                  {actividad.startTime?.slice(0, 5)} a {actividad.endTime?.slice(0, 5)}
+                </span>
 
-            <Link to="/actividades">
-              →
-            </Link>
-          </div>
-
-          <div className="dashboard-recent-row">
-            <span>
-              Natación Adultos
-            </span>
-
-            <span>
-              María Gómez
-            </span>
-
-            <span>
-              Mar 09:00
-            </span>
-
-            <Link to="/actividades">
-              →
-            </Link>
-          </div>
-
-          <div className="dashboard-recent-row">
-            <span>
-              Yoga
-            </span>
-
-            <span>
-              Lucía Torres
-            </span>
-
-            <span>
-              Mié 18:00
-            </span>
-
-            <Link to="/actividades">
-              →
-            </Link>
-          </div>
-
-          <div className="dashboard-recent-row">
-            <span>
-              Básquet Juvenil
-            </span>
-
-            <span>
-              Diego Castro
-            </span>
-
-            <span>
-              Vie 17:00
-            </span>
-
-            <Link to="/actividades">
-              →
-            </Link>
-          </div>
-
+                <Link
+                  to="/actividades"
+                  aria-label={`Ir a actividades para consultar ${actividad.name}`}
+                >
+                  →
+                </Link>
+              </div>
+            ))
+          )}
         </div>
 
       </section>

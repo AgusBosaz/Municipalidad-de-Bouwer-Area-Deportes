@@ -30,6 +30,17 @@ public class StudentAttendanceController : ControllerBase
     }
 
     [Authorize(Policy = PermissionNames.AttendanceRead)]
+    [HttpGet("history")]
+    public async Task<ActionResult<List<AttendanceHistoryDto>>> GetHistory()
+    {
+        if (!TryGetInstructorScope(out int? instructorId))
+            return Forbid();
+
+        var history = await _service.GetHistoryAsync(instructorId);
+        return Ok(history);
+    }
+
+    [Authorize(Policy = PermissionNames.AttendanceRead)]
     [HttpGet("activity/{activityId:int}")]
     public async Task<ActionResult<List<StudentAttendanceResponseDto>>> GetByActivityAndDate(
         int activityId, [FromQuery] DateOnly date)
