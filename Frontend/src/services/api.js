@@ -12,6 +12,7 @@ export async function apiRequest(path, options = {}) {
     '/Auth/login',
     '/Auth/password-reset/request',
     '/Auth/password-reset/confirm',
+    '/Activity/public',
   ]
 
   if (token && !publicAuthPaths.includes(path) && !headers.has('Authorization')) {

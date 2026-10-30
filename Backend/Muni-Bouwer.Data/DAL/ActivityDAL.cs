@@ -48,6 +48,8 @@ public class ActivityDAL : IActivityDAL
         existing.Category = activity.Category;
         existing.StartTime = activity.StartTime;
         existing.EndTime = activity.EndTime;
+        existing.Days = activity.Days;
+        existing.Location = activity.Location;
         existing.MaximumCapacity = activity.MaximumCapacity;
         return await _context.SaveChangesAsync() > 0;
     }

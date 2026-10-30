@@ -2,6 +2,41 @@
   padding-bottom: 30px;
 }
 
+@media (min-width: 601px) {
+  .actividades-page .table-container th,
+  .actividades-page .table-container td {
+    vertical-align: middle;
+  }
+
+  .actividades-page .table-actions {
+    flex-wrap: wrap;
+  }
+
+  .actividades-page .table-actions .action-button {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+}
+
+.actividades-page .actividad-fila {
+  cursor: pointer;
+}
+
+.actividades-page .actividad-nombre {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.actividades-page .actividad-nombre:focus-visible {
+  outline: 2px solid #9a1b45;
+  outline-offset: 4px;
+}
+
 .activities-toolbar {
   display: flex;
   align-items: center;
@@ -453,10 +488,14 @@
   }
 
   .actividades-page .table-container td:nth-child(6)::before {
-    content: "Estado";
+    content: "Docentes asignados";
   }
 
   .actividades-page .table-container td:nth-child(7)::before {
+    content: "Estado";
+  }
+
+  .actividades-page .table-container td:nth-child(8)::before {
     content: "Acciones";
   }
 
@@ -471,4 +510,51 @@
   .actividades-page .table-actions {
     flex-wrap: wrap;
   }
+}
+
+.crear-actividad-modal-content fieldset {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.crear-actividad-modal-content fieldset label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 6px 12px 6px 0;
+}
+
+.crear-actividad-modal-content .form-group input[type="checkbox"] {
+  width: auto;
+  min-height: auto;
+  padding: 0;
+}
+
+.activity-students-modal h2 {
+  margin: 0 2rem 0.35rem 0;
+}
+
+.activity-students-name {
+  color: #9a1b45;
+  font-weight: 600;
+}
+
+.activity-students-list {
+  list-style: none;
+  margin: 1rem 0 0;
+  padding: 0;
+}
+
+.activity-students-list li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  padding: 0.9rem 0;
+  border-top: 1px solid #eee;
+}
+
+.activity-students-list span {
+  color: #666;
 }

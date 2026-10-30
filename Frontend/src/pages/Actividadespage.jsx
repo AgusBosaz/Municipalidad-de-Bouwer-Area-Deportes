@@ -1,43 +1,112 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { getAssignments, assignInstructor } from '../services/assignmentService'
+import { getInstructors } from '../services/instructor-controller'
+import { getActivities, createActivity, updateActivity, deleteActivity } from '../services/activityService'
+import CrearActividadPage from './CrearActividadPage'
+import ActivityStudentsModal from '../components/ActivityStudentsModal'
 import '../styles/docentes.css'
 import '../styles/actividades.css'
-import CrearActividadPage from './CrearActividadPage'
+
+const categorias = {
+  0: 'Niños',
+  1: 'Adolescentes',
+  2: 'Adultos mayores',
+}
+
+const diasSemana = [
+  { nombre: 'Lunes', valor: 1 },
+  { nombre: 'Martes', valor: 2 },
+  { nombre: 'Miércoles', valor: 4 },
+  { nombre: 'Jueves', valor: 8 },
+  { nombre: 'Viernes', valor: 16 },
+  { nombre: 'Sábado', valor: 32 },
+  { nombre: 'Domingo', valor: 64 },
+]
+
+function mostrarDias(days) {
+  const seleccionados = diasSemana
+    .filter((dia) => (days & dia.valor) !== 0)
+    .map((dia) => dia.nombre)
+
+  return seleccionados.length > 0
+    ? seleccionados.join(', ')
+    : 'Sin días definidos'
+}
 
 function ActividadesPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [actividadEnEdicion, setActividadEnEdicion] = useState(null)
+  const [actividadAlumnos, setActividadAlumnos] = useState(null)
+  const [guardando, setGuardando] = useState(false)
+  const [eliminandoId, setEliminandoId] = useState(null)
+  const [actividades, setActividades] = useState([])
+  const [cargando, setCargando] = useState(true)
+  const [error, setError] = useState('')
+  const [asignaciones, setAsignaciones] = useState([])
+  const [errorAsignaciones, setErrorAsignaciones] = useState('')
+  const [cargandoAsignaciones, setCargandoAsignaciones] = useState(true)
+  const [docentes, setDocentes] = useState([])
+  const [errorDocentes, setErrorDocentes] = useState('')
+  const [cargandoDocentes, setCargandoDocentes] = useState(true)
 
-  const [actividades, setActividades] = useState([
-    {
-      id: 1,
-      nombre: 'Fútbol Infantil',
-      categoria: 'Deportes',
-      horario: 'Lunes 16:00',
-      estado: 'Activa'
-    },
-    {
-      id: 2,
-      nombre: 'Natación Adultos',
-      categoria: 'Deportes',
-      horario: 'Martes 09:00',
-      estado: 'Activa'
-    },
-    {
-      id: 3,
-      nombre: 'Yoga',
-      categoria: 'Bienestar',
-      horario: 'Miércoles 18:00',
-      estado: 'Activa'
-    },
-    {
-      id: 4,
-      nombre: 'Básquet Juvenil',
-      categoria: 'Deportes',
-      horario: 'Viernes 17:00',
-      estado: 'Activa'
+  useEffect(() => {
+    let active = true
+
+    getActivities()
+      .then((data) => {
+        if (active) setActividades(data)
+      })
+      .catch(() => {
+        if (active) setError('No se pudieron cargar las actividades.')
+      })
+      .finally(() => {
+        if (active) setCargando(false)
+      })
+
+    return () => {
+      active = false
     }
-  ])
+  }, [])
+
+  useEffect(() => {
+    let active = true
+
+    getAssignments()
+      .then((data) => {
+        if (active) setAsignaciones(data)
+      })
+      .catch(() => {
+        if (active) {
+          setErrorAsignaciones('No se pudieron cargar los docentes asignados.')
+        }
+      })
+      .finally(() => {
+        if (active) setCargandoAsignaciones(false)
+      })
+    return () => {
+      active = false
+    }
+  }, [])
+
+  useEffect(() => {
+    let active = true
+
+    getInstructors()
+      .then((data) => {
+        if (active) setDocentes(data)
+      })
+      .catch(() => {
+        if (active) setErrorDocentes('No se pudieron cargar los docentes.')
+      })
+      .finally(() => {
+        if (active) setCargandoDocentes(false)
+      })
+
+    return () => {
+      active = false
+    }
+  }, [])
 
   const [busqueda, setBusqueda] = useState('')
 
@@ -51,59 +120,113 @@ function ActividadesPage() {
     setModalOpen(true)
   }
 
-  const guardarActividad = (datosActividad) => {
-  if (actividadEnEdicion !== null) {
-    setActividades((actuales) =>
-      actuales.map((actividad) =>
-        actividad.id === actividadEnEdicion.id
-          ? { ...actividad, ...datosActividad }
-          : actividad
-      )
-    )
+  const guardarActividad = async (datosActividad, docenteId) => {
+    if (guardando) return
 
-    alert('La actividad fue actualizada correctamente.')
-  } else {
-    setActividades((actuales) => [
-      ...actuales,
-      {
-        ...datosActividad,
-        id: Date.now(),
-        estado: datosActividad.estado || 'Activa'
+    setGuardando(true)
+
+    const datosParaApi = {
+      ...datosActividad,
+      startTime: `${datosActividad.startTime}:00`,
+      endTime: `${datosActividad.endTime}:00`,
+    }
+
+    try {
+      if (actividadEnEdicion) {
+        await updateActivity(actividadEnEdicion.id, datosParaApi)
+
+        setActividades((actuales) =>
+          actuales.map((actividad) =>
+            actividad.id === actividadEnEdicion.id
+              ? { ...actividad, ...datosParaApi }
+              : actividad
+          )
+        )
+
+        alert('La actividad fue actualizada correctamente.')
+      } else {
+        const creada = await createActivity(datosParaApi)
+
+        setActividades((actuales) => [...actuales, creada])
+
+        if (!docenteId) {
+          alert('La actividad fue creada sin docente asignado.')
+        } else {
+          try {
+            const asignacion = await assignInstructor({
+              activityId: creada.id,
+              instructorId: Number(docenteId),
+            })
+
+            setAsignaciones((actuales) => [...actuales, asignacion])
+
+            const avisos = asignacion.warnings?.length
+              ? `\n\nAvisos:\n${asignacion.warnings.join('\n')}`
+              : ''
+
+            alert(`Actividad creada y docente asignado.${avisos}`)
+          } catch {
+            try {
+              const actualizadas = await getAssignments()
+              setAsignaciones(actualizadas)
+              setErrorAsignaciones('')
+            } catch {
+              setErrorAsignaciones('No se pudieron actualizar los docentes asignados.')
+            }
+
+            alert(
+              'La actividad se creó, pero no se pudo confirmar la asignación. ' +
+              'No vuelvas a crearla: revisá sus docentes asignados antes de reintentar.'
+            )
+          }
+        }
       }
-    ])
 
-    alert('La actividad fue creada correctamente.')
+      setModalOpen(false)
+      setActividadEnEdicion(null)
+    } catch (error) {
+      let mensaje = ''
+
+      try {
+        mensaje = JSON.parse(error.message).message ?? ''
+      } catch {
+        mensaje = ''
+      }
+
+      alert(mensaje || 'No se pudo guardar la actividad. Intentá nuevamente.')
+    } finally {
+      setGuardando(false)
+    }
   }
 
-  setModalOpen(false)
-  setActividadEnEdicion(null)
-}
+  const darDeBajaActividad = async (actividad) => {
+    if (eliminandoId !== null) return
 
-    const darDeBajaActividad = (actividad) => {
-      if (actividad.estado === 'Inactiva') {
-        alert('Esta actividad ya se encuentra inactiva.')
-        return
-      }
+    const confirmar = window.confirm(
+      `¿Querés dar de baja la actividad "${actividad.name}"?`
+    )
 
-      const confirmar = window.confirm(
-        `¿Querés dar de baja la actividad "${actividad.nombre}"?`
-      )
+    if (!confirmar) return
 
-      if (!confirmar) return
+    setEliminandoId(actividad.id)
+
+    try {
+      await deleteActivity(actividad.id)
 
       setActividades((actuales) =>
-        actuales.map((item) =>
-          item.id === actividad.id
-            ? { ...item, estado: 'Inactiva' }
-            : item
-        )
+        actuales.filter((item) => item.id !== actividad.id)
       )
 
       alert('La actividad fue dada de baja correctamente.')
+    } catch {
+      alert('No se pudo dar de baja la actividad. Intentá nuevamente.')
+    } finally {
+      setEliminandoId(null)
     }
+  }
 
   const actividadesFiltradas = actividades.filter((actividad) =>
-    actividad.nombre.toLowerCase().includes(busqueda.toLowerCase())
+    actividad.name.toLowerCase().includes(busqueda.toLowerCase())
   )
 
   return (
@@ -137,7 +260,7 @@ function ActividadesPage() {
         <div className="content-card-header">
           <div>
             <h2>Actividades registradas</h2>
-            <p>Listado de actividades del Área de Deportes.</p>
+            <p>Seleccioná una actividad para ver sus alumnos inscriptos.</p>
           </div>
         </div>
 
@@ -150,59 +273,103 @@ function ActividadesPage() {
                 <th>Horario</th>
                 <th>Lugar</th>
                 <th>Cupos</th>
+                <th>Docentes asignados</th>
                 <th>Estado</th>
                 <th>Acciones</th>
               </tr>
             </thead>
 
             <tbody>
-              {actividadesFiltradas.map((actividad) => (
-                <tr key={actividad.id}>
-                  <td>{actividad.nombre}</td>
-                  <td>{actividad.categoria}</td>
-                  <td>{actividad.horario || 'Sin horario'}</td>
-                  <td>{actividad.lugar || 'Sin lugar'}</td>
-                  <td>{actividad.cupos ?? 'Sin definir'}</td>
-                  <td>
-                    <span className="status-badge">
-                      {actividad.estado}
-                    </span>
-                  </td>
-
-                  <td>
-                    <div className="table-actions">
-                      <button
-                        type="button"
-                        className="action-button edit"
-                        onClick={() => abrirEdicion(actividad)}
-                      >
-                        Editar
-                      </button>
-
-                      <button
-                        type="button"
-                        className="action-button delete"
-                        onClick={() => darDeBajaActividad(actividad)}
-                        disabled={actividad.estado === 'Inactiva'}
-                      >
-                        {actividad.estado === 'Inactiva' ? 'Inactiva' : 'Dar de baja'}
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-
-              {actividadesFiltradas.length === 0 && (
+              {cargando ? (
                 <tr>
-                  <td colSpan="7" className="activities-empty">
+                  <td colSpan="8">Cargando actividades...</td>
+                </tr>
+              ) : error ? (
+                <tr>
+                  <td colSpan="8" role="alert">{error}</td>
+                </tr>
+              ) : actividadesFiltradas.length === 0 ? (
+                <tr>
+                  <td colSpan="8" className="activities-empty">
                     No se encontraron actividades.
                   </td>
                 </tr>
+              ) : (
+                actividadesFiltradas.map((actividad) => (
+                  <tr
+                    key={actividad.id}
+                    className="actividad-fila"
+                    onClick={(event) => {
+                      if (!event.target.closest('button, a, input, select, textarea')) {
+                        setActividadAlumnos(actividad)
+                      }
+                    }}
+                  >
+                    <td>
+                      <button
+                        type="button"
+                        className="actividad-nombre"
+                        onClick={() => setActividadAlumnos(actividad)}
+                        aria-label={`Ver alumnos de ${actividad.name}`}
+                      >
+                        {actividad.name}
+                      </button>
+                    </td>
+                    <td>{categorias[actividad.category] ?? 'Sin categoría'}</td>
+                    <td>
+                      {mostrarDias(actividad.days)}
+                      <br />
+                      {actividad.startTime?.slice(0, 5)} a {actividad.endTime?.slice(0, 5)}
+                    </td>
+                    <td>{actividad.location || 'Sin lugar'}</td>
+                    <td>{actividad.maximumCapacity}</td>
+                    <td>
+                      {cargandoAsignaciones
+                        ? 'Cargando...'
+                        : errorAsignaciones
+                          ? 'No disponible'
+                          : asignaciones
+                            .filter((asignacion) => asignacion.activityId === actividad.id)
+                            .map((asignacion) => asignacion.instructorName)
+                            .join(', ') || 'Sin docente asignado'}
+                    </td>
+                    <td>
+                      <span className="status-badge">Activa</span>
+                    </td>
+                    <td>
+                      <div className="table-actions">
+                        <button
+                          type="button"
+                          className="action-button edit"
+                          onClick={() => abrirEdicion(actividad)}
+                        >
+                          Editar
+                        </button>
+
+                        <button
+                          type="button"
+                          className="action-button delete"
+                          onClick={() => darDeBajaActividad(actividad)}
+                          disabled={eliminandoId !== null}
+                        >
+                          {eliminandoId === actividad.id ? 'Dando de baja...' : 'Dar de baja'}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
               )}
             </tbody>
           </table>
         </div>
       </section>
+
+      {actividadAlumnos && (
+        <ActivityStudentsModal
+          activity={actividadAlumnos}
+          onClose={() => setActividadAlumnos(null)}
+        />
+      )}
 
       {modalOpen &&
         createPortal(
@@ -233,6 +400,10 @@ function ActividadesPage() {
                 actividadInicial={actividadEnEdicion}
                 onCancel={() => setModalOpen(false)}
                 onSave={guardarActividad}
+                guardando={guardando}
+                docentes={docentes}
+                cargandoDocentes={cargandoDocentes}
+                errorDocentes={errorDocentes}
               />
             </section>
           </div>,

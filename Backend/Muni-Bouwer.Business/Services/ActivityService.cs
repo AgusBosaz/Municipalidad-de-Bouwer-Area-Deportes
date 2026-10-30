@@ -23,6 +23,8 @@ public class ActivityService : IActivityService
             Category = a.Category,
             StartTime = a.StartTime,
             EndTime = a.EndTime,
+            Days = a.Days,
+            Location = a.Location,
             MaximumCapacity = a.MaximumCapacity,
             EnrolledStudentsCount = a.StudentActivities.Count(studentActivity =>
                 studentActivity.Enrollments.Any(enrollment =>
@@ -42,6 +44,8 @@ public class ActivityService : IActivityService
             Category = a.Category,
             StartTime = a.StartTime,
             EndTime = a.EndTime,
+            Days = a.Days,
+            Location = a.Location,
             MaximumCapacity = a.MaximumCapacity,
             EnrolledStudentsCount = a.StudentActivities.Count(studentActivity =>
                 studentActivity.Enrollments.Any(enrollment =>
@@ -57,6 +61,8 @@ public class ActivityService : IActivityService
             Category = dto.Category,
             StartTime = dto.StartTime,
             EndTime = dto.EndTime,
+            Days = dto.Days,
+            Location = dto.Location.Trim(),
             MaximumCapacity = dto.MaximumCapacity
         };
 
@@ -69,6 +75,8 @@ public class ActivityService : IActivityService
             Category = created.Category,
             StartTime = created.StartTime,
             EndTime = created.EndTime,
+            Days = created.Days,
+            Location = created.Location,
             MaximumCapacity = created.MaximumCapacity,
             EnrolledStudentsCount = 0
         };
@@ -83,6 +91,8 @@ public class ActivityService : IActivityService
         existing.Category = dto.Category;
         existing.StartTime = dto.StartTime;
         existing.EndTime = dto.EndTime;
+        existing.Days = dto.Days;
+        existing.Location = dto.Location.Trim();
         existing.MaximumCapacity = dto.MaximumCapacity;
 
         return await _activityDAL.UpdateAsync(existing);
