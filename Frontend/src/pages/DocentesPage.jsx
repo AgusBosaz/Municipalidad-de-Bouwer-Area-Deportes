@@ -215,7 +215,7 @@ function DocentesPage() {
       <div className="page-header">
         <div>
           <h1>Docentes</h1>
-          <p>Gestioná los docentes del Área de Deportes.</p>
+          <p>Gestioná los docentes del Área de Deportes y Recreación.</p>
         </div>
 
         <div className="page-header-actions">
@@ -236,7 +236,7 @@ function DocentesPage() {
         <div className="content-card-header">
           <div>
             <h2>Docentes registrados</h2>
-            <p>Listado de docentes del Área de Deportes.</p>
+            <p>Listado de docentes del Área de Deportes y Recreación.</p>
           </div>
         </div>
         {cargando && <p role="status">Cargando docentes...</p>}

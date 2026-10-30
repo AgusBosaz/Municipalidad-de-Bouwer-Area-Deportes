@@ -13,7 +13,7 @@ function CrearDocentePage() {
           </h1>
 
           <p>
-            Registrá un nuevo docente en el Área de Deportes.
+            Registrá un nuevo docente en el Área de Deportes y Recreación.
           </p>
         </div>
 

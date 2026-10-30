@@ -77,6 +77,7 @@ public class AssignmentService : IAssignmentService
         ActivityId = ia.ActivityId,
         ActivityName = ia.Activity.Name,
         StartTime = ia.Activity.StartTime,
-        EndTime = ia.Activity.EndTime
+        EndTime = ia.Activity.EndTime,
+        Days = ia.Activity.Days
     };
 }

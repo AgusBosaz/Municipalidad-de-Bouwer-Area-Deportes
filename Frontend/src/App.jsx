@@ -165,6 +165,12 @@ function HomePage() {
     : <DashboardPage />
 }
 
+function AttendancePage() {
+  return getSession()?.role === 'Instructor'
+    ? <MisActividadesPage />
+    : <AsistenciaPage />
+}
+
 function App() {
   return (
     <Routes>
@@ -182,9 +188,7 @@ function App() {
         <Route path="/inicio" element={<HomePage />} />
         <Route
           path="/asistencia"
-          element={getSession()?.role === 'Instructor'
-            ? <Navigate to="/mis-actividades" replace />
-            : <AsistenciaPage />}
+          element={<AttendancePage />}
         />
         <Route path="/asistencia/:actividadId" element={<AsistenciaDocentePage />} />
 
@@ -195,11 +199,15 @@ function App() {
 
         <Route
           path="/docente"
-          element={<InstructorOnly><DocenteInicioPage session={getSession()} /></InstructorOnly>}
+          element={<InstructorOnly><DocenteInicioPage /></InstructorOnly>}
         />
         <Route
           path="/mis-actividades"
           element={<InstructorOnly><MisActividadesPage /></InstructorOnly>}
+        />
+        <Route
+          path="/mis-actividades/:actividadId/asistencia"
+          element={<InstructorOnly><AsistenciaDocentePage /></InstructorOnly>}
         />
         <Route
           path="/actividades"

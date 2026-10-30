@@ -8,6 +8,12 @@ import {
 } from '../services/assignmentService'
 import '../styles/asignaciones.css'
 
+function mostrarDias(days) {
+  const abreviaturas = ['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa', 'Do']
+  const seleccionados = abreviaturas.filter((_, indice) => (days & (1 << indice)) !== 0)
+  return seleccionados.length ? seleccionados.join(' - ') : 'Días a confirmar'
+}
+
 function AsignacionesPage() {
   const [actividad, setActividad] = useState('')
   const [docente, setDocente] = useState('')
@@ -115,7 +121,7 @@ function AsignacionesPage() {
           <span className="page-eyebrow">GESTIÓN</span>
           <h2>Asignaciones</h2>
           <p>
-            Asigná docentes a las diferentes actividades deportivas.
+            Asigná docentes a las diferentes actividades.
           </p>
         </div>
       </div>
@@ -222,6 +228,7 @@ function AsignacionesPage() {
                     <strong>{item.instructorName}</strong>
                     <span>{item.activityName}</span>
                     <small>
+                      {mostrarDias(item.days)} ·{' '}
                       {item.startTime?.slice(0, 5)} a {item.endTime?.slice(0, 5)}
                     </small>
                   </div>

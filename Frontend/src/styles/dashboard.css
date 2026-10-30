@@ -195,6 +195,13 @@
   border-bottom: none;
 }
 
+.dashboard-recent-message {
+  margin: 0;
+  padding: 24px 22px;
+  color: #777;
+  font-size: 14px;
+}
+
 .dashboard-recent-row span {
   font-size: 13px;
   color: #555;
@@ -203,6 +210,14 @@
 .dashboard-recent-row span:first-child {
   font-weight: 600;
   color: #444;
+}
+
+.dashboard-recent-row span.dashboard-activity-days {
+  display: block;
+  margin-bottom: 3px;
+  color: #777;
+  font-size: 12px;
+  font-weight: 400;
 }
 
 .dashboard-recent-row a {

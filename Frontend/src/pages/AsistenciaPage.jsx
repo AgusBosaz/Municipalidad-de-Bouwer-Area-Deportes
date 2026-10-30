@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { ArrowRight, CalendarDays } from 'lucide-react'
 import { getActivities } from '../services/activityService'
 import '../styles/docentes.css'
 import '../styles/Asistencia.css'
@@ -56,13 +57,18 @@ function AsistenciaPage() {
           <div className="docente-activity-grid">
             {activities.map((activity) => (
               <article className="docente-activity-card" key={activity.id}>
+                <div className="docente-activity-topline">
+                  <span className="docente-activity-symbol"><CalendarDays size={22} /></span>
+                  <span className="docente-assigned-badge">Activa</span>
+                </div>
                 <h3>{activity.name}</h3>
-                <p>
-                  Horario: {activity.startTime.slice(0, 5)} a{' '}
-                  {activity.endTime.slice(0, 5)}
-                </p>
-                <Link to={'/asistencia/' + activity.id}>
+                <div className="docente-activity-details">
+                  <p><CalendarDays size={16} /> {activity.startTime.slice(0, 5)} a{' '}
+                    {activity.endTime.slice(0, 5)}</p>
+                </div>
+                <Link className="docente-outline-action" to={'/asistencia/' + activity.id}>
                   Ver alumnos y tomar asistencia
+                  <ArrowRight size={17} />
                 </Link>
               </article>
             ))}

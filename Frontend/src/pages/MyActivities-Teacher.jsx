@@ -1,11 +1,30 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { ArrowRight, CalendarDays, UsersRound } from 'lucide-react'
 import { getMyAssignments } from '../services/assignmentService'
 import { getAttendanceStudents } from '../services/attendanceService'
 import '../styles/dashboard-teacher.css'
 
+const diasSemana = [
+  { nombre: 'Lunes', abreviatura: 'Lu', valor: 1 },
+  { nombre: 'Martes', abreviatura: 'Ma', valor: 2 },
+  { nombre: 'Miércoles', abreviatura: 'Mi', valor: 4 },
+  { nombre: 'Jueves', abreviatura: 'Ju', valor: 8 },
+  { nombre: 'Viernes', abreviatura: 'Vi', valor: 16 },
+  { nombre: 'Sábado', abreviatura: 'Sa', valor: 32 },
+  { nombre: 'Domingo', abreviatura: 'Do', valor: 64 },
+]
+
+function mostrarDias(days) {
+  const seleccionados = diasSemana.filter((dia) => (days & dia.valor) !== 0)
+  return seleccionados.length
+    ? seleccionados.map((dia) => dia.abreviatura).join(' - ')
+    : 'Días a confirmar'
+}
+
 function MisActividadesPage() {
+  const { pathname } = useLocation()
+  const desdeAsistencia = pathname === '/asistencia'
   const [activities, setActivities] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -62,7 +81,7 @@ function MisActividadesPage() {
               <div className="docente-activity-details">
                 <p>
                   <CalendarDays size={16} />
-                  {activity.startTime.slice(0, 5)} a {activity.endTime.slice(0, 5)}
+                  <span>{mostrarDias(activity.days)} · {activity.startTime.slice(0, 5)} a {activity.endTime.slice(0, 5)}</span>
                 </p>
                 <p>
                   <UsersRound size={16} />
@@ -71,7 +90,9 @@ function MisActividadesPage() {
               </div>
               <Link
                 className="docente-outline-action"
-                to={'/asistencia/' + activity.activityId}
+                to={desdeAsistencia
+                  ? '/asistencia/' + activity.activityId
+                  : '/mis-actividades/' + activity.activityId + '/asistencia'}
               >
                 Ver alumnos y tomar asistencia
                 <ArrowRight size={17} />

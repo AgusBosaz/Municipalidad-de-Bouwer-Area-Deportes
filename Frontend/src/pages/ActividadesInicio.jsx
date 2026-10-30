@@ -4,6 +4,26 @@ import { Link } from "react-router-dom";
 import MunicipalBrand from "../components/MunicipalBrand";
 import "../styles/ActividadesInicio.css";
 import ImagenCampo from "../assets/images/imagen-campo.jpeg";
+import imagenFutbol from "../assets/images/actividades/futbol.jpg";
+import imagenVoley from "../assets/images/actividades/voley.jpg";
+import imagenBasquet from "../assets/images/actividades/basquet.jpg";
+import imagenGimnasia from "../assets/images/actividades/gimnasia.jpg";
+import imagenNatacion from "../assets/images/actividades/natacion.jpg";
+import imagenGeneral from "../assets/images/actividades/general.jpg";
+
+function imagenParaActividad(nombre) {
+  const nombreNormalizado = (nombre || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+
+  if (/futbol|football|futsal/.test(nombreNormalizado)) return imagenFutbol;
+  if (/voley|voleibol|volleyball/.test(nombreNormalizado)) return imagenVoley;
+  if (/basquet|basket|baloncesto/.test(nombreNormalizado)) return imagenBasquet;
+  if (/natacion|natatorio/.test(nombreNormalizado)) return imagenNatacion;
+  if (/gimnasia/.test(nombreNormalizado)) return imagenGimnasia;
+  return imagenGeneral;
+}
 
 
 function IconoCalendario() {
@@ -150,7 +170,7 @@ function ActividadesInicio() {
         <div className="inicio-superior">
           <div className="inicio-titulos">
             <h2>Actividades disponibles</h2>
-            <p>Explorá las propuestas del Área de Deportes.</p>
+            <p>Explorá las propuestas del Área de Deportes y Recreación.</p>
           </div>
 
           <div className="inicio-filtros">
@@ -189,8 +209,12 @@ function ActividadesInicio() {
           {actividadesFiltradas.map((actividad) => (
             <article className="inicio-card" key={actividad.id}>
 
-              {/* Imagen vacía por ahora */}
-              <div className="inicio-card-imagen"></div>
+              <img
+                className="inicio-card-imagen"
+                src={imagenParaActividad(actividad.name)}
+                alt=""
+                loading="lazy"
+              />
 
               <div className="inicio-card-contenido">
                 <span className="inicio-categoria">

@@ -4,13 +4,14 @@
   padding: 2rem;
 }
 
-.alumnos-page h1, .alumnos-page h2 { color: #881337; }
-.alumnos-page p { color: #64748b; }
+.alumnos-page h1, .alumnos-page h2 { color: #333; }
+.alumnos-page p { color: #777; }
 .alumnos-card, .alumnos-list {
   background: #fff;
   border: 1px solid #e2e8f0;
   border-radius: 16px;
   padding: 1.5rem;
+  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.04);
 }
 .alumnos-search, .alumnos-form label {
   display: grid;
@@ -33,10 +34,13 @@
   font: inherit;
   cursor: pointer;
 }
-.alumnos-primary { color: white; background: #881337; border: 1px solid #881337; }
-.alumnos-secondary, .alumnos-tabs button { color: #881337; background: white; border: 1px solid #cbd5e1; }
+.alumnos-primary { color: white; background: #9a1b45; border: 1px solid #9a1b45; }
+.alumnos-secondary, .alumnos-tabs button { color: #9a1b45; background: white; border: 1px solid #ddd; }
+.alumnos-primary:hover:not(:disabled) { background: #801638; }
+.alumnos-secondary:hover:not(:disabled), .alumnos-tabs button:hover:not(:disabled) { background: #f8eaf0; }
 .alumnos-tabs { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1.5rem; }
-.alumnos-tabs button[aria-pressed="true"] { color: white; background: #881337; }
+.alumnos-tabs button[aria-pressed="true"] { color: white; background: #9a1b45; }
+.alumnos-tabs button[aria-pressed="true"]:hover { background: #801638; }
 .alumnos-page button:disabled { opacity: .55; cursor: not-allowed; }
 .alumnos-list, .alumnos-documents { list-style: none; }
 .alumnos-list li, .alumnos-documents li {

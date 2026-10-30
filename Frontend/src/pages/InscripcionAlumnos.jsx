@@ -187,7 +187,7 @@ export default function InscripcionAlumnos() {
     <div className="inscripcion-container" style={{ maxWidth: '1200px', margin: '0 auto' }}>
       <div className="inscripcion-header">
         <h1>Inscripción de Alumnos</h1>
-        <p>Complete el formulario para incorporar un participante a una actividad deportiva.</p>
+        <p>Complete el formulario para incorporar un participante a una actividad.</p>
       </div>
 
       {/* Tarjeta del Formulario */}
@@ -342,7 +342,7 @@ export default function InscripcionAlumnos() {
           )}
 
           <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-            <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: '600', color: '#475569' }}>ACTIVIDAD DEPORTIVA</label>
+            <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', fontWeight: '600', color: '#475569' }}>ACTIVIDAD</label>
             <select
               name="actividadId"
               value={formData.actividadId}

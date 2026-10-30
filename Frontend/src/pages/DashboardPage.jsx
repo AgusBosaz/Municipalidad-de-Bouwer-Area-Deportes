@@ -7,6 +7,21 @@ import { getAssignments } from '../services/assignmentService'
 
 import '../styles/dashboard.css'
 
+const diasSemana = [
+  { nombre: 'Lunes', abreviatura: 'Lu', valor: 1 },
+  { nombre: 'Martes', abreviatura: 'Ma', valor: 2 },
+  { nombre: 'Miércoles', abreviatura: 'Mi', valor: 4 },
+  { nombre: 'Jueves', abreviatura: 'Ju', valor: 8 },
+  { nombre: 'Viernes', abreviatura: 'Vi', valor: 16 },
+  { nombre: 'Sábado', abreviatura: 'Sa', valor: 32 },
+  { nombre: 'Domingo', abreviatura: 'Do', valor: 64 },
+]
+
+function mostrarDias(days) {
+  const dias = diasSemana.filter((dia) => (days & dia.valor) !== 0)
+  return dias.length ? dias : null
+}
+
 function DashboardPage() {
   const [actividades, setActividades] = useState([])
   const [cargando, setCargando] = useState(true)
@@ -171,7 +186,7 @@ function DashboardPage() {
             </h2>
 
             <p>
-              Algunas actividades del Área de Deportes
+              Algunas actividades del Área de Deportes y Recreación
             </p>
           </div>
 
@@ -189,11 +204,11 @@ function DashboardPage() {
           </div>
 
           {cargando ? (
-            <p role="status">Cargando actividades...</p>
+            <p className="dashboard-recent-message" role="status">Cargando actividades...</p>
           ) : error ? (
-            <p role="alert">{error}</p>
+            <p className="dashboard-recent-message" role="alert">{error}</p>
           ) : actividades.length === 0 ? (
-            <p>No hay actividades activas.</p>
+            <p className="dashboard-recent-message">No hay actividades activas.</p>
           ) : (
             actividades.slice(0, 4).map((actividad) => (
               <div className="dashboard-recent-row" key={actividad.id}>
@@ -211,6 +226,17 @@ function DashboardPage() {
                 </span>
 
                 <span>
+                  {mostrarDias(actividad.days) ? (
+                    <span
+                      className="dashboard-activity-days"
+                      aria-label={mostrarDias(actividad.days).map((dia) => dia.nombre).join(', ')}
+                      title={mostrarDias(actividad.days).map((dia) => dia.nombre).join(', ')}
+                    >
+                      {mostrarDias(actividad.days).map((dia) => dia.abreviatura).join(' - ')}
+                    </span>
+                  ) : (
+                    <span className="dashboard-activity-days">Días a confirmar</span>
+                  )}
                   {actividad.startTime?.slice(0, 5)} a {actividad.endTime?.slice(0, 5)}
                 </span>
 

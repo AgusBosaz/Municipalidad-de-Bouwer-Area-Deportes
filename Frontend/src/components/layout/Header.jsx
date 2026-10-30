@@ -22,8 +22,13 @@ function Header({ isMenuOpen, onMenuClick, session }) {
         return 'Inscripciones'
       case '/asistencia':
         return 'Asistencia'
+      case '/mis-actividades':
+        return 'Mis actividades'
       default:
-        return 'Dashboard'
+        return location.pathname.startsWith('/asistencia/') ||
+          location.pathname.startsWith('/mis-actividades/')
+          ? 'Asistencia'
+          : 'Dashboard'
     }
   }
 
@@ -41,7 +46,7 @@ function Header({ isMenuOpen, onMenuClick, session }) {
       </button>
       <div>
         <h1>{getTitle()}</h1>
-        <p>Área de Deportes</p>
+        <p>Área de Deportes y Recreación</p>
       </div>
 
       <div className="header-right">

@@ -241,4 +241,8 @@
 .inscripcion-container .custom-table td:nth-child(4)::before {
   content: "Fecha de inscripción";
 }
+
+.inscripcion-container .custom-table td[colspan]::before {
+  content: none;
+}
 }
