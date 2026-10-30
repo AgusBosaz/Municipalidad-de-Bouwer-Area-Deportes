@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, CalendarDays, CheckCircle2, UsersRound } from 'lucide-react'
 import { getSession } from '../services/AuthSession'
 import { getMyAssignments } from '../services/assignmentService'
@@ -22,8 +22,11 @@ function fechaLocal() {
 function AsistenciaDocentePage() {
   const { actividadId } = useParams()
   const navigate = useNavigate()
+  const { pathname } = useLocation()
   const isCoordinator = getSession()?.role === 'Coordinator'
-  const backPath = isCoordinator ? '/asistencia' : '/mis-actividades'
+  const backPath = isCoordinator || pathname.startsWith('/asistencia/')
+    ? '/asistencia'
+    : '/mis-actividades'
   const [fecha, setFecha] = useState(fechaLocal)
   const [actividad, setActividad] = useState(null)
   const [alumnos, setAlumnos] = useState([])

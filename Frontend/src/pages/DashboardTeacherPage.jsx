@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom'
 import { ArrowRight, CalendarDays, ClipboardCheck } from 'lucide-react'
 import { getMyAssignments } from '../services/assignmentService'
 import { getAttendanceStudents } from '../services/attendanceService'
+import { getSession } from '../services/AuthSession'
 import '../styles/dashboard-teacher.css'
 
-function DocenteInicioPage({ session }) {
+function DocenteInicioPage() {
+  const nombre = getSession()?.name?.trim().split(/\s+/)[0] || 'Docente'
   const [activities, setActivities] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -42,8 +44,8 @@ function DocenteInicioPage({ session }) {
   return (
     <section className="docente-page">
       <div className="docente-welcome">
-        <span className="docente-eyebrow">ÁREA DE DEPORTES</span>
-        <h1>¡Hola, {session?.name?.split(' ')[0] || 'Docente'}!</h1>
+        <span className="docente-eyebrow">ÁREA DE DEPORTES Y RECREACIÓN</span>
+        <h1>¡Hola, {nombre}!</h1>
         <p>
           Desde acá podés consultar tus actividades y registrar la asistencia.
         </p>

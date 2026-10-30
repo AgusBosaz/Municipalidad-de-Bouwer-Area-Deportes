@@ -447,6 +447,45 @@
     width: 100%;
   }
 
+  .attendance-history-table,
+  .attendance-history-table tbody,
+  .attendance-history-table tr,
+  .attendance-history-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .attendance-history-table thead { display: none; }
+  .attendance-history-table tr {
+    border-bottom: 1px solid #eee8eb;
+    padding: 8px 0;
+  }
+  .attendance-history-table td:not([colspan]) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 16px;
+    border: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .attendance-history-table td:not([colspan])::before {
+    flex-shrink: 0;
+    color: #756b73;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .attendance-history-table td:nth-child(1):not([colspan])::before { content: 'Actividad'; }
+  .attendance-history-table td:nth-child(2):not([colspan])::before { content: 'Fecha'; }
+  .attendance-history-table td:nth-child(3):not([colspan])::before { content: 'Presentes'; }
+  .attendance-history-table td:nth-child(4):not([colspan])::before { content: 'Ausentes'; }
+  .attendance-history-table td:nth-child(5):not([colspan])::before { content: 'Acciones'; }
+  .attendance-history-table td[colspan] {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
   .attendance-detail-overlay {
     align-items: flex-start;
     padding: 12px;

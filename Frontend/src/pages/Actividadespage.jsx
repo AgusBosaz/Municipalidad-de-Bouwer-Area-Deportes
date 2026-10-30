@@ -234,7 +234,7 @@ function ActividadesPage() {
       <div className="page-header">
         <div>
           <h1>Actividades</h1>
-          <p>Gestioná las actividades del Área de Deportes.</p>
+          <p>Gestioná las actividades del Área de Deportes y Recreación.</p>
         </div>
 
         <div className="page-header-actions">

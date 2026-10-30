@@ -3,6 +3,13 @@
   color: #333;
 }
 
+.docente-page-header {
+  margin-bottom: 24px;
+}
+
+.docente-page-header h1 { margin: 6px 0; }
+.docente-page-header p { margin: 0; color: #777; line-height: 1.5; }
+
 .docente-welcome {
   padding: 32px;
   margin-bottom: 24px;
@@ -93,9 +100,79 @@
   color: #9a1b45;
 }
 
+.docente-activity-card h2,
 .docente-activity-card h3 {
-  margin: 12px 0;
+  margin: 10px 0 16px;
+  color: #333;
+  overflow-wrap: anywhere;
 }
+
+.docente-activity-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border: 1px solid #eee;
+}
+
+.docente-activity-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.docente-activity-topline .docente-activity-symbol {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  background: #f8eaf0;
+  border-radius: 11px;
+}
+
+.docente-assigned-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: #eaf6ee;
+  color: #267344;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.docente-activity-details {
+  display: grid;
+  gap: 12px;
+  margin: 0 0 24px;
+  color: #666;
+}
+
+.docente-activity-details p {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 14px;
+}
+
+.docente-activity-details svg { color: #9a1b45; flex-shrink: 0; }
+
+.docente-outline-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: auto;
+  padding: 11px 14px;
+  border: 1px solid #e8cad5;
+  border-radius: 9px;
+  color: #9a1b45;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.docente-outline-action:hover { background: #f8eaf0; }
+.docente-outline-action:focus-visible { outline: 2px solid #9a1b45; outline-offset: 2px; }
 
 .docente-card-label {
   display: block;

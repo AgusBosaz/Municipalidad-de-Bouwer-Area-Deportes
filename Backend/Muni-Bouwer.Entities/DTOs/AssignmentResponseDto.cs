@@ -1,3 +1,5 @@
+using Muni_Bouwer.Entities.Models;
+
 namespace Muni_Bouwer.Entities.DTOs;
 
 public class AssignmentResponseDto
@@ -9,5 +11,6 @@ public class AssignmentResponseDto
     public string ActivityName { get; set; } = string.Empty;
     public TimeOnly StartTime { get; set; }
     public TimeOnly EndTime { get; set; }
+    public ActivityDays Days { get; set; }
     public List<string> Warnings { get; set; } = new();
 }
