@@ -7,6 +7,8 @@ public class Activity
     public AgeCategory Category { get; set; }
     public TimeOnly StartTime { get; set; }
     public TimeOnly EndTime { get; set; }
+    public ActivityDays Days { get; set; } = ActivityDays.None;
+    public string? Location { get; set; }
     public int MaximumCapacity { get; set; }
     public bool IsActive { get; set; } = true;
 

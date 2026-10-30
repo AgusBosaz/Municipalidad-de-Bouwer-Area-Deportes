@@ -1,16 +1,17 @@
-
 import { useState } from 'react'
 import '../styles/actividades.css'
-function CrearActividadPage({ onCancel, onSave, actividadInicial }) {
+
+function CrearActividadPage({ onCancel, onSave, actividadInicial, guardando, docentes, cargandoDocentes, errorDocentes, }) {
   const [form, setForm] = useState({
-    nombre: actividadInicial?.nombre ?? '',
-    categoria: actividadInicial?.categoria ?? '',
-    horario: actividadInicial?.horario ?? '',
-    lugar: actividadInicial?.lugar ?? '',
-    cupos: actividadInicial?.cupos ?? '',
-    estado: actividadInicial?.estado ?? 'Activa',
-    descripcion: actividadInicial?.descripcion ?? ''
+    name: actividadInicial?.name ?? '',
+    category: actividadInicial?.category?.toString() ?? '',
+    startTime: actividadInicial?.startTime?.slice(0, 5) ?? '',
+    endTime: actividadInicial?.endTime?.slice(0, 5) ?? '',
+    days: actividadInicial?.days ?? 0,
+    location: actividadInicial?.location ?? '',
+    maximumCapacity: actividadInicial?.maximumCapacity ?? '',
   })
+  const [docenteId, setDocenteId] = useState('')
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -21,31 +22,56 @@ function CrearActividadPage({ onCancel, onSave, actividadInicial }) {
     }))
   }
 
+  const handleDayChange = (dayValue) => {
+    setForm((actual) => ({
+      ...actual,
+      days: actual.days ^ dayValue,
+    }))
+  }
+
   const handleSubmit = (e) => {
     e.preventDefault()
 
-    if (!form.nombre.trim()) {
+    if (!form.name.trim()) {
       alert('Ingresá el nombre de la actividad.')
       return
     }
 
-    if (!form.categoria) {
-      alert('Seleccioná una categoría.')
+    if (form.category === '') {
+      alert('Seleccioná una categoría de edad.')
       return
     }
 
-    if (!form.cupos || Number(form.cupos) < 1) {
-      alert('Ingresá una cantidad de cupos mayor que cero.')
+    if (form.days === 0) {
+      alert('Seleccioná al menos un día.')
+      return
+    }
+
+    if (!form.startTime || !form.endTime || form.endTime <= form.startTime) {
+      alert('Ingresá un horario de fin posterior al horario de inicio.')
+      return
+    }
+
+    if (!form.location.trim()) {
+      alert('Ingresá el lugar de la actividad.')
+      return
+    }
+
+    const capacity = Number(form.maximumCapacity)
+
+    if (!Number.isInteger(capacity) || capacity < 1 || capacity > 500) {
+      alert('Ingresá una cantidad de cupos entre 1 y 500.')
       return
     }
 
     onSave({
       ...form,
-      nombre: form.nombre.trim(),
-      cupos: Number(form.cupos)
-    })
+      name: form.name.trim(),
+      category: Number(form.category),
+      location: form.location.trim(),
+      maximumCapacity: capacity,
+    }, docenteId)
   }
-
   return (
     <section className="crear-actividad-modal-content">
       <div className="page-top">
@@ -74,8 +100,8 @@ function CrearActividadPage({ onCancel, onSave, actividadInicial }) {
               <input
                 id="actividad-nombre"
                 type="text"
-                name="nombre"
-                value={form.nombre}
+                name="name"
+                value={form.name}
                 onChange={handleChange}
                 placeholder="Ej. Fútbol Infantil"
                 maxLength={100}
@@ -84,18 +110,18 @@ function CrearActividadPage({ onCancel, onSave, actividadInicial }) {
             </div>
 
             <div className="form-group">
-              <label htmlFor="actividad-categoria">Categoría</label>
+              <label htmlFor="actividad-categoria">Categoría de edad</label>
               <select
                 id="actividad-categoria"
-                name="categoria"
-                value={form.categoria}
+                name="category"
+                value={form.category}
                 onChange={handleChange}
                 required
               >
                 <option value="">Seleccionar categoría</option>
-                <option value="Deportes">Deportes</option>
-                <option value="Salud">Salud</option>
-                <option value="Bienestar">Bienestar</option>
+                <option value="0">Niños</option>
+                <option value="1">Adolescentes</option>
+                <option value="2">Adultos mayores</option>
               </select>
             </div>
 
@@ -104,26 +130,63 @@ function CrearActividadPage({ onCancel, onSave, actividadInicial }) {
               <input
                 id="actividad-cupos"
                 type="number"
-                name="cupos"
-                value={form.cupos}
+                name="maximumCapacity"
+                value={form.maximumCapacity}
                 onChange={handleChange}
                 placeholder="Ej. 20"
                 min="1"
+                max="500"
                 step="1"
                 required
               />
             </div>
 
+            <div className="form-group form-group-full">
+              <fieldset>
+                <legend>Días de la actividad</legend>
+
+                {[
+                  { label: 'Lunes', value: 1 },
+                  { label: 'Martes', value: 2 },
+                  { label: 'Miércoles', value: 4 },
+                  { label: 'Jueves', value: 8 },
+                  { label: 'Viernes', value: 16 },
+                  { label: 'Sábado', value: 32 },
+                  { label: 'Domingo', value: 64 },
+                ].map((day) => (
+                  <label key={day.value}>
+                    <input
+                      type="checkbox"
+                      checked={(form.days & day.value) !== 0}
+                      onChange={() => handleDayChange(day.value)}
+                    />
+                    {day.label}
+                  </label>
+                ))}
+              </fieldset>
+            </div>
+
             <div className="form-group">
-              <label htmlFor="actividad-horario">Horario</label>
+              <label htmlFor="actividad-inicio">Hora de inicio</label>
               <input
-                id="actividad-horario"
-                type="text"
-                name="horario"
-                value={form.horario}
+                id="actividad-inicio"
+                type="time"
+                name="startTime"
+                value={form.startTime}
                 onChange={handleChange}
-                placeholder="Ej. Lunes 18:00 hs"
-                maxLength={100}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="actividad-fin">Hora de fin</label>
+              <input
+                id="actividad-fin"
+                type="time"
+                name="endTime"
+                value={form.endTime}
+                onChange={handleChange}
+                required
               />
             </div>
 
@@ -132,62 +195,37 @@ function CrearActividadPage({ onCancel, onSave, actividadInicial }) {
               <input
                 id="actividad-lugar"
                 type="text"
-                name="lugar"
-                value={form.lugar}
+                name="location"
+                value={form.location}
                 onChange={handleChange}
                 placeholder="Ej. Polideportivo Municipal"
                 maxLength={100}
+                required
               />
             </div>
+            {!actividadInicial && (
+              <div className="form-group form-group-full">
+                <label htmlFor="actividad-docente">Docente (opcional)</label>
+                <select
+                  id="actividad-docente"
+                  value={docenteId}
+                  onChange={(e) => setDocenteId(e.target.value)}
+                  disabled={cargandoDocentes || Boolean(errorDocentes)}
+                >
+                  <option value="">Sin docente por ahora</option>
+                  {docentes.map((docente) => (
+                    <option key={docente.id} value={docente.id}>
+                      {docente.firstName} {docente.lastName}
+                    </option>
+                  ))}
+                </select>
+
+                {cargandoDocentes && <p>Cargando docentes...</p>}
+                {errorDocentes && <p role="alert">{errorDocentes}</p>}
+              </div>
+            )}
           </div>
         </div>
-
-        <div className="form-section">
-          <div className="form-section-title">
-            <span>02</span>
-            <div>
-              <h3>Descripción</h3>
-              <p>Agregá información adicional.</p>
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="actividad-descripcion">Descripción</label>
-            <textarea
-              id="actividad-descripcion"
-              name="descripcion"
-              value={form.descripcion}
-              onChange={handleChange}
-              placeholder="Descripción de la actividad..."
-              rows="3"
-              maxLength={500}
-            />
-          </div>
-        </div>
-
-        <div className="form-section">
-          <div className="form-section-title">
-            <span>03</span>
-            <div>
-              <h3>Estado</h3>
-              <p>Definí si la actividad estará disponible.</p>
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="actividad-estado">Estado</label>
-            <select
-              id="actividad-estado"
-              name="estado"
-              value={form.estado}
-              onChange={handleChange}
-            >
-              <option value="Activa">Activa</option>
-              <option value="Inactiva">Inactiva</option>
-            </select>
-          </div>
-        </div>
-
         <div className="form-actions">
           <button
             type="button"
@@ -197,8 +235,16 @@ function CrearActividadPage({ onCancel, onSave, actividadInicial }) {
             Cancelar
           </button>
 
-          <button type="submit" className="primary-button">
-            {actividadInicial ? 'Guardar cambios' : 'Guardar actividad'}
+          <button
+            type="submit"
+            className="primary-button"
+            disabled={guardando}
+          >
+            {guardando
+              ? 'Guardando...'
+              : actividadInicial
+                ? 'Guardar cambios'
+                : 'Guardar actividad'}
           </button>
         </div>
       </form>

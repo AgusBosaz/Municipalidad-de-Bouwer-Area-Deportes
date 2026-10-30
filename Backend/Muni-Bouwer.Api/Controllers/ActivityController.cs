@@ -66,4 +66,25 @@ public class ActivityController : ControllerBase
 
         return NoContent();
     }
+
+    [AllowAnonymous]
+    [HttpGet("public")]
+    public async Task<IActionResult> GetPublicActivities()
+    {
+        var activities = await _activityService.GetAllAsync();
+
+        var publicActivities = activities.Select(activity => new
+        {
+            activity.Id,
+            activity.Name,
+            activity.Category,
+            activity.StartTime,
+            activity.EndTime,
+            activity.Days,
+            activity.Location,
+            activity.MaximumCapacity
+        });
+
+        return Ok(publicActivities);
+    }
 }

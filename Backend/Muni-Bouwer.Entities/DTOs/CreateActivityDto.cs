@@ -20,4 +20,12 @@ public class CreateActivityDto
 
     [Range(1, 500, ErrorMessage = "La capacidad máxima debe ser de al menos 1 persona.")]
     public int MaximumCapacity { get; set; }
+
+    [ValidActivityDays]
+    public ActivityDays Days { get; set; }
+
+    [Required(ErrorMessage = "El lugar es obligatorio.")]
+    [StringLength(200, ErrorMessage = "El lugar no puede superar los 200 caracteres.")]
+    public string Location { get; set; } = string.Empty;
+
 }

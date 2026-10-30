@@ -1,53 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getPublicActivities } from "../services/activityService";
 import { Link } from "react-router-dom";
 import MunicipalBrand from "../components/MunicipalBrand";
 import "../styles/ActividadesInicio.css";
 import ImagenCampo from "../assets/images/imagen-campo.jpeg";
 
-const actividades = [
-  {
-    id: 1,
-    nombre: "Fútbol infantil",
-    categoria: "Fútbol",
-    dias: "Lunes y miércoles",
-    edad: "De 6 a 12 años",
-  },
-  {
-    id: 2,
-    nombre: "Yoga",
-    categoria: "Bienestar",
-    dias: "Martes y jueves",
-    edad: "Desde 16 años",
-  },
-  {
-    id: 3,
-    nombre: "Básquet juvenil",
-    categoria: "Básquet",
-    dias: "Lunes y miércoles",
-    edad: "De 12 a 18 años",
-  },
-  {
-    id: 4,
-    nombre: "Natación",
-    categoria: "Natación",
-    dias: "Martes y jueves",
-    edad: "De 6 a 18 años",
-  },
-  {
-    id: 5,
-    nombre: "Vóley",
-    categoria: "Vóley",
-    dias: "Lunes y viernes",
-    edad: "Desde 12 años",
-  },
-  {
-    id: 6,
-    nombre: "Actividad física",
-    categoria: "Actividad Física",
-    dias: "Lunes, miércoles y viernes",
-    edad: "Desde 16 años",
-  },
-];
 
 function IconoCalendario() {
   return (
@@ -71,6 +28,32 @@ function IconoPersonas() {
   );
 }
 
+const categoriasEdad = {
+  0: "Niños",
+  1: "Adolescentes",
+  2: "Adultos mayores",
+};
+
+const diasSemana = [
+  { nombre: "Lunes", valor: 1 },
+  { nombre: "Martes", valor: 2 },
+  { nombre: "Miércoles", valor: 4 },
+  { nombre: "Jueves", valor: 8 },
+  { nombre: "Viernes", valor: 16 },
+  { nombre: "Sábado", valor: 32 },
+  { nombre: "Domingo", valor: 64 },
+];
+
+function mostrarDias(days) {
+  const seleccionados = diasSemana
+    .filter((dia) => (days & dia.valor) !== 0)
+    .map((dia) => dia.nombre);
+
+  return seleccionados.length > 0
+    ? seleccionados.join(", ")
+    : "Días a confirmar";
+}
+
 function IconoUsuario() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -85,14 +68,37 @@ function ActividadesInicio() {
   const [busqueda, setBusqueda] = useState("");
   const [categoria, setCategoria] = useState("Todas");
 
+  const [actividades, setActividades] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+
+    getPublicActivities()
+      .then((data) => {
+        if (active) setActividades(data);
+      })
+      .catch(() => {
+        if (active) setError("No se pudieron cargar las actividades.");
+      })
+      .finally(() => {
+        if (active) setCargando(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   // Filtrar las actividades
   const actividadesFiltradas = actividades.filter((actividad) => {
-    const coincideBusqueda = actividad.nombre
+    const coincideBusqueda = actividad.name
       .toLowerCase()
       .includes(busqueda.toLowerCase());
 
     const coincideCategoria =
-      categoria === "Todas" || actividad.categoria === categoria;
+      categoria === "Todas" || String(actividad.category) === categoria;
 
     return coincideBusqueda && coincideCategoria;
   });
@@ -121,14 +127,15 @@ function ActividadesInicio() {
 
       {/* Banner principal */}
       <section className="inicio-banner"
-       style={{ backgroundImage: `linear-gradient(
+        style={{
+          backgroundImage: `linear-gradient(
         110deg,
         rgba(255, 235, 240, 1) 0%,
         rgba(255, 235, 240, 0.85) 28%,
         rgba(255, 235, 240, 0)),
       url(${ImagenCampo})`,
-  }}
->
+        }}
+      >
         <div className="inicio-banner-contenido">
           <div className="inicio-linea"></div>
           <h1>Encontrá tu próxima actividad</h1>
@@ -170,12 +177,9 @@ function ActividadesInicio() {
               onChange={(e) => setCategoria(e.target.value)}
             >
               <option value="Todas">Todas las categorías</option>
-              <option value="Fútbol">Fútbol</option>
-              <option value="Bienestar">Bienestar</option>
-              <option value="Básquet">Básquet</option>
-              <option value="Natación">Natación</option>
-              <option value="Vóley">Vóley</option>
-              <option value="Actividad Física">Actividad Física</option>
+              <option value="0">Niños</option>
+              <option value="1">Adolescentes</option>
+              <option value="2">Adultos mayores</option>
             </select>
           </div>
         </div>
@@ -190,37 +194,43 @@ function ActividadesInicio() {
 
               <div className="inicio-card-contenido">
                 <span className="inicio-categoria">
-                  {actividad.categoria}
+                  {categoriasEdad[actividad.category] ?? "Categoría a confirmar"}
                 </span>
 
-                <h3>{actividad.nombre}</h3>
+                <h3>{actividad.name}</h3>
 
                 <div className="inicio-card-informacion">
                   <div className="inicio-dato">
                     <IconoCalendario />
-                    <span>{actividad.dias}</span>
+                    <span>
+                      {mostrarDias(actividad.days)} · {actividad.startTime?.slice(0, 5)} a{" "}
+                      {actividad.endTime?.slice(0, 5)}
+                    </span>
                   </div>
 
                   <div className="inicio-dato">
                     <IconoPersonas />
-                    <span>{actividad.edad}</span>
+                    <span>{categoriasEdad[actividad.category] ?? "Categoría a confirmar"}</span>
                   </div>
 
-                  <span className="inicio-ver-detalles">
-                    Ver detalles
-                    <span aria-hidden="true">❯</span>
-                  </span>
+                  <div className="inicio-dato">
+                    <span>Lugar: {actividad.location || "A confirmar"}</span>
+                  </div>
                 </div>
               </div>
             </article>
           ))}
         </div>
 
-        {actividadesFiltradas.length === 0 && (
+        {cargando ? (
+          <p className="inicio-sin-resultados">Cargando actividades...</p>
+        ) : error ? (
+          <p className="inicio-sin-resultados" role="alert">{error}</p>
+        ) : actividadesFiltradas.length === 0 ? (
           <p className="inicio-sin-resultados">
             No se encontraron actividades.
           </p>
-        )}
+        ) : null}
       </main>
 
       {/* Pie de página */}

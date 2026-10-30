@@ -1,56 +1,110 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { getActivities } from '../services/activityService'
+import { getInstructors } from '../services/instructor-controller'
+import {
+  getAssignments,
+  assignInstructor,
+  unassignInstructor,
+} from '../services/assignmentService'
 import '../styles/asignaciones.css'
 
 function AsignacionesPage() {
   const [actividad, setActividad] = useState('')
   const [docente, setDocente] = useState('')
+  const [asignaciones, setAsignaciones] = useState([])
+  const [actividades, setActividades] = useState([])
+  const [docentes, setDocentes] = useState([])
+  const [cargando, setCargando] = useState(true)
+  const [error, setError] = useState('')
+  const [guardando, setGuardando] = useState(false)
+  const [eliminandoId, setEliminandoId] = useState(null)
 
-  const [asignaciones, setAsignaciones] = useState([
-    {
-      id: 1,
-      docente: 'María González',
-      actividad: 'Fútbol',
-      horario: 'Lunes y Miércoles - 18:00 hs',
-      estado: 'Activa'
-    },
-    {
-      id: 2,
-      docente: 'Juan Pérez',
-      actividad: 'Vóley',
-      horario: 'Martes y Jueves - 18:00 hs',
-      estado: 'Activa'
-    },
-    {
-      id: 3,
-      docente: 'Lucía Fernández',
-      actividad: 'Gimnasia',
-      horario: 'Lunes y Viernes - 17:00 hs',
-      estado: 'Activa'
+  useEffect(() => {
+    let active = true
+
+    Promise.all([
+      getActivities(),
+      getInstructors(),
+      getAssignments(),
+    ])
+      .then(([actividadesApi, docentesApi, asignacionesApi]) => {
+        if (!active) return
+
+        setActividades(actividadesApi)
+        setDocentes(docentesApi)
+        setAsignaciones(asignacionesApi)
+      })
+      .catch(() => {
+        if (active) setError('No se pudieron cargar los datos de asignaciones.')
+      })
+      .finally(() => {
+        if (active) setCargando(false)
+      })
+
+    return () => {
+      active = false
     }
-  ])
+  }, [])
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
 
-    if (!actividad || !docente) {
-      return
+    if (!actividad || !docente || guardando) return
+
+    setGuardando(true)
+
+    try {
+      const creada = await assignInstructor({
+        activityId: Number(actividad),
+        instructorId: Number(docente),
+      })
+
+      setAsignaciones((actuales) => [...actuales, creada])
+      setActividad('')
+      setDocente('')
+
+      const avisos = creada.warnings?.length
+        ? `\n\nAvisos:\n${creada.warnings.join('\n')}`
+        : ''
+
+      alert(`Asignación creada correctamente.${avisos}`)
+    } catch (error) {
+      let mensaje = ''
+
+      try {
+        mensaje = JSON.parse(error.message).message ?? ''
+      } catch {
+        mensaje = ''
+      }
+
+      alert(mensaje || 'No se pudo crear la asignación. Intentá nuevamente.')
+    } finally {
+      setGuardando(false)
     }
+  }
 
-    const nuevaAsignacion = {
-      id: Date.now(),
-      docente,
-      actividad,
-      horario: 'Horario a definir',
-      estado: 'Activa'
+  const handleDelete = async (id) => {
+    if (eliminandoId !== null) return
+
+    const confirmar = window.confirm(
+      '¿Querés quitar esta asignación?'
+    )
+
+    if (!confirmar) return
+
+    setEliminandoId(id)
+
+    try {
+      await unassignInstructor(id)
+
+      setAsignaciones((actuales) =>
+        actuales.filter((item) => item.id !== id)
+      )
+    } catch {
+      alert('No se pudo quitar la asignación. Intentá nuevamente.')
+    } finally {
+      setEliminandoId(null)
     }
-
-    setAsignaciones([
-      ...asignaciones,
-      nuevaAsignacion
-    ])
-
-    setActividad('')
-    setDocente('')
   }
 
   return (
@@ -91,27 +145,16 @@ function AsignacionesPage() {
               <select
                 value={actividad}
                 onChange={(e) => setActividad(e.target.value)}
+                disabled={cargando || Boolean(error)}
                 required
               >
-                <option value="">
-                  Seleccionar actividad
-                </option>
+                <option value="">Seleccionar actividad</option>
 
-                <option value="Fútbol">
-                  Fútbol
-                </option>
-
-                <option value="Vóley">
-                  Vóley
-                </option>
-
-                <option value="Gimnasia">
-                  Gimnasia
-                </option>
-
-                <option value="Yoga">
-                  Yoga
-                </option>
+                {actividades.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.name}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -121,35 +164,25 @@ function AsignacionesPage() {
               <select
                 value={docente}
                 onChange={(e) => setDocente(e.target.value)}
+                disabled={cargando || Boolean(error)}
                 required
               >
-                <option value="">
-                  Seleccionar docente
-                </option>
+                <option value="">Seleccionar docente</option>
 
-                <option value="María González">
-                  María González
-                </option>
-
-                <option value="Juan Pérez">
-                  Juan Pérez
-                </option>
-
-                <option value="Lucía Fernández">
-                  Lucía Fernández
-                </option>
-
-                <option value="Carlos Rodríguez">
-                  Carlos Rodríguez
-                </option>
+                {docentes.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.firstName} {item.lastName}
+                  </option>
+                ))}
               </select>
             </div>
 
             <button
               type="submit"
               className="primary-button assignment-submit"
+              disabled={guardando || cargando || Boolean(error)}
             >
-              Crear asignación
+              {guardando ? 'Guardando...' : 'Crear asignación'}
             </button>
 
           </form>
@@ -172,48 +205,41 @@ function AsignacionesPage() {
           </div>
 
           <div className="assignment-list">
+            {cargando ? (
+              <p>Cargando asignaciones...</p>
+            ) : error ? (
+              <p role="alert">{error}</p>
+            ) : asignaciones.length === 0 ? (
+              <p>No hay asignaciones registradas.</p>
+            ) : (
+              asignaciones.map((item) => (
+                <div className="assignment-item" key={item.id}>
+                  <div className="assignment-avatar">
+                    {item.instructorName?.charAt(0)}
+                  </div>
 
-            {asignaciones.map((item) => (
-              <div
-                className="assignment-item"
-                key={item.id}
-              >
+                  <div className="assignment-info">
+                    <strong>{item.instructorName}</strong>
+                    <span>{item.activityName}</span>
+                    <small>
+                      {item.startTime?.slice(0, 5)} a {item.endTime?.slice(0, 5)}
+                    </small>
+                  </div>
 
-                <div className="assignment-avatar">
-                  {item.docente.charAt(0)}
+                  <div className="assignment-actions">
+                    <span className="status-badge status-active">Activa</span>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(item.id)}
+                      disabled={eliminandoId !== null}
+                      aria-label={`Quitar asignación de ${item.instructorName} en ${item.activityName}`}
+                    >
+                      {eliminandoId === item.id ? 'Quitando...' : '⌫'}
+                    </button>
+                  </div>
                 </div>
-
-                <div className="assignment-info">
-
-                  <strong>
-                    {item.docente}
-                  </strong>
-
-                  <span>
-                    {item.actividad}
-                  </span>
-
-                  <small>
-                    {item.horario}
-                  </small>
-
-                </div>
-
-                <div className="assignment-actions">
-
-                  <span className="status-badge status-active">
-                    {item.estado}
-                  </span>
-
-                  <button>
-                    ⌫
-                  </button>
-
-                </div>
-
-              </div>
-            ))}
-
+              ))
+            )}
           </div>
 
         </div>

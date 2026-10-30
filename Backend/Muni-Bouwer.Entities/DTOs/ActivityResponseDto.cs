@@ -9,6 +9,9 @@ public class ActivityResponseDto
     public AgeCategory Category { get; set; }
     public TimeOnly StartTime { get; set; }
     public TimeOnly EndTime { get; set; }
+    public ActivityDays Days { get; set; }
+    public string? Location { get; set; }
     public int MaximumCapacity { get; set; }
     public int EnrolledStudentsCount { get; set; }
+
 }
