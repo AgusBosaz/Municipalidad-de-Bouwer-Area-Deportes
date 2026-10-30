@@ -1,0 +1,61 @@
+.alumnos-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.alumnos-page h1, .alumnos-page h2 { color: #333; }
+.alumnos-page p { color: #777; }
+.alumnos-card, .alumnos-list {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.04);
+}
+.alumnos-search, .alumnos-form label {
+  display: grid;
+  gap: .4rem;
+  font-weight: 600;
+  margin: 1rem 0;
+}
+.alumnos-search input, .alumnos-form input, .alumnos-form textarea {
+  width: 100%;
+  min-width: 0;
+  padding: .75rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font: inherit;
+}
+.alumnos-form textarea { min-height: 6rem; resize: vertical; }
+.alumnos-primary, .alumnos-secondary, .alumnos-tabs button {
+  padding: .7rem 1rem;
+  border-radius: 8px;
+  font: inherit;
+  cursor: pointer;
+}
+.alumnos-primary { color: white; background: #9a1b45; border: 1px solid #9a1b45; }
+.alumnos-secondary, .alumnos-tabs button { color: #9a1b45; background: white; border: 1px solid #ddd; }
+.alumnos-primary:hover:not(:disabled) { background: #801638; }
+.alumnos-secondary:hover:not(:disabled), .alumnos-tabs button:hover:not(:disabled) { background: #f8eaf0; }
+.alumnos-tabs { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1.5rem; }
+.alumnos-tabs button[aria-pressed="true"] { color: white; background: #9a1b45; }
+.alumnos-tabs button[aria-pressed="true"]:hover { background: #801638; }
+.alumnos-page button:disabled { opacity: .55; cursor: not-allowed; }
+.alumnos-list, .alumnos-documents { list-style: none; }
+.alumnos-list li, .alumnos-documents li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+.alumnos-documents { padding: 0; }
+.alumnos-message { padding: .75rem; background: #f8f3f5; border-radius: 8px; }
+@media (max-width: 700px) {
+  .alumnos-page { padding: 1rem; }
+  .alumnos-card, .alumnos-list { padding: 1rem; }
+  .alumnos-list li, .alumnos-documents li { align-items: stretch; flex-direction: column; }
+}
