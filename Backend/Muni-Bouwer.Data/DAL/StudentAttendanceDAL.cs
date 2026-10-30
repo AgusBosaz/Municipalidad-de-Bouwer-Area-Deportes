@@ -33,6 +33,39 @@ public class StudentAttendanceDal
         return await query.ToListAsync();
     }
 
+    public async Task<List<AttendanceHistoryDto>> GetHistoryAsync(
+        int? instructorId = null)
+    {
+        IQueryable<StudentAttendance> query = _context.StudentAttendances;
+
+        if (instructorId is int id)
+        {
+            query = query.Where(attendance =>
+                attendance.StudentActivity.Student.IsActive &&
+                attendance.StudentActivity.Activity.IsActive &&
+                attendance.StudentActivity.Enrollments.Any(enrollment =>
+                    enrollment.Status == EnrollmentStatuses.Active) &&
+                attendance.StudentActivity.Activity.InstructorActivities.Any(
+                    assignment => assignment.InstructorId == id &&
+                                  assignment.IsActive));
+        }
+
+        return await query
+            .Select(attendance => new AttendanceHistoryDto
+            {
+                AttendanceId = attendance.Id,
+                ActivityId = attendance.StudentActivity.ActivityId,
+                ActivityName = attendance.StudentActivity.Activity.Name,
+                StudentId = attendance.StudentActivity.StudentId,
+                StudentName = attendance.StudentActivity.Student.FirstName + " " +
+                              attendance.StudentActivity.Student.LastName,
+                StudentDni = attendance.StudentActivity.Student.Dni,
+                Date = attendance.Date,
+                IsPresent = attendance.IsPresent
+            })
+            .ToListAsync();
+    }
+
     public async Task<StudentAttendance?> GetByIdAsync(int id)
     {
         return await _context.StudentAttendances

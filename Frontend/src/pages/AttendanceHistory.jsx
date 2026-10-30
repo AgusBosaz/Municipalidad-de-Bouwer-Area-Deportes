@@ -1,54 +1,35 @@
-import { useMemo, useState } from 'react'
-import { CalendarDays, ClipboardCheck, UsersRound, UserCheck, UserX, Eye, X, Search, Filter} from 'lucide-react'
+import { useMemo, useState, useEffect } from 'react'
+import { getAttendanceHistory } from '../services/attendanceService'
+import { CalendarDays, ClipboardCheck, UsersRound, UserCheck, UserX, Eye, X, Search } from 'lucide-react'
 import '../styles/attendanceHistory.css'
 
-const initialAttendanceRecords = [
-  {
-    id: 1,
-    activityName: 'Fútbol Infantil',
-    date: '2026-10-19',
-    teacherName: 'Juan Pérez',
-    status: 'Registrada',
-    students: [
-      { id: 1, name: 'Lucas González', document: '45123456', present: true },
-      { id: 2, name: 'Martina López', document: '46234567', present: true },
-      { id: 3, name: 'Tomás Rodríguez', document: '47345678', present: false },
-      { id: 4, name: 'Sofía Fernández', document: '48456789', present: true }
-    ]
-  },
-  {
-    id: 2,
-    activityName: 'Natación Adultos',
-    date: '2026-10-20',
-    teacherName: 'María Gómez',
-    status: 'Registrada',
-    students: [
-      { id: 5, name: 'Carlos Díaz', document: '30123456', present: true },
-      { id: 6, name: 'Ana Martínez', document: '31234567', present: false },
-      { id: 7, name: 'Pedro Sánchez', document: '32345678', present: true }
-    ]
-  },
-  {
-    id: 3,
-    activityName: 'Yoga',
-    date: '2026-10-21',
-    teacherName: 'Laura Torres',
-    status: 'Registrada',
-    students: [
-      { id: 8, name: 'Valentina Ruiz', document: '40123456', present: true },
-      { id: 9, name: 'Santiago Romero', document: '41234567', present: true },
-      { id: 10, name: 'Camila Herrera', document: '42345678', present: true }
-    ]
-  },
-  {
-    id: 4,
-    activityName: 'Básquet Juvenil',
-    date: '2026-10-23',
-    teacherName: 'Juan Pérez',
-    status: 'Pendiente',
-    students: []
-  }
-]
+function agruparAsistencias(asistencias) {
+  const grupos = new Map()
+
+  asistencias.forEach((asistencia) => {
+    const clave = `${asistencia.activityId}-${asistencia.date}`
+
+    if (!grupos.has(clave)) {
+      grupos.set(clave, {
+        id: clave,
+        activityName: asistencia.activityName,
+        date: asistencia.date,
+        students: [],
+      })
+    }
+
+    grupos.get(clave).students.push({
+      id: asistencia.attendanceId,
+      name: asistencia.studentName,
+      document: asistencia.studentDni,
+      present: asistencia.isPresent,
+    })
+  })
+
+  return [...grupos.values()].sort((a, b) =>
+    b.date.localeCompare(a.date)
+  )
+}
 
 function formatDate(date) {
   if (!date) return '—'
@@ -61,26 +42,43 @@ function formatDate(date) {
 }
 
 function AttendanceHistoryPage() {
-  const [attendanceRecords] = useState(initialAttendanceRecords)
+  const [attendanceRecords, setAttendanceRecords] = useState([])
+  const [cargando, setCargando] = useState(true)
+  const [error, setError] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedDate, setSelectedDate] = useState('')
-  const [selectedStatus, setSelectedStatus] = useState('Todos')
   const [selectedRecord, setSelectedRecord] = useState(null)
+
+  useEffect(() => {
+    let active = true
+
+    getAttendanceHistory()
+      .then((data) => {
+        if (active) setAttendanceRecords(agruparAsistencias(data))
+      })
+      .catch(() => {
+        if (active) setError('No se pudo cargar el historial de asistencia.')
+      })
+      .finally(() => {
+        if (active) setCargando(false)
+      })
+
+    return () => {
+      active = false
+    }
+  }, [])
 
   const filteredRecords = useMemo(() => {
     return attendanceRecords.filter((record) => {
-      const matchesSearch =
-        record.activityName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        record.teacherName.toLowerCase().includes(searchTerm.toLowerCase())
+      const matchesSearch = record.activityName
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase())
 
       const matchesDate = !selectedDate || record.date === selectedDate
 
-      const matchesStatus =
-        selectedStatus === 'Todos' || record.status === selectedStatus
-
-      return matchesSearch && matchesDate && matchesStatus
+      return matchesSearch && matchesDate
     })
-  }, [attendanceRecords, searchTerm, selectedDate, selectedStatus])
+  }, [attendanceRecords, searchTerm, selectedDate])
 
   const totalStudents = filteredRecords.reduce(
     (total, record) => total + record.students.length,
@@ -98,7 +96,6 @@ function AttendanceHistoryPage() {
   const clearFilters = () => {
     setSearchTerm('')
     setSelectedDate('')
-    setSelectedStatus('Todos')
   }
 
   return (
@@ -117,7 +114,7 @@ function AttendanceHistoryPage() {
           </div>
           <div>
             <p>Registros encontrados</p>
-            <strong>{filteredRecords.length}</strong>
+            <strong>{cargando || error ? '—' : filteredRecords.length}</strong>
           </div>
         </article>
 
@@ -126,8 +123,8 @@ function AttendanceHistoryPage() {
             <UsersRound size={23} />
           </div>
           <div>
-            <p>Alumnos registrados</p>
-            <strong>{totalStudents}</strong>
+            <p>Asistencias de alumnos</p>
+            <strong>{cargando || error ? '—' : totalStudents}</strong>
           </div>
         </article>
 
@@ -137,7 +134,7 @@ function AttendanceHistoryPage() {
           </div>
           <div>
             <p>Presentes</p>
-            <strong>{totalPresent}</strong>
+            <strong>{cargando || error ? '—' : totalPresent}</strong>
           </div>
         </article>
 
@@ -147,7 +144,7 @@ function AttendanceHistoryPage() {
           </div>
           <div>
             <p>Ausentes</p>
-            <strong>{totalAbsent}</strong>
+            <strong>{cargando || error ? '—' : totalAbsent}</strong>
           </div>
         </article>
       </section>
@@ -162,7 +159,7 @@ function AttendanceHistoryPage() {
 
         <div className="attendance-history-filters">
           <label className="attendance-filter search-filter">
-            <span>Buscar actividad o docente</span>
+            <span>Buscar actividad</span>
             <div className="attendance-input-wrapper">
               <Search size={18} />
               <input
@@ -185,22 +182,6 @@ function AttendanceHistoryPage() {
               />
             </div>
           </label>
-
-          <label className="attendance-filter">
-            <span>Estado del registro</span>
-            <div className="attendance-input-wrapper">
-              <Filter size={18} />
-              <select
-                value={selectedStatus}
-                onChange={(event) => setSelectedStatus(event.target.value)}
-              >
-                <option value="Todos">Todos</option>
-                <option value="Registrada">Registrada</option>
-                <option value="Pendiente">Pendiente</option>
-              </select>
-            </div>
-          </label>
-
           <button
             type="button"
             className="attendance-clear-button"
@@ -216,71 +197,64 @@ function AttendanceHistoryPage() {
               <tr>
                 <th>Actividad</th>
                 <th>Fecha</th>
-                <th>Docente</th>
                 <th>Presentes</th>
                 <th>Ausentes</th>
-                <th>Estado</th>
                 <th>Acciones</th>
               </tr>
             </thead>
 
             <tbody>
-              {filteredRecords.map((record) => {
-                const presentCount = record.students.filter(
-                  (student) => student.present
-                ).length
-
-                const absentCount = record.students.filter(
-                  (student) => !student.present
-                ).length
-
-                return (
-                  <tr key={record.id}>
-                    <td className="attendance-activity-name">
-                      {record.activityName}
-                    </td>
-                    <td>{formatDate(record.date)}</td>
-                    <td>{record.teacherName}</td>
-                    <td>
-                      <span className="attendance-count present-count">
-                        {presentCount}
-                      </span>
-                    </td>
-                    <td>
-                      <span className="attendance-count absent-count">
-                        {absentCount}
-                      </span>
-                    </td>
-                    <td>
-                      <span
-                        className={`attendance-status ${record.status === 'Registrada'
-                            ? 'status-registered'
-                            : 'status-pending'
-                          }`}
-                      >
-                        {record.status}
-                      </span>
-                    </td>
-                    <td>
-                      <button
-                        type="button"
-                        className="attendance-detail-button"
-                        onClick={() => setSelectedRecord(record)}
-                      >
-                        <Eye size={16} />
-                        Ver detalle
-                      </button>
-                    </td>
-                  </tr>
-                )
-              })}
-
-              {filteredRecords.length === 0 && (
+              {cargando ? (
                 <tr>
-                  <td colSpan="7" className="attendance-history-empty">
+                  <td colSpan="5">Cargando historial...</td>
+                </tr>
+              ) : error ? (
+                <tr>
+                  <td colSpan="5" role="alert">{error}</td>
+                </tr>
+              ) : filteredRecords.length === 0 ? (
+                <tr>
+                  <td colSpan="5" className="attendance-history-empty">
                     No se encontraron registros con esos filtros.
                   </td>
                 </tr>
+              ) : (
+                filteredRecords.map((record) => {
+                  const presentCount = record.students.filter(
+                    (student) => student.present
+                  ).length
+
+                  const absentCount = record.students.length - presentCount
+
+                  return (
+                    <tr key={record.id}>
+                      <td className="attendance-activity-name">
+                        {record.activityName}
+                      </td>
+                      <td>{formatDate(record.date)}</td>
+                      <td>
+                        <span className="attendance-count present-count">
+                          {presentCount}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="attendance-count absent-count">
+                          {absentCount}
+                        </span>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          className="attendance-detail-button"
+                          onClick={() => setSelectedRecord(record)}
+                        >
+                          <Eye size={16} />
+                          Ver detalle
+                        </button>
+                      </td>
+                    </tr>
+                  )
+                })
               )}
             </tbody>
           </table>
@@ -322,12 +296,6 @@ function AttendanceHistoryPage() {
               <p>
                 <strong>Fecha:</strong> {formatDate(selectedRecord.date)}
               </p>
-              <p>
-                <strong>Docente:</strong> {selectedRecord.teacherName}
-              </p>
-              <p>
-                <strong>Estado:</strong> {selectedRecord.status}
-              </p>
             </div>
 
             {selectedRecord.students.length > 0 ? (
@@ -348,8 +316,8 @@ function AttendanceHistoryPage() {
                         <td>
                           <span
                             className={`attendance-status ${student.present
-                                ? 'status-registered'
-                                : 'status-pending'
+                              ? 'status-registered'
+                              : 'status-pending'
                               }`}
                           >
                             {student.present ? 'Presente' : 'Ausente'}

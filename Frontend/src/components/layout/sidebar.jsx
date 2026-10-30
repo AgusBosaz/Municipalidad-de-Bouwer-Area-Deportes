@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom'
+import logoBouwer from '../../assets/images/logo-bouwer.png'
 import {
   CalendarDays,
   CircleCheck,
@@ -35,12 +36,12 @@ function Sidebar({ isOpen, onNavigate, session, onLogout }) {
       className={`sidebar ${isOpen ? 'sidebar-open' : ''}`}
     >
       <div className="sidebar-brand">
-        <div className="sidebar-brand-icon">
-          AD
+        <div className="sidebar-brand-icon" aria-hidden="true">
+          <img src={logoBouwer} alt="" />
         </div>
 
         <div>
-          <strong>Área de Deportes</strong>
+          <strong>Área de Deportes y Recreación</strong>
           <span>Municipalidad de Bouwer</span>
         </div>
       </div>
