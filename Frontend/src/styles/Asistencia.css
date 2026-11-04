@@ -1,0 +1,152 @@
+.asistencia-filtros {
+  margin-bottom: 25px;
+}
+
+.asistencia-page .docente-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 16px;
+  color: #9a1b45;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.asistencia-activity-summary {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.asistencia-activity-summary .docente-activity-symbol {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  background: #f8eaf0;
+}
+
+.asistencia-activity-summary .docente-card-label { margin-top: 0; }
+.asistencia-activity-summary h2 { margin: 4px 0; color: #333; }
+.asistencia-activity-summary p { margin: 0; color: #777; }
+
+.asistencia-meta-row {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+  margin: 24px 0;
+}
+
+.asistencia-meta-row .form-group { margin: 0; }
+.asistencia-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  color: #555;
+}
+.asistencia-count svg { color: #9a1b45; flex-shrink: 0; }
+.asistencia-heading { flex-wrap: wrap; }
+.docente-total-pill {
+  padding: 7px 12px;
+  border-radius: 20px;
+  background: #f8eaf0;
+  color: #9a1b45;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.asistencia-checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.asistencia-table {
+  margin-top: 10px;
+}
+
+.asistencia-table input[type="checkbox"] {
+  width: 17px;
+  height: 17px;
+  accent-color: #9a1b45;
+  flex: 0 0 17px;
+  margin: 0;
+  cursor: pointer;
+}
+
+.asistencia-success {
+  margin-top: 20px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: #eaf6ee;
+  color: #267344;
+}
+
+.asistencia-table td:last-child,
+.asistencia-table th:last-child {
+  width: 120px;
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  .asistencia-page {
+    padding: 20px 0 30px;
+  }
+
+  .asistencia-page .page-header h1 {
+    font-size: 25px;
+  }
+
+  .asistencia-page .content-card {
+    padding: 16px;
+  }
+
+  .asistencia-filtros {
+    grid-template-columns: 1fr;
+  }
+
+  .asistencia-filtros input,
+  .asistencia-filtros select {
+    font-size: 16px;
+  }
+
+  .asistencia-table th,
+  .asistencia-table td {
+    padding: 12px 8px;
+  }
+
+  .asistencia-meta-row { align-items: stretch; flex-direction: column; gap: 8px; }
+  .asistencia-meta-row .form-group { margin-bottom: 8px; }
+  .asistencia-count { min-height: 32px; }
+
+  .asistencia-table table,
+  .asistencia-table tbody,
+  .asistencia-table tr,
+  .asistencia-table td { display: block; width: 100%; }
+  .asistencia-table thead { display: none; }
+  .asistencia-table tr { border: 1px solid #eee; border-radius: 10px; margin-bottom: 12px; }
+  .asistencia-table td { display: flex; justify-content: space-between; align-items: center; gap: 12px; overflow-wrap: anywhere; }
+  .asistencia-table td::before { color: #777; font-size: 12px; font-weight: 600; }
+  .asistencia-table td:nth-child(1)::before { content: 'Alumno'; }
+  .asistencia-table td:nth-child(2)::before { content: 'DNI'; }
+  .asistencia-table td:nth-child(3)::before { content: 'Asistencia'; }
+
+  .asistencia-table th:last-child,
+  .asistencia-table td:last-child {
+    width: 100%;
+  }
+
+  .asistencia-page .form-actions { flex-wrap: wrap; }
+  .asistencia-page .form-actions .secondary-button,
+  .asistencia-page .form-actions .primary-button {
+    width: 100%;
+  }
+}

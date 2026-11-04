@@ -1,7 +1,23 @@
 // path starts with '/', without including /api.
 // For POST or PUT, pass body: JSON.stringify(data) in options.
+
+import { expireSession, getSession } from "./AuthSession"
+
 export async function apiRequest(path, options = {}) {
   const headers = new Headers(options.headers)
+
+  const token = getSession()?.token
+
+  const publicAuthPaths = [
+    '/Auth/login',
+    '/Auth/password-reset/request',
+    '/Auth/password-reset/confirm',
+    '/Activity/public',
+  ]
+
+  if (token && !publicAuthPaths.includes(path) && !headers.has('Authorization')) {
+    headers.set('Authorization', `Bearer ${token}`)
+  }
 
   if (typeof options.body === 'string' && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json')
@@ -10,6 +26,10 @@ export async function apiRequest(path, options = {}) {
   const response = await fetch(`/api${path}`, { ...options, headers })
 
   if (!response.ok) {
+    if (response.status === 401 && token && !publicAuthPaths.includes(path) &&
+        getSession()?.token === token) {
+      expireSession()
+    }
     const details = await response.text()
     const error = new Error(details || `HTTP error ${response.status}`)
     error.status = response.status

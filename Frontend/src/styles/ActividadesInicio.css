@@ -1,0 +1,446 @@
+/* Página general */
+.inicio-actividades {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #fafafa;
+  color: #202020;
+  font-family: Arial, sans-serif;
+}
+
+/* Encabezado */
+.inicio-header {
+  min-height: 94px;
+  padding: 8px 4%;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.inicio-marca {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* Reutilizar el logo del login */
+.inicio-marca .login-izquierda {
+  width: auto;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  box-shadow: none;
+  border: none;
+  display: block;
+}
+
+.inicio-marca .logo-contenedor {
+  margin: 0;
+  padding: 0;
+  width: auto;
+}
+
+.inicio-marca .logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.inicio-marca .logo-simbolo {
+  width: 78px;
+  height: 78px;
+  flex-shrink: 0;
+}
+
+.inicio-marca .logo-separador {
+  width: 2px;
+  height: 58px;
+  background: #981744;
+}
+
+.inicio-marca .logo-texto {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.inicio-marca .municipalidad {
+  color: #d35a70;
+  font-size: 17px;
+  font-weight: 799;
+}
+
+.inicio-marca .logo-texto h1 {
+  color: #981744;
+  font-size: 37px;
+  line-height: 1;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+.inicio-marca .logo-subtitulo,
+.inicio-marca .descripcion {
+  display: none;
+}
+
+.inicio-area {
+  border-left: 2px solid #981744;
+  padding-left: 20px;
+  height: 58px;
+  color: #981744;
+  font-size: 22px;
+  font-weight: 750;
+  text-align: center;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.2;
+ white-space: nowrap;
+}
+
+.inicio-navegacion {
+  display: flex;
+  align-items: center;
+  gap: 46px;
+}
+
+.inicio-navegacion a {
+  color: #252525;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.inicio-navegacion .inicio-boton-login {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #981744;
+  color: #fff;
+  padding: 13px 21px;
+  border-radius: 9px;
+  font-weight: 600;
+}
+
+.inicio-boton-login svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Banner */
+.inicio-banner {
+  background-size: cover;
+  background-position: center 70%;
+  background-repeat: no-repeat;
+
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  padding: 24px 4%;
+}
+
+.inicio-banner-contenido {
+  width: 100%;
+}
+
+.inicio-linea {
+  width: 30px;
+  height: 3px;
+  background: #981744;
+  border-radius: 4px;
+  margin-bottom: 17px;
+}
+
+.inicio-banner h1 {
+  color: #981744;
+  font-size: clamp(35px, 3.7vw, 58px);
+  font-weight: 850;
+  line-height: 1.1;
+  margin: 0 0 10px;
+}
+
+.inicio-banner p {
+  font-size: clamp(21px, 1.8vw, 28px);
+  margin: 0;
+  color: #292929;
+}
+
+/* Contenido */
+.inicio-contenido {
+  padding: 19px 4% 16px;
+  max-width: 1700px;
+  margin: 0 auto;
+}
+
+.inicio-superior {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.inicio-titulos h2 {
+  font-size: 34px;
+  margin: 0 0 3px;
+  line-height: 1.2;
+}
+
+.inicio-titulos p {
+  font-size: 19px;
+  color: #666;
+  margin: 0;
+}
+
+/* Buscador y categorías */
+.inicio-filtros {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.inicio-buscador {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 325px;
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid #dedede;
+  border-radius: 10px;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.inicio-buscador svg {
+  width: 21px;
+  height: 21px;
+  color: #666;
+  flex-shrink: 0;
+}
+
+.inicio-buscador input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+}
+
+.inicio-filtros select {
+  height: 44px;
+  min-width: 215px;
+  padding: 0 14px;
+  background: #fff;
+  border: 1px solid #dedede;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #292929;
+}
+
+/* Grilla de actividades */
+.inicio-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.inicio-card {
+  min-width: 0;
+  overflow: hidden;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.09);
+}
+
+.inicio-card-imagen {
+  display: block;
+  width: 100%;
+  height: 132px;
+  object-fit: cover;
+  background: #ededed;
+}
+
+/* Información de cada tarjeta */
+.inicio-card-contenido {
+  position: relative;
+  padding: 21px 18px 16px;
+}
+
+.inicio-categoria {
+  position: absolute;
+  top: -17px;
+  left: 18px;
+  padding: 6px 18px;
+  background: #981744;
+  color: #fff;
+  border: 4px solid white;
+  border-radius: 25px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.inicio-card:nth-child(2) .inicio-categoria,
+.inicio-card:nth-child(4) .inicio-categoria,
+.inicio-card:nth-child(6) .inicio-categoria {
+  background: #f2b1c3;
+  color: #981744;
+}
+
+.inicio-card-contenido h3 {
+  font-size: 20px;
+  line-height: 1.2;
+  margin: 0 0 11px;
+  font-weight: 800;
+}
+
+.inicio-card-informacion {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.inicio-dato {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #555;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.inicio-dato svg {
+  width: 18px;
+  height: 18px;
+  color: #981744;
+  flex-shrink: 0;
+}
+
+.inicio-ver-detalles {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: #981744;
+  font-size: 12px;
+  font-weight: 700;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.inicio-ver-detalles span {
+  font-size: 14px;
+}
+
+.inicio-sin-resultados {
+  padding: 30px 0;
+  text-align: center;
+  color: #666;
+}
+
+/* Pie de página */
+.inicio-footer {
+  background: #981744;
+  color: #fff;
+  text-align: center;
+  padding: 15px;
+  font-size: 13px;
+  margin-top: auto;
+}
+
+/* Tablets */
+@media (max-width: 1100px) {
+  .inicio-area {
+    font-size: 17px;
+  }
+
+  .inicio-marca .logo-texto h1 {
+    font-size: 29px;
+  }
+
+  .inicio-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .inicio-superior {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+/* Celulares */
+@media (max-width: 650px) {
+  .inicio-header {
+    flex-wrap: wrap;
+    padding: 12px 5%;
+  }
+
+  .inicio-marca {
+    gap: 10px;
+  }
+
+  .inicio-marca .logo-simbolo {
+    width: 50px;
+    height: 50px;
+  }
+
+  .inicio-marca .logo-separador {
+    height: 40px;
+  }
+
+  .inicio-marca .logo-texto h1 {
+    font-size: 23px;
+  }
+
+  .inicio-marca .municipalidad {
+    font-size: 11px;
+  }
+
+  .inicio-area {
+    font-size: 12px;
+    padding-left: 10px;
+  }
+
+  .inicio-navegacion {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .inicio-banner {
+    min-height: 180px;
+    padding: 25px 5%;
+  }
+
+  .inicio-contenido {
+    padding: 24px 5%;
+  }
+
+  .inicio-titulos h2 {
+    font-size: 27px;
+  }
+
+  .inicio-titulos p {
+    font-size: 15px;
+  }
+
+  .inicio-filtros {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .inicio-buscador,
+  .inicio-filtros select {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .inicio-grid {
+    grid-template-columns: 1fr;
+  }
+}

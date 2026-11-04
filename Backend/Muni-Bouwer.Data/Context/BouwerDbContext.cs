@@ -23,6 +23,7 @@ public class BouwerDbContext : DbContext
     public DbSet<MedicalRecord> MedicalRecords { get; set; }
     public DbSet<StudentAttendance> StudentAttendances { get; set; }
     public DbSet<InstructorAttendance> InstructorAttendances { get; set; }
+    public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -39,18 +40,52 @@ public class BouwerDbContext : DbContext
             .IsUnique();
 
         modelBuilder.Entity<User>()
+            .Property(user => user.Email)
+            .HasMaxLength(254);
+
+        // Students may share a family email; credentialed accounts need a unique address.
+        modelBuilder.Entity<User>()
+            .HasIndex(user => user.Email)
+            .IsUnique()
+            .HasFilter("[Email] IS NOT NULL AND [UserType] IN (N'Coordinator', N'Instructor')");
+
+        modelBuilder.Entity<User>()
             .HasMany(user => user.Roles)
             .WithMany(role => role.Users)
             .UsingEntity(table => table.ToTable("UserRoles"));
+
+        modelBuilder.Entity<PasswordResetToken>()
+            .HasIndex(token => token.TokenHash)
+            .IsUnique();
+
+        modelBuilder.Entity<PasswordResetToken>()
+            .Property(token => token.TokenHash)
+            .HasMaxLength(64);
+
+        modelBuilder.Entity<PasswordResetToken>()
+            .Property(token => token.EmailAtIssue)
+            .HasMaxLength(254);
 
         modelBuilder.Entity<Role>()
             .HasMany(role => role.Permissions)
             .WithMany(permission => permission.Roles)
             .UsingEntity(table => table.ToTable("RolePermissions"));
 
+        modelBuilder.Entity<Role>()
+            .Property(role => role.IsActive)
+            .HasDefaultValue(true);
+
         modelBuilder.Entity<Activity>()
             .Property(activity => activity.Category)
             .HasConversion<string>();
+
+        modelBuilder.Entity<Activity>()
+            .Property(activity => activity.IsActive)
+            .HasDefaultValue(true);
+
+        modelBuilder.Entity<InstructorActivity>()
+            .Property(assignment => assignment.IsActive)
+            .HasDefaultValue(true);
 
         modelBuilder.Entity<InstructorActivity>()
             .HasOne(assignment => assignment.Instructor)
@@ -78,6 +113,10 @@ public class BouwerDbContext : DbContext
             .HasForeignKey(enrollment => enrollment.StudentActivityId);
 
         modelBuilder.Entity<Documentation>()
+            .Property(document => document.IsActive)
+            .HasDefaultValue(true);
+
+        modelBuilder.Entity<Documentation>()
             .HasOne(document => document.Student)
             .WithMany(student => student.Documents)
             .HasForeignKey(document => document.StudentId);
@@ -96,5 +135,9 @@ public class BouwerDbContext : DbContext
             .HasOne(attendance => attendance.InstructorActivity)
             .WithMany(assignment => assignment.Attendances)
             .HasForeignKey(attendance => attendance.InstructorActivityId);
+
+        modelBuilder.Entity<Permission>()
+            .Property(permission => permission.IsActive)
+            .HasDefaultValue(true);
     }
 }

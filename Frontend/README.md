@@ -47,6 +47,18 @@ Vite reenvia /api/... al backend conservando la ruta. No se necesitan variables 
 - src/assets/images: imagenes importadas desde React.
 - public: archivos publicos servidos directamente.
 
+## Pantalla de recuperacion de contraseña
+
+La ruta publica `/recuperar-contrasena` muestra `src/pages/RecoverPassword.jsx`
+desde el enlace del login. La marca municipal se encuentra en
+`src/components/MunicipalBrand.jsx` y se comparte con el login. Ambas pantallas
+utilizan `src/styles/Login.css`; `src/styles/recovery.css` contiene solo los ajustes
+del formulario de recuperacion. El enlace para volver al login funciona.
+
+El campo de correo es obligatorio y utiliza la validacion del navegador. Por
+ahora no se solicitan enlaces a la API ni se envian correos; el formulario informa
+esa limitacion. La recuperacion real requiere definir el flujo y su endpoint.
+
 ## Solicitudes a la API
 
 `src/services/api.js` exporta `apiRequest(path, options)`.
