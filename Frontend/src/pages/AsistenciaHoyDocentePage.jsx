@@ -136,8 +136,7 @@ function AsistenciaHoyDocentePage() {
 
           {clasesHoy.length === 0 ? (
             <p className="docente-history-empty">
-              Hoy no tenés clases programadas. Si necesitás cargar una clase de otro día,
-              elegí la actividad en la lista de abajo.
+              Hoy no tenés clases programadas. Podés consultar tus otras actividades abajo.
             </p>
           ) : (
             <div className="docente-activity-grid">
@@ -184,7 +183,7 @@ function AsistenciaHoyDocentePage() {
               <div className="docente-section-heading">
                 <div>
                   <h2>Otras actividades asignadas</h2>
-                  <p>No tienen clase hoy. Podés cargar la asistencia de otra fecha.</p>
+                  <p>No tienen clase programada para hoy.</p>
                 </div>
               </div>
 
@@ -205,7 +204,7 @@ function AsistenciaHoyDocentePage() {
                       className="docente-text-link"
                       to={'/asistencia/' + actividad.activityId}
                     >
-                      Cargar otra fecha <ArrowRight size={15} />
+                      Tomar asistencia de hoy <ArrowRight size={15} />
                     </Link>
                   </li>
                 ))}

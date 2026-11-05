@@ -165,7 +165,7 @@ function DocenteInicioPage() {
       <div className="docente-section-heading docente-history-heading">
         <div>
           <h2>Historial de asistencia</h2>
-          <p>Últimas clases registradas en tus actividades. Podés ver el detalle o corregir la asistencia.</p>
+          <p>Últimas clases registradas en las actividades que tenés asignadas actualmente. Podés ver o corregir la asistencia.</p>
         </div>
         <Link to="/attendance-history">Ver historial completo</Link>
       </div>
@@ -174,7 +174,7 @@ function DocenteInicioPage() {
       {errorHistorial && <p role="alert">{errorHistorial}</p>}
       {!cargandoHistorial && !errorHistorial && clasesRecientes.length === 0 && (
         <p className="docente-history-empty">
-          Todavía no registraste asistencia en tus clases.
+          Todavía no hay asistencias en tus actividades asignadas.
         </p>
       )}
 

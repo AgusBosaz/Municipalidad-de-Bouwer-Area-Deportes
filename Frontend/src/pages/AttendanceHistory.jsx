@@ -117,7 +117,7 @@ function AttendanceHistoryPage() {
           <p>
             {isCoordinator
               ? 'Consultá y corregí los registros de asistencia de todas las actividades.'
-              : 'Consultá y corregí la asistencia de las clases que tenés asignadas.'}
+              : 'Consultá y corregí la asistencia de las actividades que tenés asignadas actualmente.'}
           </p>
         </div>
       </header>

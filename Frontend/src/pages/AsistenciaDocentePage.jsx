@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useAvisos } from '../components/AvisosContext'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, CalendarDays, CheckCircle2, UsersRound } from 'lucide-react'
 import { getSession } from '../services/AuthSession'
@@ -20,6 +21,7 @@ function fechaLocal() {
 }
 
 function AsistenciaDocentePage() {
+  const { preguntar } = useAvisos()
   const { actividadId } = useParams()
   const navigate = useNavigate()
   const { pathname } = useLocation()
@@ -27,7 +29,7 @@ function AsistenciaDocentePage() {
   const backPath = isCoordinator || pathname.startsWith('/asistencia/')
     ? '/asistencia'
     : '/mis-actividades'
-  const [fecha, setFecha] = useState(fechaLocal)
+  const [fecha] = useState(fechaLocal)
   const [actividad, setActividad] = useState(null)
   const [alumnos, setAlumnos] = useState([])
   const [asistencia, setAsistencia] = useState({})
@@ -93,12 +95,16 @@ function AsistenciaDocentePage() {
   async function guardarAsistencia() {
     if (!fecha || alumnos.length === 0 || !actividad) return
 
-    const confirmar = window.confirm(
+    const confirmar = await preguntar(
       '¿Confirmás guardar la asistencia de ' + actividad.name +
       ' del ' + fecha + '? Presentes: ' + presentes +
       ' de ' + alumnos.length + '.',
     )
     if (!confirmar) return
+    if (fecha !== fechaLocal()) {
+      setError('La fecha cambió. Actualizá la página para tomar la asistencia de hoy.')
+      return
+    }
 
     setSaving(true)
     setError('')
@@ -118,8 +124,8 @@ function AsistenciaDocentePage() {
     }
   }
 
-  function cancelar() {
-    if (window.confirm('¿Querés salir y descartar los cambios de asistencia?')) {
+  async function cancelar() {
+    if (await preguntar('¿Querés salir y descartar los cambios de asistencia?')) {
       navigate(backPath)
     }
   }
@@ -160,10 +166,7 @@ function AsistenciaDocentePage() {
                 id="fecha-asistencia"
                 type="date"
                 value={fecha}
-                onChange={(event) => setFecha(event.target.value)}
-                max={fechaLocal()}
-                disabled={saving}
-                required
+                disabled
               />
             </div>
             <div className="asistencia-count">

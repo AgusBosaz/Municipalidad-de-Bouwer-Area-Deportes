@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { useAvisos } from './AvisosContext'
 import { PencilLine, X } from 'lucide-react'
 import { formatAttendanceDate, updateAttendance } from '../services/attendanceService'
 import '../styles/attendanceHistory.css'
@@ -32,6 +33,7 @@ function AttendanceDetailModal({
   onClose,
   onSaved,
 }) {
+  const { preguntar } = useAvisos()
   const [editando, setEditando] = useState(canEdit && startInEditMode)
   // cambios guarda solo lo que se modificó: { [attendanceId]: nuevoValorIsPresent }
   const [cambios, setCambios] = useState({})
@@ -49,11 +51,11 @@ function AttendanceDetailModal({
   const ausentes = record.students.length - presentes
   const fecha = formatAttendanceDate(record.date)
 
-  function solicitarCierre() {
+  async function solicitarCierre() {
     if (guardando) return
 
     if (hayCambios &&
-      !window.confirm('Tenés cambios sin guardar. ¿Querés cerrar el detalle igual?')) {
+      !await preguntar('Tenés cambios sin guardar. ¿Querés cerrar el detalle igual?')) {
       return
     }
 
@@ -97,9 +99,9 @@ function AttendanceDetailModal({
     setError('')
   }
 
-  function cancelarEdicion() {
+  async function cancelarEdicion() {
     if (hayCambios &&
-      !window.confirm('¿Querés descartar los cambios de asistencia?')) {
+      !await preguntar('¿Querés descartar los cambios de asistencia?')) {
       return
     }
 
@@ -115,7 +117,7 @@ function AttendanceDetailModal({
         ' → ' + textoAsistencia(cambios[student.id]))
       .join('\n')
 
-    const confirmar = window.confirm(
+    const confirmar = await preguntar(
       '¿Confirmás modificar la asistencia de ' + record.activityName +
       ' del ' + fecha + '?\n\n' + detalle,
     )
