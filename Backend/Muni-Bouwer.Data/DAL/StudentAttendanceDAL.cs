@@ -51,9 +51,12 @@ public class StudentAttendanceDal
         }
 
         return await query
+            .OrderByDescending(attendance => attendance.Date)
+            .ThenBy(attendance => attendance.StudentActivity.Student.LastName)
             .Select(attendance => new AttendanceHistoryDto
             {
                 AttendanceId = attendance.Id,
+                StudentActivityId = attendance.StudentActivityId,
                 ActivityId = attendance.StudentActivity.ActivityId,
                 ActivityName = attendance.StudentActivity.Activity.Name,
                 StudentId = attendance.StudentActivity.StudentId,
