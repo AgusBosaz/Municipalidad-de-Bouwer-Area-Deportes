@@ -82,10 +82,10 @@ public class ActivityService : IActivityService
         };
     }
 
-    public async Task<bool> UpdateAsync(int id, UpdateActivityDto dto)
+    public async Task<(bool Updated, string? Conflict)> UpdateAsync(int id, UpdateActivityDto dto)
     {
         var existing = await _activityDAL.GetByIdAsync(id);
-        if (existing == null) return false;
+        if (existing == null) return (false, null);
 
         existing.Name = dto.Name;
         existing.Category = dto.Category;

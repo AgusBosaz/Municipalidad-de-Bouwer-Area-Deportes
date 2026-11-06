@@ -317,6 +317,13 @@
   background: #7f1639;
 }
 
+.docente-history-actions button:disabled,
+.docente-history-actions button.is-primary:disabled:hover {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #9a1b45;
+}
+
 .docente-history-actions button:focus-visible {
   outline: 2px solid #9a1b45;
   outline-offset: 2px;
@@ -412,6 +419,12 @@ button.docente-outline-action {
   background: #fff;
 }
 
+button.docente-outline-action.docente-card-disabled {
+  color: #8a8587;
+  border-color: #ddd;
+  cursor: not-allowed;
+}
+
 .docente-text-link {
   display: inline-flex;
   align-items: center;
@@ -425,6 +438,18 @@ button.docente-outline-action {
 
 .docente-text-link:hover {
   text-decoration: underline;
+}
+
+.docente-attendance-disabled {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #8a8587;
+  cursor: not-allowed;
+}
+
+.docente-attendance-disabled:hover {
+  text-decoration: none;
 }
 
 /* ===== Asistencia del docente (clases de hoy) ===== */

@@ -12,7 +12,7 @@ import ActivityStudentsModal from '../components/ActivityStudentsModal'
 import AsistenciaHoyDocentePage from './AsistenciaHoyDocentePage'
 import { getMyAssignments } from '../services/assignmentService'
 import { getPublicActivities } from '../services/activityService'
-import { getAttendanceStudents } from '../services/attendanceService'
+import { canTakeAttendance, getAttendanceStudents } from '../services/attendanceService'
 import '../styles/actividades.css'
 import '../styles/dashboard-teacher.css'
 
@@ -49,6 +49,12 @@ function MisActividadesInfo() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [actividadAlumnos, setActividadAlumnos] = useState(null)
+  const [ahora, setAhora] = useState(() => new Date())
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setAhora(new Date()), 15000)
+    return () => window.clearInterval(timer)
+  }, [])
 
   useEffect(() => {
     let active = true
@@ -163,12 +169,15 @@ function MisActividadesInfo() {
                   Ver alumnos inscriptos
                   <UsersRound size={17} />
                 </button>
-                <Link
-                  className="docente-text-link"
-                  to={'/mis-actividades/' + activity.activityId + '/asistencia'}
-                >
-                  Tomar asistencia <ArrowRight size={15} />
-                </Link>
+                {canTakeAttendance(activity, ahora) ? (
+                  <Link className="docente-outline-action" to={'/mis-actividades/' + activity.activityId + '/asistencia'}>
+                    Tomar asistencia <ArrowRight size={15} />
+                  </Link>
+                ) : (
+                  <button type="button" className="docente-outline-action docente-card-disabled" disabled title="Disponible durante el día y horario de la actividad">
+                    Tomar asistencia <ArrowRight size={15} />
+                  </button>
+                )}
               </div>
             </article>
           ))}

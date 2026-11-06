@@ -1,3 +1,4 @@
+import { useAvisos } from '../components/AvisosContext'
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { getAssignments, assignInstructor } from '../services/assignmentService'
@@ -35,6 +36,7 @@ function mostrarDias(days) {
 }
 
 function ActividadesPage() {
+  const { avisar, preguntar } = useAvisos()
   const [modalOpen, setModalOpen] = useState(false)
   const [actividadEnEdicion, setActividadEnEdicion] = useState(null)
   const [actividadAlumnos, setActividadAlumnos] = useState(null)
@@ -143,14 +145,14 @@ function ActividadesPage() {
           )
         )
 
-        alert('La actividad fue actualizada correctamente.')
+        await avisar('La actividad fue actualizada correctamente.')
       } else {
         const creada = await createActivity(datosParaApi)
 
         setActividades((actuales) => [...actuales, creada])
 
         if (!docenteId) {
-          alert('La actividad fue creada sin docente asignado.')
+          await avisar('La actividad fue creada sin docente asignado.')
         } else {
           try {
             const asignacion = await assignInstructor({
@@ -164,8 +166,8 @@ function ActividadesPage() {
               ? `\n\nAvisos:\n${asignacion.warnings.join('\n')}`
               : ''
 
-            alert(`Actividad creada y docente asignado.${avisos}`)
-          } catch {
+            await avisar(`Actividad creada y docente asignado.${avisos}`)
+          } catch (errorAsignacion) {
             try {
               const actualizadas = await getAssignments()
               setAsignaciones(actualizadas)
@@ -174,10 +176,11 @@ function ActividadesPage() {
               setErrorAsignaciones('No se pudieron actualizar los docentes asignados.')
             }
 
-            alert(
-              'La actividad se creó, pero no se pudo confirmar la asignación. ' +
-              'No vuelvas a crearla: revisá sus docentes asignados antes de reintentar.'
-            )
+            let motivo = ''
+            try { motivo = JSON.parse(errorAsignacion.message).message || '' } catch { /* Error de conexión. */ }
+            await avisar(errorAsignacion.status === 409 && motivo
+              ? `La actividad se creó sin docente asignado. ${motivo}`
+              : 'La actividad se creó, pero no se pudo confirmar la asignación. No vuelvas a crearla: revisá sus docentes asignados antes de reintentar.')
           }
         }
       }
@@ -193,7 +196,7 @@ function ActividadesPage() {
         mensaje = ''
       }
 
-      alert(mensaje || 'No se pudo guardar la actividad. Intentá nuevamente.')
+      await avisar(mensaje || 'No se pudo guardar la actividad. Intentá nuevamente.')
     } finally {
       setGuardando(false)
     }
@@ -202,7 +205,7 @@ function ActividadesPage() {
   const darDeBajaActividad = async (actividad) => {
     if (eliminandoId !== null) return
 
-    const confirmar = window.confirm(
+    const confirmar = await preguntar(
       `¿Querés dar de baja la actividad "${actividad.name}"?`
     )
 
@@ -217,9 +220,9 @@ function ActividadesPage() {
         actuales.filter((item) => item.id !== actividad.id)
       )
 
-      alert('La actividad fue dada de baja correctamente.')
+      await avisar('La actividad fue dada de baja correctamente.')
     } catch {
-      alert('No se pudo dar de baja la actividad. Intentá nuevamente.')
+      await avisar('No se pudo dar de baja la actividad. Intentá nuevamente.')
     } finally {
       setEliminandoId(null)
     }

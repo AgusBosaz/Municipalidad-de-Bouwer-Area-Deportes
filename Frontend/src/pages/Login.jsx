@@ -1,3 +1,4 @@
+import { useAvisos } from '../components/AvisosContext'
 import { useState } from "react";
 import "../styles/Login.css";
 
@@ -7,6 +8,7 @@ import { saveSession } from "../services/AuthSession";
 import MunicipalBrand from '../components/MunicipalBrand'
 
 function Login() {
+  const { avisar } = useAvisos()
   const [usuario, setUsuario] = useState("");
   const [contrasena, setContrasena] = useState("");
 
@@ -16,7 +18,7 @@ function Login() {
     e.preventDefault()
 
     if (!usuario.trim() || !contrasena.trim()) {
-      alert('Completá DNI y contraseña')
+      await avisar('Completá DNI y contraseña')
       return
     }
 
@@ -32,13 +34,13 @@ function Login() {
       navigate('/inicio', { replace: true })
     } catch (error) {
       if (error.status === 401) {
-        alert('DNI o contraseña incorrectos.')
+        await avisar('DNI o contraseña incorrectos.')
       } else if (error.status === 403) {
-        alert('El usuario está inactivo.')
+        await avisar('El usuario está inactivo.')
       } else if (error.status === 429) {
-        alert('Demasiados intentos. Esperá unos minutos antes de volver a ingresar.')
+        await avisar('Demasiados intentos. Esperá unos minutos antes de volver a ingresar.')
       } else {
-        alert('No se pudo iniciar sesión. Revisá que la API este funcionando.')
+        await avisar('No se pudo iniciar sesión. Revisá que la API este funcionando.')
       }
     }
   }

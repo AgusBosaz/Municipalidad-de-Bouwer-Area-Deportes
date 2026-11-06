@@ -428,6 +428,13 @@
   background: #7f1538;
 }
 
+.attendance-edit-button:disabled,
+.attendance-edit-button:disabled:hover {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #9a1b45;
+}
+
 .attendance-detail-footer {
   flex-wrap: wrap;
   gap: 10px;
@@ -614,6 +621,11 @@
   .attendance-history-table td:nth-child(3):not([colspan])::before { content: 'Presentes'; }
   .attendance-history-table td:nth-child(4):not([colspan])::before { content: 'Ausentes'; }
   .attendance-history-table td:nth-child(5):not([colspan])::before { content: 'Acciones'; }
+  .attendance-history-coordinator td:nth-child(2):not([colspan])::before { content: 'Docente'; }
+  .attendance-history-coordinator td:nth-child(3):not([colspan])::before { content: 'Fecha'; }
+  .attendance-history-coordinator td:nth-child(4):not([colspan])::before { content: 'Presentes'; }
+  .attendance-history-coordinator td:nth-child(5):not([colspan])::before { content: 'Ausentes'; }
+  .attendance-history-coordinator td:nth-child(6):not([colspan])::before { content: 'Acciones'; }
   .attendance-history-table td[colspan] {
     white-space: normal;
     overflow-wrap: anywhere;

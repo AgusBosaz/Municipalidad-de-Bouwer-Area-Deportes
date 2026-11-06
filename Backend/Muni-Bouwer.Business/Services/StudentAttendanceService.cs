@@ -48,6 +48,40 @@ public class StudentAttendanceService
         int studentActivityId, DateOnly date, int? excludeId = null) =>
         _dal.ExistsForDateAsync(studentActivityId, date, excludeId);
 
+    public Task<bool> ExistsForActivityDateAsync(int activityId, DateOnly date) =>
+        _dal.ExistsForActivityDateAsync(activityId, date);
+
+    public async Task<bool> CanInstructorEditActivityAsync(int activityId, DateOnly date) =>
+        IsInEditWindow(await _dal.GetActivityAsync(activityId), date);
+
+    public async Task<bool> CanInstructorEditStudentAttendanceAsync(int studentActivityId, DateOnly date) =>
+        IsInEditWindow(await _dal.GetActivityForStudentAsync(studentActivityId), date);
+
+    public async Task<bool> CanInstructorRegisterActivityAsync(int activityId, DateOnly date) =>
+        IsInRegistrationWindow(await _dal.GetActivityAsync(activityId), date);
+
+    public async Task<bool> CanInstructorRegisterStudentAsync(int studentActivityId, DateOnly date) =>
+        IsInRegistrationWindow(await _dal.GetActivityForStudentAsync(studentActivityId), date);
+
+    private static bool IsInRegistrationWindow(Activity? activity, DateOnly date)
+    {
+        if (activity is null || !IsInEditWindow(activity, date)) return false;
+        var day = date.DayOfWeek == DayOfWeek.Sunday
+            ? ActivityDays.Sunday
+            : (ActivityDays)(1 << ((int)date.DayOfWeek - 1));
+        return (activity.Days & day) != 0;
+    }
+
+    private static bool IsInEditWindow(Activity? activity, DateOnly date)
+    {
+        if (activity is null) return false;
+        var now = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(
+            DateTimeOffset.UtcNow, "America/Argentina/Buenos_Aires");
+        return date == DateOnly.FromDateTime(now.DateTime) &&
+               TimeOnly.FromDateTime(now.DateTime) >= activity.StartTime &&
+               TimeOnly.FromDateTime(now.DateTime) < activity.EndTime;
+    }
+
     public Task<bool> IsAssignedToStudentActivityAsync(
         int studentActivityId, int instructorId) =>
         _dal.IsAssignedToStudentActivityAsync(studentActivityId, instructorId);
@@ -56,8 +90,8 @@ public class StudentAttendanceService
         _dal.GetStudentsByActivityAsync(activityId);
 
     public Task SaveActivityAttendanceAsync(
-        DateOnly date, IReadOnlyList<AttendanceEntryDto> entries) =>
-        _dal.SaveActivityAttendanceAsync(date, entries);
+        DateOnly date, IReadOnlyList<AttendanceEntryDto> entries, int instructorId) =>
+        _dal.SaveActivityAttendanceAsync(date, entries, instructorId);
 
     public async Task<StudentAttendanceResponseDto> CreateAsync(StudentAttendanceCreateDto dto)
     {
@@ -101,6 +135,7 @@ public class StudentAttendanceService
             Id = attendance.Id,
             StudentActivityId = attendance.StudentActivityId,
             Date = attendance.Date,
-            IsPresent = attendance.IsPresent
+            IsPresent = attendance.IsPresent,
+            InstructorId = attendance.InstructorId
         };
 }

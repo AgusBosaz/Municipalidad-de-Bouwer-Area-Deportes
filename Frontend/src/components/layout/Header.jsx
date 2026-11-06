@@ -12,6 +12,10 @@ function Header({ isMenuOpen, onMenuClick, session }) {
         return 'Docentes'
       case '/docentes/nuevo':
         return 'Nuevo docente'
+      case '/coordinadores/nuevo':
+        return 'Crear coordinador'
+      case '/coordinadores':
+        return 'Coordinadores'
       case '/actividades':
         return 'Actividades'
       case '/actividades/nueva':

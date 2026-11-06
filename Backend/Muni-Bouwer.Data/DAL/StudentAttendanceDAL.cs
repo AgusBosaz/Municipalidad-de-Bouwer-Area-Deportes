@@ -59,12 +59,16 @@ public class StudentAttendanceDal
                 StudentActivityId = attendance.StudentActivityId,
                 ActivityId = attendance.StudentActivity.ActivityId,
                 ActivityName = attendance.StudentActivity.Activity.Name,
+                StartTime = attendance.StudentActivity.Activity.StartTime,
+                EndTime = attendance.StudentActivity.Activity.EndTime,
                 StudentId = attendance.StudentActivity.StudentId,
                 StudentName = attendance.StudentActivity.Student.FirstName + " " +
                               attendance.StudentActivity.Student.LastName,
                 StudentDni = attendance.StudentActivity.Student.Dni,
                 Date = attendance.Date,
-                IsPresent = attendance.IsPresent
+                IsPresent = attendance.IsPresent,
+                InstructorName = attendance.Instructor == null ? null :
+                    attendance.Instructor.FirstName + " " + attendance.Instructor.LastName
             })
             .ToListAsync();
     }
@@ -82,6 +86,19 @@ public class StudentAttendanceDal
             attendance.StudentActivityId == studentActivityId &&
             attendance.Date == date &&
             (!excludeId.HasValue || attendance.Id != excludeId.Value));
+
+    public Task<bool> ExistsForActivityDateAsync(int activityId, DateOnly date) =>
+        _context.StudentAttendances.AnyAsync(attendance =>
+            attendance.StudentActivity.ActivityId == activityId && attendance.Date == date);
+
+    public Task<Activity?> GetActivityAsync(int activityId) =>
+        _context.Activities.AsNoTracking().FirstOrDefaultAsync(activity => activity.Id == activityId);
+
+    public Task<Activity?> GetActivityForStudentAsync(int studentActivityId) =>
+        _context.StudentActivities.AsNoTracking()
+            .Where(item => item.Id == studentActivityId)
+            .Select(item => item.Activity)
+            .FirstOrDefaultAsync();
 
     public async Task<List<StudentAttendance>> GetByActivityAndDateAsync(
         int activityId, DateOnly date, int? instructorId)
@@ -137,7 +154,7 @@ public class StudentAttendanceDal
         {
             activities = activities.Where(activity =>
                 activity.InstructorActivities.Any(assignment =>
-                    assignment.InstructorId == id && assignment.IsActive));
+                    assignment.InstructorId == id && assignment.IsActive && assignment.Instructor.IsActive));
         }
 
         return await activities.AnyAsync();
@@ -183,7 +200,7 @@ public class StudentAttendanceDal
     }
 
     public async Task SaveActivityAttendanceAsync(
-        DateOnly date, IReadOnlyList<AttendanceEntryDto> entries)
+        DateOnly date, IReadOnlyList<AttendanceEntryDto> entries, int instructorId)
     {
         if (entries.Count == 0)
             return;
@@ -211,13 +228,17 @@ public class StudentAttendanceDal
                 {
                     StudentActivityId = entry.StudentActivityId,
                     Date = date,
-                    IsPresent = entry.IsPresent
+                    IsPresent = entry.IsPresent,
+                    InstructorId = instructorId
                 });
             }
             else
             {
                 foreach (StudentAttendance attendance in previous)
+                {
                     attendance.IsPresent = entry.IsPresent;
+                    attendance.InstructorId = instructorId;
+                }
             }
         }
 

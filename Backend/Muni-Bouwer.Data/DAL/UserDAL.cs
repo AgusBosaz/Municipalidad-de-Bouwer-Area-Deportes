@@ -60,6 +60,7 @@ public class UserDAL
     public void Deactivate(User user)
     {
         user.IsActive = false;
+        if (user is Coordinator) user.CredentialVersion++;
         user.UpdatedAt = DateOnly.FromDateTime(DateTime.Today);
     }
 

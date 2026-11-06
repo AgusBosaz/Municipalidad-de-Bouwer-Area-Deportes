@@ -139,6 +139,11 @@
   overflow-x: auto;
 }
 
+.docentes-filtros-estado { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 18px; }
+.docentes-filtros-estado button { min-height: 40px; padding: 8px 16px; border: 1px solid #ddd; border-radius: 9px; background: #fff; color: #9a1b45; font: inherit; cursor: pointer; }
+.docentes-filtros-estado button[aria-pressed="true"] { background: #9a1b45; border-color: #9a1b45; color: #fff; }
+.docentes-filtros-estado button:focus-visible { outline: 2px solid #9a1b45; outline-offset: 2px; }
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -412,6 +417,26 @@ tbody tr:last-child td {
 
 .docente-modal-content {
   width: 100%;
+}
+
+.docente-copiar {
+  align-self: flex-start;
+  padding: 9px 14px;
+  border: 1px solid #9a1b45;
+  border-radius: 8px;
+  background: #fff;
+  color: #9a1b45;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.docente-copiar:hover {
+  background: #f9eaf0;
+}
+
+.docente-copia-estado {
+  color: #555;
+  font-size: 13px;
 }
 
 .docente-modal-close {
