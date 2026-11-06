@@ -1,23 +1,23 @@
-import { useEffect, useMemo, useState } from 'react'
 import { useAvisos } from '../components/AvisosContext'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, CalendarDays, CheckCircle2, UsersRound } from 'lucide-react'
 import { getSession } from '../services/AuthSession'
-import { getMyAssignments } from '../services/assignmentService'
+import { getAssignments, getMyAssignments } from '../services/assignmentService'
 import { getActivityById } from '../services/activityService'
+import AttendanceToggle from '../components/AttendanceToggle'
 import {
   getAttendanceStudents,
   getActivityAttendance,
   saveActivityAttendance,
+  canTakeAttendance,
+  fechaArgentina,
 } from '../services/attendanceService'
 import '../styles/Asistencia.css'
 import '../styles/dashboard-teacher.css'
 
 function fechaLocal() {
-  const ahora = new Date()
-  return new Date(
-    ahora.getTime() - ahora.getTimezoneOffset() * 60000,
-  ).toISOString().slice(0, 10)
+  return fechaArgentina()
 }
 
 function AsistenciaDocentePage() {
@@ -32,11 +32,19 @@ function AsistenciaDocentePage() {
   const [fecha] = useState(fechaLocal)
   const [actividad, setActividad] = useState(null)
   const [alumnos, setAlumnos] = useState([])
+  const [docentes, setDocentes] = useState([])
+  const [docenteId, setDocenteId] = useState('')
   const [asistencia, setAsistencia] = useState({})
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [guardado, setGuardado] = useState(false)
+  const [ahora, setAhora] = useState(() => new Date())
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setAhora(new Date()), 15000)
+    return () => window.clearInterval(timer)
+  }, [])
 
   useEffect(() => {
     let active = true
@@ -55,9 +63,10 @@ function AsistenciaDocentePage() {
           throw new Error('La actividad no está asignada a tu cuenta.')
         }
 
-        const [students, records] = await Promise.all([
+        const [students, records, assignments] = await Promise.all([
           getAttendanceStudents(actividadId),
           getActivityAttendance(actividadId, fecha),
+          isCoordinator ? getAssignments() : Promise.resolve([]),
         ])
 
         if (!active) return
@@ -66,8 +75,13 @@ function AsistenciaDocentePage() {
           name: isCoordinator ? activity.name : activity.activityName,
           startTime: activity.startTime,
           endTime: activity.endTime,
+          days: activity.days,
         })
         setAlumnos(students)
+        const docentesAsignados = assignments.filter((item) => item.activityId === Number(actividadId))
+        setDocentes(docentesAsignados)
+        const anterior = records.find((record) => record.instructorId)?.instructorId
+        setDocenteId(docentesAsignados.some((item) => item.instructorId === anterior) ? String(anterior) : '')
         setAsistencia(Object.fromEntries(
           records.map((record) => [record.studentActivityId, record.isPresent]),
         ))
@@ -94,6 +108,14 @@ function AsistenciaDocentePage() {
 
   async function guardarAsistencia() {
     if (!fecha || alumnos.length === 0 || !actividad) return
+    if (!isCoordinator && !canTakeAttendance(actividad)) {
+      setError('La asistencia solo puede registrarse durante el día y horario de la clase.')
+      return
+    }
+    if (isCoordinator && !docenteId) {
+      setError('Seleccioná el docente que dio la clase.')
+      return
+    }
 
     const confirmar = await preguntar(
       '¿Confirmás guardar la asistencia de ' + actividad.name +
@@ -115,10 +137,12 @@ function AsistenciaDocentePage() {
         studentActivityId: alumno.studentActivityId,
         isPresent: Boolean(asistencia[alumno.studentActivityId]),
       }))
-      await saveActivityAttendance(actividadId, fecha, entries)
+      await saveActivityAttendance(actividadId, fecha, entries, isCoordinator ? Number(docenteId) : null)
       setGuardado(true)
-    } catch {
-      setError('No se pudo guardar la asistencia. Revisá la conexión e intentá de nuevo.')
+    } catch (errorApi) {
+      setError(errorApi.status === 409
+        ? 'La asistencia solo puede registrarse durante el día y horario de la clase.'
+        : 'No se pudo guardar la asistencia. Revisá la conexión e intentá de nuevo.')
     } finally {
       setSaving(false)
     }
@@ -160,6 +184,16 @@ function AsistenciaDocentePage() {
           </div>
 
           <div className="asistencia-meta-row">
+            {isCoordinator && (
+              <div className="form-group">
+                <label htmlFor="docente-asistencia">Docente que dio la clase</label>
+                <select id="docente-asistencia" value={docenteId} onChange={(event) => setDocenteId(event.target.value)}>
+                  <option value="">Seleccionar docente</option>
+                  {docentes.map((docente) => <option key={docente.instructorId} value={docente.instructorId}>{docente.instructorName}</option>)}
+                </select>
+                {docentes.length === 0 && <span>Asigná un docente a esta actividad para registrar la asistencia.</span>}
+              </div>
+            )}
             <div className="form-group">
               <label htmlFor="fecha-asistencia">Fecha de asistencia</label>
               <input
@@ -182,7 +216,7 @@ function AsistenciaDocentePage() {
           <div className="docente-section-heading asistencia-heading">
             <div>
               <h2>Listado de alumnos</h2>
-              <p>Marcá la casilla de los alumnos presentes.</p>
+              <p>Seleccioná presente o ausente para cada alumno.</p>
             </div>
             <span className="docente-total-pill">
               {presentes}/{alumnos.length} presentes
@@ -195,7 +229,7 @@ function AsistenciaDocentePage() {
             <div className="table-container asistencia-table">
               <table>
                 <thead>
-                  <tr><th>Alumno</th><th>DNI</th><th>Presente</th></tr>
+                  <tr><th>Alumno</th><th>DNI</th><th>Asistencia</th></tr>
                 </thead>
                 <tbody>
                   {alumnos.map((alumno) => (
@@ -203,24 +237,20 @@ function AsistenciaDocentePage() {
                       <td>{alumno.firstName} {alumno.lastName}</td>
                       <td>{alumno.dni}</td>
                       <td className="asistencia-check-cell">
-                        <label className="asistencia-checkbox-label">
-                          <input
-                            type="checkbox"
-                            checked={Boolean(asistencia[alumno.studentActivityId])}
-                            disabled={saving}
-                            onChange={(event) => {
+                        <div className="asistencia-checkbox-label">
+                          <AttendanceToggle
+                            present={Boolean(asistencia[alumno.studentActivityId])}
+                            disabled={saving || (!isCoordinator && !canTakeAttendance(actividad, ahora))}
+                            studentName={alumno.firstName + ' ' + alumno.lastName}
+                            onChange={(presente) => {
                               setAsistencia((current) => ({
                                 ...current,
-                                [alumno.studentActivityId]: event.target.checked,
+                                [alumno.studentActivityId]: presente,
                               }))
                               setGuardado(false)
                             }}
-                            aria-label={'Marcar presente a ' + alumno.firstName + ' ' + alumno.lastName}
                           />
-                          <span>
-                            {asistencia[alumno.studentActivityId] ? 'Presente' : 'Ausente'}
-                          </span>
-                        </label>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -234,6 +264,9 @@ function AsistenciaDocentePage() {
               La asistencia quedó guardada en la base de datos.
             </p>
           )}
+          {!isCoordinator && !canTakeAttendance(actividad, ahora) && (
+            <p role="status">La asistencia se habilita durante el día y horario de la clase.</p>
+          )}
           <div className="form-actions asistencia-actions">
             <button type="button" className="secondary-button" onClick={cancelar}>
               Cancelar
@@ -242,7 +275,7 @@ function AsistenciaDocentePage() {
               type="button"
               className="primary-button"
               onClick={guardarAsistencia}
-              disabled={loading || saving || alumnos.length === 0 || !fecha}
+              disabled={loading || saving || alumnos.length === 0 || !fecha || (!isCoordinator && !canTakeAttendance(actividad, ahora))}
             >
               {saving ? 'Guardando...' : 'Guardar asistencia'}
             </button>

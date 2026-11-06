@@ -50,12 +50,14 @@ builder.Services.AddDbContext<BouwerDbContext>(options =>
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 
 builder.Services.AddScoped<InstructorDAL>();
+builder.Services.AddScoped<CoordinatorDAL>();
 builder.Services.AddScoped<StudentDAL>();
 builder.Services.AddScoped<UserDAL>();
 builder.Services.AddScoped<RoleDAL>();
 builder.Services.AddScoped<PermissionDAL>();
 
 builder.Services.AddScoped<InstructorService>();
+builder.Services.AddScoped<CoordinatorService>();
 builder.Services.AddScoped<StudentService>();
 builder.Services.AddScoped<EnrollmentService>();
 builder.Services.AddScoped<DocumentService>();

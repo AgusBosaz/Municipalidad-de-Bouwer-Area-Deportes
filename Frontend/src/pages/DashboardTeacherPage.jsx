@@ -12,6 +12,7 @@ import AttendanceDetailModal from '../components/AttendanceDetailModal'
 import { getMyAssignments } from '../services/assignmentService'
 import {
   formatAttendanceDate,
+  canEditDuringClass,
   getAttendanceHistoryByClass,
   getAttendanceStudents,
 } from '../services/attendanceService'
@@ -32,6 +33,12 @@ function DocenteInicioPage() {
   const [cargandoHistorial, setCargandoHistorial] = useState(true)
   const [errorHistorial, setErrorHistorial] = useState('')
   const [claseSeleccionada, setClaseSeleccionada] = useState(null) // { id, edit }
+  const [ahora, setAhora] = useState(() => new Date())
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setAhora(new Date()), 15000)
+    return () => window.clearInterval(timer)
+  }, [])
 
   useEffect(() => {
     let active = true
@@ -214,6 +221,8 @@ function DocenteInicioPage() {
                   <button
                     type="button"
                     className="is-primary"
+                    disabled={!canEditDuringClass(clase, ahora)}
+                    title={!canEditDuringClass(clase, ahora) ? 'Solo disponible durante el horario de la clase' : undefined}
                     onClick={() => setClaseSeleccionada({ id: clase.id, edit: true })}
                     aria-label={`Editar asistencia de ${clase.activityName} del ${formatAttendanceDate(clase.date)}`}
                   >
@@ -231,6 +240,7 @@ function DocenteInicioPage() {
           key={claseAbierta.id}
           record={claseAbierta}
           startInEditMode={claseSeleccionada.edit}
+          canEdit={canEditDuringClass(claseAbierta, ahora)}
           onClose={() => setClaseSeleccionada(null)}
           onSaved={recargarHistorial}
         />

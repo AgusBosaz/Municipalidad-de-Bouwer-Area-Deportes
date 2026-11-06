@@ -7,6 +7,6 @@ public interface IActivityService
     Task<List<ActivityResponseDto>> GetAllAsync();
     Task<ActivityResponseDto?> GetByIdAsync(int id);
     Task<ActivityResponseDto> CreateAsync(CreateActivityDto dto);
-    Task<bool> UpdateAsync(int id, UpdateActivityDto dto);
+    Task<(bool Updated, string? Conflict)> UpdateAsync(int id, UpdateActivityDto dto);
     Task<bool> DeleteAsync(int id);
 }

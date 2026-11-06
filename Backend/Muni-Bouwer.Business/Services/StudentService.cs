@@ -53,14 +53,19 @@ public class StudentService
             Email = string.IsNullOrWhiteSpace(data.Email)
                 ? null : data.Email.Trim().ToLowerInvariant(),
             Gender = data.Gender,
-            PhoneNumber = data.PhoneNumber,
+            PhoneNumber = data.PhoneNumber?.Trim() ?? string.Empty,
             Address = data.Address,
             BirthDate = data.BirthDate,
             CreatedAt = now,
             UpdatedAt = now,
             IsActive = true,
             EmergencyContactName = data.EmergencyContactName,
-            EmergencyContactPhoneNumber = data.EmergencyContactPhoneNumber
+            EmergencyContactPhoneNumber = data.EmergencyContactPhoneNumber,
+            AdditionalEmergencyContacts = data.AdditionalEmergencyContacts.Select(contact => new EmergencyContact
+            {
+                Name = contact.Name.Trim(),
+                PhoneNumber = contact.PhoneNumber.Trim()
+            }).ToList()
         };
 
         student.Roles.Add(studentRole);
@@ -89,11 +94,20 @@ public class StudentService
         student.Email = string.IsNullOrWhiteSpace(data.Email)
             ? null : data.Email.Trim().ToLowerInvariant();
         student.Gender = data.Gender;
-        student.PhoneNumber = data.PhoneNumber;
+        student.PhoneNumber = data.PhoneNumber?.Trim() ?? string.Empty;
         student.Address = data.Address;
         student.BirthDate = data.BirthDate;
         student.EmergencyContactName = data.EmergencyContactName;
         student.EmergencyContactPhoneNumber = data.EmergencyContactPhoneNumber;
+        if (data.AdditionalEmergencyContacts is not null)
+        {
+            student.AdditionalEmergencyContacts.Clear();
+            student.AdditionalEmergencyContacts.AddRange(data.AdditionalEmergencyContacts.Select(contact => new EmergencyContact
+            {
+                Name = contact.Name.Trim(),
+                PhoneNumber = contact.PhoneNumber.Trim()
+            }));
+        }
         student.UpdatedAt = DateOnly.FromDateTime(DateTime.Now);
 
         return await _studentDAL.UpdateAsync(student);
@@ -112,6 +126,11 @@ public class StudentService
         BirthDate = student.BirthDate,
         EmergencyContactName = student.EmergencyContactName,
         EmergencyContactPhoneNumber = student.EmergencyContactPhoneNumber,
+        AdditionalEmergencyContacts = student.AdditionalEmergencyContacts.Select(contact => new EmergencyContactDto
+        {
+            Name = contact.Name,
+            PhoneNumber = contact.PhoneNumber
+        }).ToList(),
         IsActive = student.IsActive
     };
 }

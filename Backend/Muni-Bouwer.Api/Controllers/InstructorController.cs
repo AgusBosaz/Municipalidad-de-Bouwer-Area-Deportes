@@ -25,6 +25,26 @@ public class InstructorController : ControllerBase
     }
 
     [Authorize(Policy = PermissionNames.InstructorsRead)]
+    [Authorize(Roles = RoleNames.Coordinator)]
+    [HttpGet("inactive")]
+    public async Task<ActionResult<List<InstructorResponseDto>>> GetInactive()
+    {
+        return Ok(await _instructorsService.GetInactiveAsync());
+    }
+
+    [Authorize(Policy = PermissionNames.InstructorsManage)]
+    [Authorize(Roles = RoleNames.Coordinator)]
+    [HttpPost("{id:int}/reactivate")]
+    public async Task<ActionResult<CreateInstructorResponseDto>> Reactivate(int id)
+    {
+        var result = await _instructorsService.ReactivateAsync(id);
+        if (result is null)
+            return Conflict(new { message = "No se pudo reactivar: verificá que el docente esté inactivo y tenga el rol docente activo." });
+        Response.Headers.CacheControl = "no-store";
+        return Ok(result);
+    }
+
+    [Authorize(Policy = PermissionNames.InstructorsRead)]
     [HttpGet("{id}")]
     public async Task<ActionResult<InstructorResponseDto>> GetById(int id)
     {

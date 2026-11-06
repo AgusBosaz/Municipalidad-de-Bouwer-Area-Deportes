@@ -14,6 +14,7 @@ import AttendanceDetailModal from '../components/AttendanceDetailModal'
 import { getSession } from '../services/AuthSession'
 import {
   formatAttendanceDate,
+  canEditDuringClass,
   getAttendanceHistoryByClass,
 } from '../services/attendanceService'
 import '../styles/attendanceHistory.css'
@@ -30,6 +31,12 @@ function AttendanceHistoryPage() {
   const [selectedDate, setSelectedDate] = useState('')
   // Guardamos el id (no el objeto) para que el detalle se actualice al recargar.
   const [selected, setSelected] = useState(null) // { id, edit }
+  const [ahora, setAhora] = useState(() => new Date())
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setAhora(new Date()), 15000)
+    return () => window.clearInterval(timer)
+  }, [])
 
   useEffect(() => {
     let active = true
@@ -225,10 +232,11 @@ function AttendanceHistoryPage() {
         </div>
 
         <div className="table-container attendance-history-table-container">
-          <table className="attendance-history-table">
+          <table className={`attendance-history-table${isCoordinator ? ' attendance-history-coordinator' : ''}`}>
             <thead>
               <tr>
                 <th>Actividad</th>
+                {isCoordinator && <th>Docente</th>}
                 <th>Fecha</th>
                 <th>Presentes</th>
                 <th>Ausentes</th>
@@ -239,15 +247,15 @@ function AttendanceHistoryPage() {
             <tbody>
               {cargando ? (
                 <tr>
-                  <td colSpan="5">Cargando historial...</td>
+                  <td colSpan={isCoordinator ? 6 : 5}>Cargando historial...</td>
                 </tr>
               ) : error ? (
                 <tr>
-                  <td colSpan="5" role="alert">{error}</td>
+                  <td colSpan={isCoordinator ? 6 : 5} role="alert">{error}</td>
                 </tr>
               ) : attendanceRecords.length === 0 ? (
                 <tr>
-                  <td colSpan="5" className="attendance-history-empty">
+                  <td colSpan={isCoordinator ? 6 : 5} className="attendance-history-empty">
                     {isCoordinator
                       ? 'Todavía no hay asistencias registradas.'
                       : 'Todavía no hay asistencias registradas en tus clases.'}
@@ -255,7 +263,7 @@ function AttendanceHistoryPage() {
                 </tr>
               ) : filteredRecords.length === 0 ? (
                 <tr>
-                  <td colSpan="5" className="attendance-history-empty">
+                  <td colSpan={isCoordinator ? 6 : 5} className="attendance-history-empty">
                     No se encontraron registros con esos filtros.
                   </td>
                 </tr>
@@ -272,6 +280,7 @@ function AttendanceHistoryPage() {
                       <td className="attendance-activity-name">
                         {record.activityName}
                       </td>
+                      {isCoordinator && <td>{record.instructors.join(', ')}</td>}
                       <td>{formatAttendanceDate(record.date)}</td>
                       <td>
                         <span className="attendance-count present-count">
@@ -296,6 +305,8 @@ function AttendanceHistoryPage() {
                           <button
                             type="button"
                             className="attendance-detail-button attendance-edit-button"
+                            disabled={!isCoordinator && !canEditDuringClass(record, ahora)}
+                            title={!isCoordinator && !canEditDuringClass(record, ahora) ? 'Solo disponible durante el horario de la clase' : undefined}
                             onClick={() => setSelected({ id: record.id, edit: true })}
                             aria-label={`Editar asistencia de ${record.activityName} del ${formatAttendanceDate(record.date)}`}
                           >
@@ -318,6 +329,7 @@ function AttendanceHistoryPage() {
           key={selectedRecord.id}
           record={selectedRecord}
           startInEditMode={selected.edit}
+          canEdit={isCoordinator || canEditDuringClass(selectedRecord, ahora)}
           onClose={() => setSelected(null)}
           onSaved={recargarHistorial}
         />

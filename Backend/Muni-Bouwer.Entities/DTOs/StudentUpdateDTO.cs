@@ -26,9 +26,8 @@ public class StudentUpdateDTO : IValidatableObject
     [StringLength(30, ErrorMessage = "El género no puede superar los 30 caracteres.")]
     public string Gender { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "El teléfono es obligatorio.")]
     [StringLength(30, ErrorMessage = "El teléfono no puede superar los 30 caracteres.")]
-    public string PhoneNumber { get; set; } = string.Empty;
+    public string? PhoneNumber { get; set; }
 
     [Required(ErrorMessage = "La dirección es obligatoria.")]
     [StringLength(200, ErrorMessage = "La dirección no puede superar los 200 caracteres.")]
@@ -44,8 +43,14 @@ public class StudentUpdateDTO : IValidatableObject
     [StringLength(30, ErrorMessage = "El teléfono del contacto no puede superar los 30 caracteres.")]
     public string EmergencyContactPhoneNumber { get; set; } = string.Empty;
 
+    public List<EmergencyContactDto>? AdditionalEmergencyContacts { get; set; }
+
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
+        if (AdditionalEmergencyContacts?.Any(contact =>
+            contact is null || string.IsNullOrWhiteSpace(contact.Name) || string.IsNullOrWhiteSpace(contact.PhoneNumber)) == true)
+            yield return new ValidationResult("Cada contacto adicional debe tener nombre y teléfono.", new[] { nameof(AdditionalEmergencyContacts) });
+
         if (BirthDate == default)
         {
             yield return new ValidationResult(

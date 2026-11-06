@@ -51,7 +51,7 @@ function CrearDocentePage() {
               <input
                 id="nombre"
                 type="text"
-                placeholder="Ej: Karina Salto"
+                placeholder="Ej. Karina Salto"
               />
             </div>
 
@@ -63,7 +63,7 @@ function CrearDocentePage() {
               <input
                 id="email"
                 type="email"
-                placeholder="ejemplo@mail.com"
+                placeholder="Ej. karina@ejemplo.com"
               />
             </div>
 
@@ -103,7 +103,7 @@ function CrearDocentePage() {
               <input
                 id="telefono"
                 type="tel"
-                placeholder="Ej: 351 1234567"
+                placeholder="Ej. 3511234567"
               />
             </div>
 

@@ -4,6 +4,7 @@
 import { expireSession, getSession } from "./AuthSession"
 
 export async function apiRequest(path, options = {}) {
+  const { responseType, ...fetchOptions } = options
   const headers = new Headers(options.headers)
 
   const token = getSession()?.token
@@ -23,7 +24,7 @@ export async function apiRequest(path, options = {}) {
     headers.set('Content-Type', 'application/json')
   }
 
-  const response = await fetch(`/api${path}`, { ...options, headers })
+  const response = await fetch(`/api${path}`, { ...fetchOptions, headers })
 
   if (!response.ok) {
     if (response.status === 401 && token && !publicAuthPaths.includes(path) &&
@@ -38,6 +39,10 @@ export async function apiRequest(path, options = {}) {
 
   if (response.status === 204) {
     return null
+  }
+
+  if (responseType === 'blob') {
+    return response.blob()
   }
 
   const content = await response.text()

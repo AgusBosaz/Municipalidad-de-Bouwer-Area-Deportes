@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { useAvisos } from './AvisosContext'
 import { PencilLine, X } from 'lucide-react'
 import { formatAttendanceDate, updateAttendance } from '../services/attendanceService'
+import AttendanceToggle from './AttendanceToggle'
 import '../styles/attendanceHistory.css'
 
 function textoAsistencia(presente) {
@@ -111,6 +112,10 @@ function AttendanceDetailModal({
   }
 
   async function guardarCambios() {
+    if (!canEdit) {
+      setError('La asistencia solo puede editarse durante el horario de la clase.')
+      return
+    }
     const detalle = modificados
       .map((student) =>
         student.name + ': ' + textoAsistencia(student.present) +
@@ -213,6 +218,7 @@ function AttendanceDetailModal({
         </header>
 
         <div className="attendance-detail-meta">
+          <p><strong>Docente:</strong> {record.instructors.join(', ')}</p>
           <p>
             <strong>Fecha:</strong> {fecha}
           </p>
@@ -253,30 +259,8 @@ function AttendanceDetailModal({
                       <td>
                         {editando ? (
                           <div className="attendance-edit-cell">
-                            <div
-                              className="attendance-toggle"
-                              role="group"
-                              aria-label={'Asistencia de ' + student.name}
-                            >
-                              <button
-                                type="button"
-                                className={presente ? 'is-present' : ''}
-                                aria-pressed={presente}
-                                disabled={guardando}
-                                onClick={() => marcar(student, true)}
-                              >
-                                Presente
-                              </button>
-                              <button
-                                type="button"
-                                className={!presente ? 'is-absent' : ''}
-                                aria-pressed={!presente}
-                                disabled={guardando}
-                                onClick={() => marcar(student, false)}
-                              >
-                                Ausente
-                              </button>
-                            </div>
+                            <AttendanceToggle present={presente} disabled={guardando || !canEdit}
+                              studentName={student.name} onChange={(valor) => marcar(student, valor)} />
                             {modificado && (
                               <span className="attendance-change-note">
                                 Antes: {textoAsistencia(student.present)}
@@ -316,6 +300,11 @@ function AttendanceDetailModal({
             {error}
           </p>
         )}
+        {editando && !canEdit && (
+          <p className="attendance-detail-feedback is-error" role="status">
+            Terminó el horario de edición. Pedile al coordinador que realice la corrección.
+          </p>
+        )}
 
         <footer className="attendance-detail-footer">
           {editando ? (
@@ -332,7 +321,7 @@ function AttendanceDetailModal({
                 type="button"
                 className="attendance-close-button"
                 onClick={guardarCambios}
-                disabled={!hayCambios || guardando}
+                disabled={!hayCambios || guardando || !canEdit}
               >
                 {guardando
                   ? 'Guardando...'

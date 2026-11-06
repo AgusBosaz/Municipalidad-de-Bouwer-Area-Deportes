@@ -4,6 +4,14 @@ export function getInstructors() {
   return apiRequest('/Instructor')
 }
 
+export function getInactiveInstructors() {
+  return apiRequest('/Instructor/inactive')
+}
+
+export function reactivateInstructor(id) {
+  return apiRequest(`/Instructor/${encodeURIComponent(id)}/reactivate`, { method: 'POST' })
+}
+
 export function getInstructorById(id) {
   return apiRequest(`/Instructor/${encodeURIComponent(id)}`)
 }
