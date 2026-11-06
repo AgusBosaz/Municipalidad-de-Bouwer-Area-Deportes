@@ -202,6 +202,137 @@
   font-size: 12px;
 }
 
+/* ===== Historial de asistencia en el inicio del docente ===== */
+.docente-history-heading {
+  margin-top: 8px;
+}
+
+.docente-history-heading a {
+  flex-shrink: 0;
+  font-weight: 600;
+}
+
+.docente-history-empty {
+  color: #777;
+}
+
+.docente-history-list {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.docente-history-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 14px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
+}
+
+.docente-history-icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  color: #9a1b45;
+  background: #f8eaf0;
+  border-radius: 11px;
+}
+
+.docente-history-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.docente-history-info strong {
+  color: #333;
+  overflow-wrap: anywhere;
+}
+
+.docente-history-info span {
+  color: #777;
+  font-size: 13px;
+}
+
+.docente-history-counts,
+.docente-history-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.docente-history-chip {
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 7px;
+  white-space: nowrap;
+}
+
+.docente-history-chip.is-present {
+  color: #218653;
+  background: #e7f5ed;
+}
+
+.docente-history-chip.is-absent {
+  color: #bd4545;
+  background: #fbeaea;
+}
+
+.docente-history-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  color: #9a1b45;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  background: #fff;
+  border: 1px solid #e8cad5;
+  border-radius: 8px;
+}
+
+.docente-history-actions button:hover {
+  background: #f8eaf0;
+}
+
+.docente-history-actions button.is-primary {
+  color: #fff;
+  background: #9a1b45;
+  border-color: #9a1b45;
+}
+
+.docente-history-actions button.is-primary:hover {
+  background: #7f1639;
+}
+
+.docente-history-actions button:focus-visible {
+  outline: 2px solid #9a1b45;
+  outline-offset: 2px;
+}
+
+@media (max-width: 900px) {
+  .docente-history-item {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .docente-history-counts,
+  .docente-history-actions {
+    grid-column: 1 / -1;
+  }
+}
+
 @media (max-width: 700px) {
   .docente-page {
     padding: 16px;
@@ -214,5 +345,168 @@
 
   .docente-section-heading {
     align-items: flex-start;
+  }
+
+  .docente-history-heading {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .docente-history-item {
+    padding: 14px 16px;
+  }
+
+  .docente-history-actions button {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+/* ===== Mis actividades (vista de información) ===== */
+.docente-info-list {
+  display: grid;
+  gap: 10px;
+  margin: 0 0 22px;
+}
+
+.docente-info-list > div {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+}
+
+.docente-info-list dt {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #777;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.docente-info-list dt svg {
+  flex-shrink: 0;
+  color: #9a1b45;
+}
+
+.docente-info-list dd {
+  margin: 0;
+  color: #333;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.docente-card-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  margin-top: auto;
+}
+
+button.docente-outline-action {
+  width: 100%;
+  font-family: inherit;
+  cursor: pointer;
+  background: #fff;
+}
+
+.docente-text-link {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 6px;
+  color: #9a1b45;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.docente-text-link:hover {
+  text-decoration: underline;
+}
+
+/* ===== Asistencia del docente (clases de hoy) ===== */
+.docente-today-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.docente-history-link {
+  justify-content: center;
+  margin-top: 0;
+  background: #fff;
+}
+
+.docente-solid-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: auto;
+  padding: 11px 14px;
+  border: 1px solid #9a1b45;
+  border-radius: 9px;
+  background: #9a1b45;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.docente-solid-action:hover {
+  background: #7f1639;
+}
+
+.docente-solid-action:focus-visible {
+  outline: 2px solid #9a1b45;
+  outline-offset: 2px;
+}
+
+.docente-attendance-status {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.docente-attendance-status.is-done {
+  background: #eaf6ee;
+  color: #267344;
+}
+
+.docente-attendance-status.is-pending {
+  background: #fff3d9;
+  color: #986b13;
+}
+
+.docente-history-item.docente-other-item {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.docente-other-item .docente-text-link {
+  align-self: center;
+}
+
+@media (max-width: 700px) {
+  .docente-info-list > div {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+
+  .docente-history-link {
+    width: 100%;
+  }
+
+  .docente-history-item.docente-other-item {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .docente-other-item .docente-text-link {
+    grid-column: 1 / -1;
   }
 }

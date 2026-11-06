@@ -1,60 +1,42 @@
 import { useMemo, useState, useEffect } from 'react'
-import { getAttendanceHistory } from '../services/attendanceService'
-import { CalendarDays, ClipboardCheck, UsersRound, UserCheck, UserX, Eye, X, Search } from 'lucide-react'
+import {
+  CalendarDays,
+  ClipboardCheck,
+  Eye,
+  PencilLine,
+  Search,
+  Trophy,
+  UserCheck,
+  UserX,
+  UsersRound,
+} from 'lucide-react'
+import AttendanceDetailModal from '../components/AttendanceDetailModal'
+import { getSession } from '../services/AuthSession'
+import {
+  formatAttendanceDate,
+  getAttendanceHistoryByClass,
+} from '../services/attendanceService'
 import '../styles/attendanceHistory.css'
 
-function agruparAsistencias(asistencias) {
-  const grupos = new Map()
-
-  asistencias.forEach((asistencia) => {
-    const clave = `${asistencia.activityId}-${asistencia.date}`
-
-    if (!grupos.has(clave)) {
-      grupos.set(clave, {
-        id: clave,
-        activityName: asistencia.activityName,
-        date: asistencia.date,
-        students: [],
-      })
-    }
-
-    grupos.get(clave).students.push({
-      id: asistencia.attendanceId,
-      name: asistencia.studentName,
-      document: asistencia.studentDni,
-      present: asistencia.isPresent,
-    })
-  })
-
-  return [...grupos.values()].sort((a, b) =>
-    b.date.localeCompare(a.date)
-  )
-}
-
-function formatDate(date) {
-  if (!date) return '—'
-
-  return new Date(`${date}T12:00:00`).toLocaleDateString('es-AR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
-  })
-}
-
+// Misma pantalla para los dos roles: el backend decide qué registros devuelve.
+// Coordinador -> todas las actividades. Docente -> solo sus actividades asignadas.
 function AttendanceHistoryPage() {
+  const isCoordinator = getSession()?.role === 'Coordinator'
   const [attendanceRecords, setAttendanceRecords] = useState([])
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
+  const [selectedActivity, setSelectedActivity] = useState('')
   const [selectedDate, setSelectedDate] = useState('')
-  const [selectedRecord, setSelectedRecord] = useState(null)
+  // Guardamos el id (no el objeto) para que el detalle se actualice al recargar.
+  const [selected, setSelected] = useState(null) // { id, edit }
 
   useEffect(() => {
     let active = true
 
-    getAttendanceHistory()
+    getAttendanceHistoryByClass()
       .then((data) => {
-        if (active) setAttendanceRecords(agruparAsistencias(data))
+        if (active) setAttendanceRecords(data)
       })
       .catch(() => {
         if (active) setError('No se pudo cargar el historial de asistencia.')
@@ -68,17 +50,41 @@ function AttendanceHistoryPage() {
     }
   }, [])
 
+  // Se llama después de editar para traer los datos actualizados.
+  async function recargarHistorial() {
+    const data = await getAttendanceHistoryByClass()
+    setAttendanceRecords(data)
+  }
+
+  const activityOptions = useMemo(() => {
+    const actividades = new Map()
+    attendanceRecords.forEach((record) => {
+      actividades.set(record.activityId, record.activityName)
+    })
+
+    return [...actividades.entries()]
+      .map(([id, name]) => ({ id: String(id), name }))
+      .sort((a, b) => a.name.localeCompare(b.name))
+  }, [attendanceRecords])
+
   const filteredRecords = useMemo(() => {
+    const busqueda = searchTerm.trim().toLowerCase()
+
     return attendanceRecords.filter((record) => {
-      const matchesSearch = record.activityName
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase())
+      const matchesSearch = !busqueda ||
+        record.activityName.toLowerCase().includes(busqueda) ||
+        record.students.some((student) =>
+          student.name.toLowerCase().includes(busqueda) ||
+          student.document.includes(busqueda))
+
+      const matchesActivity = !selectedActivity ||
+        String(record.activityId) === selectedActivity
 
       const matchesDate = !selectedDate || record.date === selectedDate
 
-      return matchesSearch && matchesDate
+      return matchesSearch && matchesActivity && matchesDate
     })
-  }, [attendanceRecords, searchTerm, selectedDate])
+  }, [attendanceRecords, searchTerm, selectedActivity, selectedDate])
 
   const totalStudents = filteredRecords.reduce(
     (total, record) => total + record.students.length,
@@ -93,8 +99,13 @@ function AttendanceHistoryPage() {
 
   const totalAbsent = totalStudents - totalPresent
 
+  const selectedRecord = selected
+    ? attendanceRecords.find((record) => record.id === selected.id)
+    : null
+
   const clearFilters = () => {
     setSearchTerm('')
+    setSelectedActivity('')
     setSelectedDate('')
   }
 
@@ -103,7 +114,11 @@ function AttendanceHistoryPage() {
       <header className="page-header attendance-history-header">
         <div>
           <h1>Historial de asistencia</h1>
-          <p>Consultá los registros de asistencia de las actividades.</p>
+          <p>
+            {isCoordinator
+              ? 'Consultá y corregí los registros de asistencia de todas las actividades.'
+              : 'Consultá y corregí la asistencia de las actividades que tenés asignadas actualmente.'}
+          </p>
         </div>
       </header>
 
@@ -113,7 +128,7 @@ function AttendanceHistoryPage() {
             <ClipboardCheck size={23} />
           </div>
           <div>
-            <p>Registros encontrados</p>
+            <p>Clases registradas</p>
             <strong>{cargando || error ? '—' : filteredRecords.length}</strong>
           </div>
         </article>
@@ -152,22 +167,40 @@ function AttendanceHistoryPage() {
       <section className="content-card attendance-history-content">
         <div className="content-card-header attendance-history-card-header">
           <div>
-            <h2>Registros de asistencia</h2>
-            <p>Filtrá los registros y consultá el detalle de cada actividad.</p>
+            <h2>{isCoordinator ? 'Registros de asistencia' : 'Mis clases registradas'}</h2>
+            <p>Filtrá los registros, consultá el detalle de cada clase y editá la asistencia.</p>
           </div>
         </div>
 
         <div className="attendance-history-filters">
           <label className="attendance-filter search-filter">
-            <span>Buscar actividad</span>
+            <span>Buscar actividad o alumno</span>
             <div className="attendance-input-wrapper">
               <Search size={18} />
               <input
                 type="text"
-                placeholder="Escribí para buscar..."
+                placeholder="Nombre, DNI o actividad..."
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
               />
+            </div>
+          </label>
+
+          <label className="attendance-filter">
+            <span>Actividad</span>
+            <div className="attendance-input-wrapper">
+              <Trophy size={18} />
+              <select
+                value={selectedActivity}
+                onChange={(event) => setSelectedActivity(event.target.value)}
+              >
+                <option value="">Todas</option>
+                {activityOptions.map((activity) => (
+                  <option key={activity.id} value={activity.id}>
+                    {activity.name}
+                  </option>
+                ))}
+              </select>
             </div>
           </label>
 
@@ -212,6 +245,14 @@ function AttendanceHistoryPage() {
                 <tr>
                   <td colSpan="5" role="alert">{error}</td>
                 </tr>
+              ) : attendanceRecords.length === 0 ? (
+                <tr>
+                  <td colSpan="5" className="attendance-history-empty">
+                    {isCoordinator
+                      ? 'Todavía no hay asistencias registradas.'
+                      : 'Todavía no hay asistencias registradas en tus clases.'}
+                  </td>
+                </tr>
               ) : filteredRecords.length === 0 ? (
                 <tr>
                   <td colSpan="5" className="attendance-history-empty">
@@ -231,7 +272,7 @@ function AttendanceHistoryPage() {
                       <td className="attendance-activity-name">
                         {record.activityName}
                       </td>
-                      <td>{formatDate(record.date)}</td>
+                      <td>{formatAttendanceDate(record.date)}</td>
                       <td>
                         <span className="attendance-count present-count">
                           {presentCount}
@@ -243,14 +284,25 @@ function AttendanceHistoryPage() {
                         </span>
                       </td>
                       <td>
-                        <button
-                          type="button"
-                          className="attendance-detail-button"
-                          onClick={() => setSelectedRecord(record)}
-                        >
-                          <Eye size={16} />
-                          Ver detalle
-                        </button>
+                        <div className="attendance-row-actions">
+                          <button
+                            type="button"
+                            className="attendance-detail-button"
+                            onClick={() => setSelected({ id: record.id, edit: false })}
+                          >
+                            <Eye size={16} />
+                            Ver detalle
+                          </button>
+                          <button
+                            type="button"
+                            className="attendance-detail-button attendance-edit-button"
+                            onClick={() => setSelected({ id: record.id, edit: true })}
+                            aria-label={`Editar asistencia de ${record.activityName} del ${formatAttendanceDate(record.date)}`}
+                          >
+                            <PencilLine size={16} />
+                            Editar
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   )
@@ -262,90 +314,13 @@ function AttendanceHistoryPage() {
       </section>
 
       {selectedRecord && (
-        <div
-          className="attendance-detail-overlay"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) {
-              setSelectedRecord(null)
-            }
-          }}
-        >
-          <section
-            className="attendance-detail-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="attendance-detail-title"
-          >
-            <header className="attendance-detail-header">
-              <div>
-                <h2 id="attendance-detail-title">Detalle de asistencia</h2>
-                <p>{selectedRecord.activityName}</p>
-              </div>
-
-              <button
-                type="button"
-                className="attendance-detail-close"
-                aria-label="Cerrar detalle"
-                onClick={() => setSelectedRecord(null)}
-              >
-                <X size={22} />
-              </button>
-            </header>
-
-            <div className="attendance-detail-meta">
-              <p>
-                <strong>Fecha:</strong> {formatDate(selectedRecord.date)}
-              </p>
-            </div>
-
-            {selectedRecord.students.length > 0 ? (
-              <div className="table-container attendance-detail-table-container">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Alumno/a</th>
-                      <th>DNI</th>
-                      <th>Asistencia</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {selectedRecord.students.map((student) => (
-                      <tr key={student.id}>
-                        <td>{student.name}</td>
-                        <td>{student.document}</td>
-                        <td>
-                          <span
-                            className={`attendance-status ${student.present
-                              ? 'status-registered'
-                              : 'status-pending'
-                              }`}
-                          >
-                            {student.present ? 'Presente' : 'Ausente'}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <p className="attendance-detail-empty">
-                Todavía no hay alumnos registrados en este registro de
-                asistencia.
-              </p>
-            )}
-
-            <footer className="attendance-detail-footer">
-              <button
-                type="button"
-                className="attendance-close-button"
-                onClick={() => setSelectedRecord(null)}
-              >
-                Cerrar
-              </button>
-            </footer>
-          </section>
-        </div>
+        <AttendanceDetailModal
+          key={selectedRecord.id}
+          record={selectedRecord}
+          startInEditMode={selected.edit}
+          onClose={() => setSelected(null)}
+          onSaved={recargarHistorial}
+        />
       )}
     </main>
   )

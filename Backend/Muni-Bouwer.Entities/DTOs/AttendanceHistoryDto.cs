@@ -3,6 +3,7 @@ namespace Muni_Bouwer.Entities.DTOs;
 public class AttendanceHistoryDto
 {
     public int AttendanceId { get; set; }
+    public int StudentActivityId { get; set; }
     public int ActivityId { get; set; }
     public string ActivityName { get; set; } = string.Empty;
     public int StudentId { get; set; }
