@@ -97,6 +97,34 @@ namespace Muni_Bouwer.Data.Migrations
                     b.ToTable("Documents");
                 });
 
+            modelBuilder.Entity("Muni_Bouwer.Entities.Models.EmergencyContact", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StudentId");
+
+                    b.ToTable("EmergencyContact");
+                });
+
             modelBuilder.Entity("Muni_Bouwer.Entities.Models.Enrollment", b =>
                 {
                     b.Property<int>("Id")
@@ -203,6 +231,20 @@ namespace Muni_Bouwer.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("MedicalRecords");
+                });
+
+            modelBuilder.Entity("Muni_Bouwer.Entities.Models.MedicalRecordPdf", b =>
+                {
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.Property<byte[]>("Content")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.HasKey("StudentId");
+
+                    b.ToTable("MedicalRecordPdfs");
                 });
 
             modelBuilder.Entity("Muni_Bouwer.Entities.Models.PasswordResetToken", b =>
@@ -331,6 +373,9 @@ namespace Muni_Bouwer.Data.Migrations
                     b.Property<DateOnly>("Date")
                         .HasColumnType("date");
 
+                    b.Property<int?>("InstructorId")
+                        .HasColumnType("int");
+
                     b.Property<bool>("IsPresent")
                         .HasColumnType("bit");
 
@@ -338,6 +383,8 @@ namespace Muni_Bouwer.Data.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("InstructorId");
 
                     b.HasIndex("StudentActivityId");
 
@@ -496,6 +543,17 @@ namespace Muni_Bouwer.Data.Migrations
                     b.Navigation("Student");
                 });
 
+            modelBuilder.Entity("Muni_Bouwer.Entities.Models.EmergencyContact", b =>
+                {
+                    b.HasOne("Muni_Bouwer.Entities.Models.Student", "Student")
+                        .WithMany("AdditionalEmergencyContacts")
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Student");
+                });
+
             modelBuilder.Entity("Muni_Bouwer.Entities.Models.Enrollment", b =>
                 {
                     b.HasOne("Muni_Bouwer.Entities.Models.StudentActivity", "StudentActivity")
@@ -548,6 +606,17 @@ namespace Muni_Bouwer.Data.Migrations
                     b.Navigation("Student");
                 });
 
+            modelBuilder.Entity("Muni_Bouwer.Entities.Models.MedicalRecordPdf", b =>
+                {
+                    b.HasOne("Muni_Bouwer.Entities.Models.Student", "Student")
+                        .WithOne()
+                        .HasForeignKey("Muni_Bouwer.Entities.Models.MedicalRecordPdf", "StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Student");
+                });
+
             modelBuilder.Entity("Muni_Bouwer.Entities.Models.PasswordResetToken", b =>
                 {
                     b.HasOne("Muni_Bouwer.Entities.Models.User", "User")
@@ -580,11 +649,18 @@ namespace Muni_Bouwer.Data.Migrations
 
             modelBuilder.Entity("Muni_Bouwer.Entities.Models.StudentAttendance", b =>
                 {
+                    b.HasOne("Muni_Bouwer.Entities.Models.Instructor", "Instructor")
+                        .WithMany()
+                        .HasForeignKey("InstructorId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Muni_Bouwer.Entities.Models.StudentActivity", "StudentActivity")
                         .WithMany("Attendances")
                         .HasForeignKey("StudentActivityId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Instructor");
 
                     b.Navigation("StudentActivity");
                 });
@@ -645,6 +721,8 @@ namespace Muni_Bouwer.Data.Migrations
 
             modelBuilder.Entity("Muni_Bouwer.Entities.Models.Student", b =>
                 {
+                    b.Navigation("AdditionalEmergencyContacts");
+
                     b.Navigation("Documents");
 
                     b.Navigation("MedicalRecord");

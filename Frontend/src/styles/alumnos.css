@@ -54,6 +54,23 @@
 }
 .alumnos-documents { padding: 0; }
 .alumnos-message { padding: .75rem; background: #f8f3f5; border-radius: 8px; }
+.alumnos-contactos { margin-top: 1.5rem; padding: 1rem; border: 1px solid #eee; border-radius: 10px; background: #faf8f9; }
+.alumnos-contactos h3 { margin-bottom: .75rem; color: #333; }
+.alumnos-contactos p { display: flex; flex-wrap: wrap; gap: .25rem .4rem; margin: 0; line-height: 1.5; overflow-wrap: anywhere; }
+.alumnos-contactos strong { color: #444; }
+.alumnos-volver { margin-bottom: 1.25rem; }
+.alumnos-card > h2 { margin: 0 0 .4rem; line-height: 1.3; }
+.alumnos-contactos .alumnos-telefono { margin-bottom: .4rem; }
+.alumnos-contactos-lista { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: .75rem 2rem; }
+.alumnos-contacto { display: flex; min-width: 0; flex-direction: column; gap: .4rem; }
+.alumnos-pdf { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #eee; }
+.alumnos-pdf h3 { margin-bottom: .5rem; color: #333; }
+.alumnos-pdf-form { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; margin: 1rem 0; }
+.alumnos-pdf-form label { width: 100%; font-weight: 600; }
+.alumnos-pdf-form input { max-width: 100%; }
+.alumnos-pdf-preview { display: grid; gap: .75rem; margin-top: 1rem; }
+.alumnos-pdf-preview iframe { width: 100%; height: 65vh; min-height: 320px; border: 1px solid #ddd; border-radius: 8px; }
+.alumnos-pdf-preview button { justify-self: start; }
 @media (max-width: 700px) {
   .alumnos-page { padding: 1rem; }
   .alumnos-card, .alumnos-list { padding: 1rem; }

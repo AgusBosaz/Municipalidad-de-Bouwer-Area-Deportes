@@ -411,6 +411,146 @@
   background: #7f1538;
 }
 
+/* ===== Acciones de la tabla y edición de asistencia ===== */
+.attendance-row-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.attendance-edit-button {
+  color: #fff;
+  background: #9a1b45;
+  border-color: #9a1b45;
+}
+
+.attendance-edit-button:hover {
+  background: #7f1538;
+}
+
+.attendance-edit-button:disabled,
+.attendance-edit-button:disabled:hover {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #9a1b45;
+}
+
+.attendance-detail-footer {
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.attendance-secondary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 0 18px;
+  color: #9a1b45;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  background: #fff;
+  border: 1px solid #e6c5d0;
+  border-radius: 8px;
+}
+
+.attendance-secondary-button:hover {
+  background: #fbf0f4;
+}
+
+.attendance-close-button:disabled,
+.attendance-secondary-button:disabled,
+.attendance-detail-close:disabled,
+.attendance-toggle button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.attendance-edit-hint {
+  margin: 0 24px 16px;
+  padding: 10px 14px;
+  color: #6e1735;
+  font-size: 13px;
+  line-height: 1.5;
+  background: #fbf0f4;
+  border-radius: 8px;
+}
+
+.attendance-edit-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+}
+
+.attendance-toggle {
+  display: inline-flex;
+  padding: 3px;
+  background: #f5f0f2;
+  border-radius: 9px;
+}
+
+.attendance-toggle button {
+  min-width: 78px;
+  padding: 6px 10px;
+  color: #766c74;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.attendance-toggle button:hover:not(:disabled) {
+  color: #30272e;
+}
+
+.attendance-toggle button.is-present {
+  color: #fff;
+  background: #218653;
+}
+
+.attendance-toggle button.is-absent {
+  color: #fff;
+  background: #bd4545;
+}
+
+.attendance-toggle button:focus-visible {
+  outline: 2px solid #9a1b45;
+  outline-offset: 1px;
+}
+
+.attendance-row-changed td {
+  background: #fff8e8;
+}
+
+.attendance-change-note {
+  color: #986b13;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.attendance-detail-feedback {
+  margin: 16px 24px 0;
+  padding: 11px 14px;
+  font-size: 13px;
+  border-radius: 8px;
+}
+
+.attendance-detail-feedback.is-success {
+  color: #267344;
+  background: #eaf6ee;
+}
+
+.attendance-detail-feedback.is-error {
+  color: #a33333;
+  background: #fbeaea;
+}
+
 @media (max-width: 1100px) {
   .attendance-history-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -481,6 +621,11 @@
   .attendance-history-table td:nth-child(3):not([colspan])::before { content: 'Presentes'; }
   .attendance-history-table td:nth-child(4):not([colspan])::before { content: 'Ausentes'; }
   .attendance-history-table td:nth-child(5):not([colspan])::before { content: 'Acciones'; }
+  .attendance-history-coordinator td:nth-child(2):not([colspan])::before { content: 'Docente'; }
+  .attendance-history-coordinator td:nth-child(3):not([colspan])::before { content: 'Fecha'; }
+  .attendance-history-coordinator td:nth-child(4):not([colspan])::before { content: 'Presentes'; }
+  .attendance-history-coordinator td:nth-child(5):not([colspan])::before { content: 'Ausentes'; }
+  .attendance-history-coordinator td:nth-child(6):not([colspan])::before { content: 'Acciones'; }
   .attendance-history-table td[colspan] {
     white-space: normal;
     overflow-wrap: anywhere;
@@ -510,5 +655,56 @@
 
   .attendance-detail-footer {
     padding: 16px 18px 20px;
+  }
+
+  .attendance-detail-footer button {
+    flex: 1 1 100%;
+  }
+
+  .attendance-edit-hint,
+  .attendance-detail-feedback {
+    margin-right: 18px;
+    margin-left: 18px;
+  }
+
+  /* Tabla del detalle como tarjetas en celulares */
+  .attendance-detail-table-container table,
+  .attendance-detail-table-container tbody,
+  .attendance-detail-table-container tr,
+  .attendance-detail-table-container td {
+    display: block;
+    width: 100%;
+  }
+
+  .attendance-detail-table-container thead { display: none; }
+
+  .attendance-detail-table-container tr {
+    padding: 6px 0;
+    border-bottom: 1px solid #eee8eb;
+  }
+
+  .attendance-detail-table-container td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 6px 8px;
+    border-bottom: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .attendance-detail-table-container td::before {
+    flex-shrink: 0;
+    color: #756b73;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .attendance-detail-table-container td:nth-child(1)::before { content: 'Alumno/a'; }
+  .attendance-detail-table-container td:nth-child(2)::before { content: 'DNI'; }
+  .attendance-detail-table-container td:nth-child(3)::before { content: 'Asistencia'; }
+
+  .attendance-edit-cell {
+    align-items: flex-end;
   }
 }

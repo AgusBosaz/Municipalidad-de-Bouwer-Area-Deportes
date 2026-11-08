@@ -44,6 +44,11 @@ public class UserService
             };
         }
 
+        if (user is Instructor && !user.IsActive)
+        {
+            return new UserOperationResultDto { Status = UserOperationStatus.InstructorRequiresReactivation };
+        }
+
         _userDAL.Activate(user);
         await _userDAL.SaveChangesAsync();
 

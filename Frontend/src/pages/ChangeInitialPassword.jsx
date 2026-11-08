@@ -1,3 +1,4 @@
+import { useAvisos } from '../components/AvisosContext'
 import { useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import MunicipalBrand from '../components/MunicipalBrand'
@@ -7,6 +8,7 @@ import '../styles/Login.css'
 import '../styles/recovery.css'
 
 export default function ChangeInitialPassword() {
+  const { avisar } = useAvisos()
   const [password, setPassword] = useState('')
   const [confirmation, setConfirmation] = useState('')
   const [message, setMessage] = useState('')
@@ -31,12 +33,12 @@ export default function ChangeInitialPassword() {
     try {
       await changeInitialPassword(password)
       clearSession()
-      window.alert('Contraseña cambiada. Iniciá sesión con la nueva.')
+      await avisar('Contraseña cambiada. Iniciá sesión con la nueva.')
       navigate('/login', { replace: true })
     } catch (error) {
       if (error.status === 401) {
         clearSession()
-        window.alert('La sesión venció. Iniciá sesión nuevamente.')
+        await avisar('La sesión venció. Iniciá sesión nuevamente.')
         navigate('/login', { replace: true })
         return
       }
@@ -62,6 +64,7 @@ export default function ChangeInitialPassword() {
           </label>
           <input
             id="initial-password"
+            placeholder="Nueva contraseña (mínimo 8 caracteres)"
             type="password"
             autoComplete="new-password"
             minLength={8}
@@ -76,6 +79,7 @@ export default function ChangeInitialPassword() {
           </label>
           <input
             id="initial-confirmation"
+            placeholder="Repetir contraseña"
             type="password"
             autoComplete="new-password"
             minLength={8}

@@ -7,6 +7,6 @@ public interface IActivityDAL
     Task<List<Activity>> GetAllAsync();
     Task<Activity?> GetByIdAsync(int id);
     Task<Activity> CreateAsync(Activity activity);
-    Task<bool> UpdateAsync(Activity activity);
+    Task<(bool Updated, string? Conflict)> UpdateAsync(Activity activity);
     Task<bool> DeleteAsync(int id);
 }

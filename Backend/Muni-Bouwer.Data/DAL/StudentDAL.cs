@@ -32,7 +32,7 @@ public class StudentDAL
 
     private IQueryable<Student> ReadableStudents(int? instructorId)
     {
-        IQueryable<Student> students = _context.Students;
+        IQueryable<Student> students = _context.Students.Include(student => student.AdditionalEmergencyContacts);
 
         if (instructorId is int id)
         {

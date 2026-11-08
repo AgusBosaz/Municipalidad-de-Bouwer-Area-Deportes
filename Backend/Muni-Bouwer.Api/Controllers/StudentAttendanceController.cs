@@ -86,6 +86,10 @@ public class StudentAttendanceController : ControllerBase
         if (!IsValidDate(dto.Date))
             return BadRequest(new { message = "La fecha de asistencia no es válida." });
 
+        if (instructorId.HasValue &&
+            !await _service.CanInstructorRegisterActivityAsync(activityId, dto.Date))
+            return Conflict(new { message = "La asistencia solo puede registrarse durante el día y horario de la clase." });
+
         List<AttendanceStudentDto> students =
             await _service.GetStudentsByActivityAsync(activityId);
         HashSet<int> expectedIds = students
@@ -96,7 +100,11 @@ public class StudentAttendanceController : ControllerBase
             !expectedIds.SetEquals(dto.Entries.Select(entry => entry.StudentActivityId)))
             return BadRequest(new { message = "La lista debe incluir una vez a cada alumno inscripto." });
 
-        await _service.SaveActivityAttendanceAsync(dto.Date, dto.Entries);
+        int? teacherId = instructorId ?? dto.InstructorId;
+        if (teacherId is null || !await _service.CanAccessActivityAsync(activityId, teacherId))
+            return BadRequest(new { message = "Seleccioná un docente activo asignado a la actividad." });
+
+        await _service.SaveActivityAttendanceAsync(dto.Date, dto.Entries, teacherId.Value);
         return NoContent();
     }
 
@@ -116,6 +124,10 @@ public class StudentAttendanceController : ControllerBase
 
         if (!IsValidDate(dto.Date))
             return BadRequest(new { message = "La fecha de asistencia no es válida." });
+
+        if (instructorId.HasValue &&
+            !await _service.CanInstructorRegisterStudentAsync(dto.StudentActivityId, dto.Date))
+            return Conflict(new { message = "La asistencia solo puede registrarse durante el día y horario de la clase." });
 
         if (await _service.ExistsForDateAsync(dto.StudentActivityId, dto.Date))
             return Conflict(new { message = "Ya existe asistencia para ese alumno y fecha." });
@@ -141,6 +153,11 @@ public class StudentAttendanceController : ControllerBase
 
         if (existing.StudentActivityId != dto.StudentActivityId)
             return BadRequest(new { message = "No se puede cambiar el alumno de una asistencia existente." });
+
+        if (instructorId.HasValue &&
+            (existing.Date != dto.Date ||
+             !await _service.CanInstructorEditStudentAttendanceAsync(existing.StudentActivityId, existing.Date)))
+            return Conflict(new { message = "La asistencia solo puede editarse durante el horario de la clase." });
 
         if (!await _service.HasActiveEnrollmentAsync(existing.StudentActivityId))
             return BadRequest(new { message = "El alumno no tiene una inscripción activa en esa actividad." });

@@ -3,6 +3,7 @@ namespace Muni_Bouwer.Entities.DTOs;
 public class SaveActivityAttendanceDto
 {
     public DateOnly Date { get; set; }
+    public int? InstructorId { get; set; }
     public List<AttendanceEntryDto> Entries { get; set; } = new();
 }
 

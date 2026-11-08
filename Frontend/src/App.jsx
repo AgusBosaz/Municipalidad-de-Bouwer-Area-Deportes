@@ -17,6 +17,8 @@ import RecoverPassword from './pages/RecoverPassword'
 import ResetPassword from './pages/ResetPassword'
 import DashboardPage from './pages/DashboardPage.jsx'
 import DocentesPage from './pages/DocentesPage.jsx'
+import CrearCoordinadorPage from './pages/CrearCoordinadorPage.jsx'
+import CoordinadoresPage from './pages/CoordinadoresPage.jsx'
 import ActividadesPage from './pages/Actividadespage.jsx'
 import AsignacionesPage from './pages/AsignacionesPage.jsx'
 import InscripcionAlumnos from './pages/InscripcionAlumnos.jsx'
@@ -195,6 +197,14 @@ function App() {
         <Route
           path="/docentes"
           element={<CoordinatorOnly><DocentesPage /></CoordinatorOnly>}
+        />
+        <Route
+          path="/coordinadores"
+          element={<CoordinatorOnly><CoordinadoresPage /></CoordinatorOnly>}
+        />
+        <Route
+          path="/coordinadores/nuevo"
+          element={<CoordinatorOnly><CrearCoordinadorPage /></CoordinatorOnly>}
         />
 
         <Route

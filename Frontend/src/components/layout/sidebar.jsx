@@ -17,6 +17,7 @@ function Sidebar({ isOpen, onNavigate, session, onLogout }) {
       { to: '/inicio', label: 'Inicio', Icon: LayoutDashboard },
       { to: '/actividades', label: 'Actividades', Icon: Trophy },
       { to: '/docentes', label: 'Docentes', Icon: UsersRound },
+      { to: '/coordinadores', label: 'Coordinadores', Icon: UsersRound },
       { to: '/asignaciones', label: 'Asignaciones', Icon: CalendarDays },
       { to: '/inscribir-alumnos', label: 'Inscripciones', Icon: ClipboardList },
       { to: '/alumnos', label: 'Alumnos', Icon: GraduationCap },

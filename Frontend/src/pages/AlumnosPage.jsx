@@ -1,21 +1,77 @@
+import { useAvisos } from '../components/AvisosContext'
 import { useEffect, useState } from 'react'
 import { apiRequest } from '../services/api'
 import { getStudents } from '../services/studentService'
 import { getSession } from '../services/AuthSession'
+import { getMedicalRecordPdf, saveMedicalRecordPdf } from '../services/medicalRecordPdfService'
 import '../styles/alumnos.css'
 
 const emptyRecord = { diseases: '', cus: '', observations: '' }
 
 function StudentDetails({ student, onBack, canManage }) {
-  const [tab, setTab] = useState('medical')
+  const { preguntar } = useAvisos()
+  const [tab, setTab] = useState('personal')
   const [record, setRecord] = useState(emptyRecord)
   const [recordReady, setRecordReady] = useState(false)
-  const [documents, setDocuments] = useState(null)
-  const [documentType, setDocumentType] = useState('')
-  const [fileUrl, setFileUrl] = useState('')
   const [message, setMessage] = useState('')
   const [busy, setBusy] = useState(false)
+  const [pdfFile, setPdfFile] = useState(null)
+  const [pdfUrl, setPdfUrl] = useState(null)
+  const [pdfBusy, setPdfBusy] = useState(false)
+  const [pdfMessage, setPdfMessage] = useState('')
+  const [pdfInputKey, setPdfInputKey] = useState(0)
   const base = `/students/${student.id}`
+
+  useEffect(() => () => {
+    if (pdfUrl) URL.revokeObjectURL(pdfUrl)
+  }, [pdfUrl])
+
+  async function viewPdf() {
+    setPdfBusy(true)
+    setPdfMessage('')
+    setPdfUrl(null)
+    try {
+      const pdf = await getMedicalRecordPdf(student.id)
+      setPdfUrl(URL.createObjectURL(pdf))
+    } catch (error) {
+      setPdfMessage(error.status === 404
+        ? 'Este alumno todavía no tiene una ficha médica en PDF.'
+        : 'No se pudo cargar el PDF. Intentá nuevamente.')
+    } finally {
+      setPdfBusy(false)
+    }
+  }
+
+  function openMedicalTab() {
+    setTab('medical')
+    setMessage('')
+    if (!pdfBusy) viewPdf()
+  }
+
+  async function uploadPdf(event) {
+    event.preventDefault()
+    if (!pdfFile || pdfBusy) return
+    if (!pdfFile.name.toLowerCase().endsWith('.pdf') || pdfFile.size > 10 * 1024 * 1024) {
+      setPdfMessage('Seleccioná un archivo PDF de hasta 10 MB.')
+      return
+    }
+    if (!await preguntar('Si ya existe una ficha PDF, será reemplazada. ¿Querés continuar?')) return
+    setPdfBusy(true)
+    setPdfMessage('')
+    try {
+      await saveMedicalRecordPdf(student.id, pdfFile)
+      setPdfUrl(null)
+      setPdfFile(null)
+      setPdfInputKey((key) => key + 1)
+      setPdfMessage('Ficha médica PDF guardada correctamente.')
+    } catch (error) {
+      setPdfMessage(error.status === 400 || error.status === 413
+        ? 'El archivo debe ser un PDF válido de hasta 10 MB.'
+        : 'No se pudo guardar la ficha PDF. Intentá nuevamente.')
+    } finally {
+      setPdfBusy(false)
+    }
+  }
 
   useEffect(() => {
     let active = true
@@ -34,15 +90,8 @@ function StudentDetails({ student, onBack, canManage }) {
         if (error.status === 404) setRecordReady(true)
         else setMessage('No se pudo cargar la ficha médica. Volvé a seleccionar el alumno para reintentar.')
       })
-    if (canManage) {
-      apiRequest(`${base}/documents`)
-        .then((data) => { if (active) setDocuments(data) })
-        .catch(() => {
-          if (active) setMessage('No se pudieron cargar los documentos. Volvé a seleccionar el alumno para reintentar.')
-        })
-    }
     return () => { active = false }
-  }, [base, canManage])
+  }, [base])
 
   async function saveRecord(event) {
     event.preventDefault()
@@ -62,64 +111,28 @@ function StudentDetails({ student, onBack, canManage }) {
     }
   }
 
-  async function addDocument(event) {
-    event.preventDefault()
-    if (busy || !documentType.trim() || !fileUrl.trim()) return
-    let url
-    try {
-      url = new URL(fileUrl.trim())
-      if (!['http:', 'https:'].includes(url.protocol)) throw new Error()
-    } catch {
-      setMessage('Ingresá un enlace que comience con http:// o https://.')
-      return
-    }
-    setBusy(true)
-    setMessage('')
-    try {
-      const result = await apiRequest(`${base}/documents`, {
-        method: 'POST',
-        body: JSON.stringify({ type: documentType.trim(), fileUrl: url.href }),
-      })
-      setDocuments((current) => [...current, result.data])
-      setDocumentType('')
-      setFileUrl('')
-      setMessage('Documento registrado correctamente.')
-    } catch {
-      setMessage('No se pudo registrar el documento.')
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  async function deleteDocument(id) {
-    if (busy || !window.confirm('¿Querés dar de baja este documento?')) return
-    setBusy(true)
-    setMessage('')
-    try {
-      await apiRequest(`${base}/documents/${id}`, { method: 'DELETE' })
-      setDocuments((current) => current.filter((document) => document.id !== id))
-      setMessage('Documento dado de baja.')
-    } catch {
-      setMessage('No se pudo dar de baja el documento.')
-    } finally {
-      setBusy(false)
-    }
-  }
-
   return (
     <section className="alumnos-card">
-      <button type="button" className="alumnos-secondary" onClick={onBack}>← Volver al listado</button>
+      <button type="button" className="alumnos-secondary alumnos-volver" onClick={onBack}>← Volver al listado</button>
       <h2>{student.lastName}, {student.firstName}</h2>
       <p>DNI: {student.dni}</p>
       <div className="alumnos-tabs">
         <button
           type="button"
+          aria-pressed={tab === 'personal'}
+          onClick={() => { setTab('personal'); setMessage('') }}
+        >
+          Datos personales
+        </button>
+
+        <button
+          type="button"
           aria-pressed={tab === 'medical'}
-          onClick={() => { setTab('medical'); setMessage('') }}
+          onClick={openMedicalTab}
+          disabled={pdfBusy}
         >
           Ficha médica
         </button>
-
         {canManage && (
           <button
             type="button"
@@ -131,26 +144,36 @@ function StudentDetails({ student, onBack, canManage }) {
         )}
       </div>
       {message && <p role="status" className="alumnos-message">{message}</p>}
-      {tab === 'medical' ? (
+      {tab === 'personal' ? (
         <form className="alumnos-form" onSubmit={saveRecord}>
+          <section className="alumnos-contactos" aria-label="Datos de contacto">
+            <h3>Datos de contacto</h3>
+            <p className="alumnos-telefono"><strong>Teléfono del alumno:</strong> <span>{student.phoneNumber || 'No registrado'}</span></p>
+            <div className="alumnos-contactos-lista">
+              <div className="alumnos-contacto">
+                <p><strong>Contacto de emergencia:</strong> <span>{student.emergencyContactName || 'No registrado'}</span></p>
+                <p><strong>Teléfono de emergencia:</strong> <span>{student.emergencyContactPhoneNumber || 'No registrado'}</span></p>
+              </div>
+              {(student.additionalEmergencyContacts || []).map((contacto, index) => (
+                <div className="alumnos-contacto" key={`${contacto.name}-${contacto.phoneNumber}-${index}`}>
+                  <p><strong>Contacto adicional:</strong> <span>{contacto.name}</span></p>
+                  <p><strong>Teléfono de emergencia:</strong> <span>{contacto.phoneNumber}</span></p>
+                </div>
+              ))}
+            </div>
+          </section>
           <label>Enfermedades o condiciones
             <textarea
+              placeholder="Ej. Alergia al polen"
               value={record.diseases}
               onChange={(e) => setRecord({ ...record, diseases: e.target.value })}
               disabled={!recordReady || busy}
               readOnly={!canManage}
             />
           </label>
-          <label>CUS
-            <input
-              value={record.cus}
-              onChange={(e) => setRecord({ ...record, cus: e.target.value })}
-              disabled={!recordReady || busy}
-              readOnly={!canManage}
-            />
-          </label>
           <label>Observaciones
             <textarea
+              placeholder="Ej. Indicación para la actividad"
               value={record.observations}
               onChange={(e) => setRecord({ ...record, observations: e.target.value })}
               disabled={!recordReady || busy}
@@ -163,39 +186,43 @@ function StudentDetails({ student, onBack, canManage }) {
               className="alumnos-primary"
               disabled={!recordReady || busy}
             >
-              Guardar ficha médica
+              Guardar datos
             </button>
           )}
         </form>
-      ) : (
-        <>
-          <p>Registrá el tipo de documento y un enlace donde ya esté disponible.</p>
-          <form className="alumnos-form" onSubmit={addDocument}>
-            <label>Tipo de documento
-              <input required value={documentType} onChange={(e) => setDocumentType(e.target.value)} placeholder="Ej. Apto físico" />
-            </label>
-            <label>Enlace del documento
-              <input required type="url" value={fileUrl} onChange={(e) => setFileUrl(e.target.value)} placeholder="https://..." />
-            </label>
-            <button type="submit" className="alumnos-primary" disabled={documents === null || busy}>Registrar documento</button>
-          </form>
-          <h3>Documentos registrados</h3>
-          {documents === null ? <p>Los documentos no están disponibles.</p> : documents.length === 0 ? (
-            <p>No hay documentos registrados para este alumno.</p>
-          ) : (
-            <ul className="alumnos-documents">
-              {documents.map((document) => (
-                <li key={document.id}>
-                  <span>{document.type}</span>
-                  <span>{document.fileUrl && /^https?:\/\//i.test(document.fileUrl)
-                    ? <a href={document.fileUrl} target="_blank" rel="noopener noreferrer">Abrir enlace</a>
-                    : 'Enlace no disponible'}</span>
-                  <button type="button" className="alumnos-secondary" disabled={busy} onClick={() => deleteDocument(document.id)}>Dar de baja</button>
-                </li>
-              ))}
-            </ul>
+      ) : tab === 'documents' ? (
+        <section className="alumnos-pdf">
+          <h3>Ficha médica en PDF</h3>
+          <p>Consultá la ficha escaneada del alumno.</p>
+          {canManage && (
+            <form className="alumnos-pdf-form" onSubmit={uploadPdf}>
+              <label htmlFor="medical-pdf">Seleccionar PDF (máximo 10 MB)</label>
+              <input
+                key={pdfInputKey}
+                id="medical-pdf"
+                type="file"
+                accept=".pdf,application/pdf"
+                onChange={(event) => setPdfFile(event.target.files?.[0] || null)}
+                disabled={pdfBusy}
+              />
+              <button className="alumnos-primary" type="submit" disabled={!pdfFile || pdfBusy}>
+                {pdfBusy ? 'Procesando...' : 'Subir'}
+              </button>
+            </form>
           )}
-        </>
+          {pdfMessage && <p className="alumnos-message" role="status">{pdfMessage}</p>}
+        </section>
+      ) : (
+        <section className="alumnos-pdf">
+          <h3>Ficha médica en PDF</h3>
+          {pdfBusy && <p role="status">Cargando ficha médica...</p>}
+          {pdfMessage && <p className="alumnos-message" role="status">{pdfMessage}</p>}
+          {pdfUrl && (
+            <div className="alumnos-pdf-preview">
+              <iframe title="Ficha médica en PDF" src={pdfUrl} />
+            </div>
+          )}
+        </section>
       )}
     </section>
   )

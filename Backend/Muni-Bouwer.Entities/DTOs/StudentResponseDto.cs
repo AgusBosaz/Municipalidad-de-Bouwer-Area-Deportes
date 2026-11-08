@@ -13,5 +13,6 @@ public class StudentResponseDto
     public DateOnly BirthDate { get; set; }
     public string EmergencyContactName { get; set; } = string.Empty;
     public string EmergencyContactPhoneNumber { get; set; } = string.Empty;
+    public List<EmergencyContactDto> AdditionalEmergencyContacts { get; set; } = new();
     public bool IsActive { get; set; }
 }

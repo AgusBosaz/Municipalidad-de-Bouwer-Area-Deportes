@@ -51,7 +51,8 @@ public class ActivityController : ControllerBase
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
-        var updated = await _activityService.UpdateAsync(id, dto);
+        var (updated, conflict) = await _activityService.UpdateAsync(id, dto);
+        if (conflict is not null) return Conflict(new { message = conflict });
         if (!updated) return NotFound(new { message = $"No se encontró la actividad con ID {id} para actualizar." });
 
         return NoContent();

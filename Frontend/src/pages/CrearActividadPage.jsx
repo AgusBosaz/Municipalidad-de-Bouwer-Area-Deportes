@@ -1,7 +1,9 @@
+import { useAvisos } from '../components/AvisosContext'
 import { useState } from 'react'
 import '../styles/actividades.css'
 
 function CrearActividadPage({ onCancel, onSave, actividadInicial, guardando, docentes, cargandoDocentes, errorDocentes, }) {
+  const { avisar } = useAvisos()
   const [form, setForm] = useState({
     name: actividadInicial?.name ?? '',
     category: actividadInicial?.category?.toString() ?? '',
@@ -29,38 +31,38 @@ function CrearActividadPage({ onCancel, onSave, actividadInicial, guardando, doc
     }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
 
     if (!form.name.trim()) {
-      alert('Ingresá el nombre de la actividad.')
+      await avisar('Ingresá el nombre de la actividad.')
       return
     }
 
     if (form.category === '') {
-      alert('Seleccioná una categoría de edad.')
+      await avisar('Seleccioná una categoría de edad.')
       return
     }
 
     if (form.days === 0) {
-      alert('Seleccioná al menos un día.')
+      await avisar('Seleccioná al menos un día.')
       return
     }
 
     if (!form.startTime || !form.endTime || form.endTime <= form.startTime) {
-      alert('Ingresá un horario de fin posterior al horario de inicio.')
+      await avisar('Ingresá un horario de fin posterior al horario de inicio.')
       return
     }
 
     if (!form.location.trim()) {
-      alert('Ingresá el lugar de la actividad.')
+      await avisar('Ingresá el lugar de la actividad.')
       return
     }
 
     const capacity = Number(form.maximumCapacity)
 
     if (!Number.isInteger(capacity) || capacity < 1 || capacity > 500) {
-      alert('Ingresá una cantidad de cupos entre 1 y 500.')
+      await avisar('Ingresá una cantidad de cupos entre 1 y 500.')
       return
     }
 
