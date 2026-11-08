@@ -1,0 +1,67 @@
+stages:
+  - build
+  - test
+  - smoke_test
+  - deploy
+
+build_backend:
+  stage: build
+  image: mcr.microsoft.com/dotnet/sdk:8.0
+  script:
+    - dotnet restore Backend/MuniBack.sln
+    - dotnet build Backend/MuniBack.sln --configuration Release --no-restore
+
+test_backend:
+  stage: test
+  image: mcr.microsoft.com/dotnet/sdk:8.0
+  script:
+    - dotnet test Backend/Muni-Bouwer.Tests/Muni-Bouwer.Tests.csproj --configuration Release
+
+smoke_test_backend:
+  stage: smoke_test
+  image: mcr.microsoft.com/dotnet/sdk:8.0
+
+  services:
+    - name: mcr.microsoft.com/mssql/server:2022-latest
+      alias: sql
+
+  variables:
+    ACCEPT_EULA: "Y"
+    MSSQL_SA_PASSWORD: "SoloPrueba_CI2026!"
+    ASPNETCORE_ENVIRONMENT: "Development"
+    ASPNETCORE_URLS: "http://0.0.0.0:5218"
+    ConnectionStrings__BouwerDatabase: "Server=sql,1433;Database=MuniBouwerSmokeTest;User Id=sa;Password=SoloPrueba_CI2026!;TrustServerCertificate=True;"
+    Jwt__Key: "clave-exclusiva-para-pruebas-automaticas-no-usar-en-produccion-123456"
+    API_BASE_URL: "http://localhost:5218"
+
+  script:
+    - dotnet tool restore
+    - dotnet restore Backend/MuniBack.sln
+    - dotnet build Backend/MuniBack.sln --configuration Release --no-restore
+    - |
+      intentos=0
+      until dotnet tool run dotnet-ef database update \
+        --project Backend/Muni-Bouwer.Data/Muni-Bouwer.Data.csproj \
+        --startup-project Backend/Muni-Bouwer.Api/Muni-Bouwer.Api.csproj \
+        --configuration Release --no-build
+      do
+        intentos=$((intentos + 1))
+        if [ "$intentos" -ge 30 ]; then
+          echo "No se pudieron aplicar las migraciones."
+          exit 1
+        fi
+        echo "Esperando SQL Server antes de reintentar..."
+        sleep 5
+      done
+    - dotnet run --project Backend/Muni-Bouwer.Api/Muni-Bouwer.Api.csproj --configuration Release --no-build --no-launch-profile &
+    - |
+      intentos=0
+      until sh Backend/Scripts/smoke-test.sh
+      do
+        intentos=$((intentos + 1))
+        if [ "$intentos" -ge 30 ]; then
+          echo "La API no respondió a tiempo."
+          exit 1
+        fi
+        sleep 2
+      done

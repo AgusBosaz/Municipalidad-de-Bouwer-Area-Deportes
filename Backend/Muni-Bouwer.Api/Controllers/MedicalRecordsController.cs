@@ -54,7 +54,7 @@ namespace Muni_Bouwer.Api.Controllers
         [Authorize(Policy = PermissionNames.MedicalRecordsManage)]
         [HttpPut("pdf")]
         [RequestSizeLimit(MaxPdfBytes + 65536)]
-        public async Task<IActionResult> UploadPdf(int studentId, [FromForm] IFormFile file)
+       public async Task<IActionResult> UploadPdf(int studentId, IFormFile file)
         {
             if (!User.IsInRole(RoleNames.Coordinator)) return Forbid();
             if (await _studentService.GetByIdAsync(studentId) is null) return NotFound();
