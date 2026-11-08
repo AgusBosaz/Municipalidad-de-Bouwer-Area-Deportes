@@ -65,22 +65,16 @@ public class StudentAttendanceService
 
     private static bool IsInRegistrationWindow(Activity? activity, DateOnly date)
     {
-        if (activity is null || !IsInEditWindow(activity, date)) return false;
-        var day = date.DayOfWeek == DayOfWeek.Sunday
-            ? ActivityDays.Sunday
-            : (ActivityDays)(1 << ((int)date.DayOfWeek - 1));
-        return (activity.Days & day) != 0;
+        return AttendanceSchedule.CanRegister(activity, date, GetLocalNow());
     }
 
     private static bool IsInEditWindow(Activity? activity, DateOnly date)
     {
-        if (activity is null) return false;
-        var now = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(
-            DateTimeOffset.UtcNow, "America/Argentina/Buenos_Aires");
-        return date == DateOnly.FromDateTime(now.DateTime) &&
-               TimeOnly.FromDateTime(now.DateTime) >= activity.StartTime &&
-               TimeOnly.FromDateTime(now.DateTime) < activity.EndTime;
+        return AttendanceSchedule.CanEdit(activity, date, GetLocalNow());
     }
+
+    private static DateTimeOffset GetLocalNow() => TimeZoneInfo.ConvertTimeBySystemTimeZoneId(
+        DateTimeOffset.UtcNow, "America/Argentina/Buenos_Aires");
 
     public Task<bool> IsAssignedToStudentActivityAsync(
         int studentActivityId, int instructorId) =>

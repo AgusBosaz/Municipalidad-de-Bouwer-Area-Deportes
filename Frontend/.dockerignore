@@ -2,3 +2,7 @@ node_modules/
 dist/
 .env
 .env.*
+.npmrc
+**/*.pfx
+**/*.p12
+**/*.key
