@@ -11,6 +11,13 @@ build_backend:
     - dotnet restore Backend/MuniBack.sln
     - dotnet build Backend/MuniBack.sln --configuration Release --no-restore
 
+build_frontend:
+  stage: build
+  image: node:22-alpine
+  script:
+    - npm ci --prefix Frontend
+    - npm run build --prefix Frontend
+
 test_backend:
   stage: test
   image: mcr.microsoft.com/dotnet/sdk:8.0

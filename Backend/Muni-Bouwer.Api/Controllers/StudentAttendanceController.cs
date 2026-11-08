@@ -203,5 +203,6 @@ public class StudentAttendanceController : ControllerBase
     }
 
     private static bool IsValidDate(DateOnly date) =>
-        date != default && date <= DateOnly.FromDateTime(DateTime.UtcNow);
+        AttendanceSchedule.IsValidDate(date, TimeZoneInfo.ConvertTimeBySystemTimeZoneId(
+            DateTimeOffset.UtcNow, "America/Argentina/Buenos_Aires"));
 }
