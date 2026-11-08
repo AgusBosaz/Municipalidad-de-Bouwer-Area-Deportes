@@ -120,9 +120,35 @@ Compose espera el control de salud de SQL antes de iniciar la API. La API carga 
 - Swagger de la API de prueba: <http://localhost:15218/swagger>
 - Consulta pública: <http://localhost:15173/api/Activity/public>
 
-En una base nueva, la consulta pública puede devolver `[]`. Los roles y permisos iniciales no crean un usuario coordinador. **Todavía falta incorporar al proyecto un mecanismo compartido y seguro para crear el primer coordinador en una base vacía**; no se deben agregar contraseñas reales a una migración o al repositorio. Coordinar su creación antes de probar el ingreso.
+En una base nueva, la consulta pública puede devolver `[]`. Los roles y permisos iniciales no crean un usuario coordinador. Para preparar el primer acceso, seguí el apartado **Crear el primer coordinador** de esta guía.
 
 El recupero de contraseña por correo requiere configuración adicional de Mailjet y una URL de frontend adecuada; no queda configurado solo por levantar Compose. Ver [RECUPERO_PASSWORD.md](RECUPERO_PASSWORD.md).
+
+### Crear el primer coordinador
+
+La herramienta `Muni-Bouwer.Bootstrap` permite crear el primer coordinador cuando la base ya tiene todas sus migraciones. No crea otro si existe cualquier coordinador, incluso inactivo. Para altas posteriores se usa la aplicación con una cuenta coordinadora activa. La herramienta crea los roles que falten, solicita los datos y requiere escribir `CREAR` antes de guardar. La contraseña temporal se genera automáticamente, se muestra una sola vez y debe cambiarse en el primer ingreso.
+
+Para probarla desde Windows con la base local de Compose, comprobá primero que SQL esté saludable y que aplicaste las migraciones del paso 4. Desde la raíz, ejecutá:
+
+```powershell
+$claveSegura = Read-Host 'Contraseña de SQL Server de prueba' -AsSecureString
+$claveSql = [System.Net.NetworkCredential]::new('', $claveSegura).Password
+$claveEscapada = $claveSql.Replace('"', '""')
+$conexionAnterior = [Environment]::GetEnvironmentVariable('ConnectionStrings__BouwerDatabase')
+
+try {
+    $env:ConnectionStrings__BouwerDatabase = "Server=127.0.0.1,14333;Database=MuniBouwerDockerPrueba;User Id=sa;Password=`"$claveEscapada`";TrustServerCertificate=True;"
+    dotnet run --project Backend/Muni-Bouwer.Bootstrap/Muni-Bouwer.Bootstrap.csproj
+}
+finally {
+    [Environment]::SetEnvironmentVariable('ConnectionStrings__BouwerDatabase', $conexionAnterior)
+    Remove-Variable claveSegura, claveSql, claveEscapada, conexionAnterior -ErrorAction SilentlyContinue
+}
+```
+
+Revisá el servidor y el nombre de base que muestra la herramienta antes de confirmar. No publiques ni compartas el token o la contraseña temporal. El procedimiento de conexión, entrega de credenciales y ejecución para el servidor definitivo debe acordarse con la empresa; no copies a producción esta cadena ni sus opciones de prueba.
+
+También se puede construir la imagen de la herramienta con `docker build -f Backend/Dockerfile.bootstrap -t muni-bootstrap ./Backend`. Para ejecutarla se requiere una terminal interactiva (`docker run --rm -it`) y suministrar `ConnectionStrings__BouwerDatabase` de forma adecuada al entorno. La dirección `127.0.0.1` dentro del contenedor apunta al propio contenedor, no al servidor SQL del host; para Docker Desktop local puede usarse `host.docker.internal` y el puerto publicado. La configuración de red y secretos de producción queda pendiente de confirmar.
 
 ## 6. Detener, reiniciar y revisar
 
