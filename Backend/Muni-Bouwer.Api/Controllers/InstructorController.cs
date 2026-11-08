@@ -63,6 +63,7 @@ public class InstructorController : ControllerBase
         if (created is null)
             return Conflict(new { message = "Ya existe un usuario con ese DNI o email." });
 
+        Response.Headers.CacheControl = "no-store";
         return StatusCode(StatusCodes.Status201Created, created);
     }
 

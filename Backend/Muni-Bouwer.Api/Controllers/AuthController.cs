@@ -54,6 +54,7 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<ActionResult<LoginResponseDto>> Login(LoginRequestDto request)
     {
+        Response.Headers.CacheControl = "no-store";
         LoginResultDto result = await _authService.LoginAsync(request);
 
         return result.Status switch
