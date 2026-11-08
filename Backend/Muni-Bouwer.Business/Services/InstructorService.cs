@@ -26,6 +26,30 @@ public class InstructorService
         return instructors.Select(ToResponseDto).ToList();
     }
 
+    public async Task<List<InstructorResponseDto>> GetInactiveAsync()
+    {
+        var instructors = await _instructorDAL.GetInactiveAsync();
+        return instructors.Select(ToResponseDto).ToList();
+    }
+
+    public async Task<CreateInstructorResponseDto?> ReactivateAsync(int id)
+    {
+        var instructor = await _instructorDAL.GetInactiveByIdAsync(id);
+        if (instructor is null) return null;
+
+        string temporaryPassword = Convert.ToBase64String(RandomNumberGenerator.GetBytes(18))
+            .Replace('+', '-').Replace('/', '_');
+        string hash = _passwordService.HashPassword(instructor, temporaryPassword);
+        if (!await _instructorDAL.ReactivateAsync(id, hash)) return null;
+
+        instructor.IsActive = true;
+        return new CreateInstructorResponseDto
+        {
+            Instructor = ToResponseDto(instructor),
+            TemporaryPassword = temporaryPassword
+        };
+    }
+
     public async Task<InstructorResponseDto?> GetByIdAsync(int id)
     {
         var instructor = await _instructorDAL.GetByIdAsync(id);
@@ -115,14 +139,7 @@ public class InstructorService
 
     public async Task<bool> DeleteAsync(int id)
     {
-        var existing = await _instructorDAL.GetByIdAsync(id);
-        if (existing is null)
-            return false;
-
-        existing.IsActive = false;
-        existing.UpdatedAt = DateOnly.FromDateTime(DateTime.UtcNow);
-        await _instructorDAL.SaveChangesAsync();
-        return true;
+        return await _instructorDAL.DeactivateAsync(id);
     }
 
     private static InstructorResponseDto ToResponseDto(Instructor i) => new()

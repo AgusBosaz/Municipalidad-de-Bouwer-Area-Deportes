@@ -2,6 +2,8 @@
 
 Esta guía explica cómo preparar el proyecto y dónde debe trabajar cada integrante. Las decisiones académicas generales se encuentran en [`../context.md`](../context.md).
 
+Para ejecutar frontend, API y una base de prueba en contenedores, consultá la [guía de Docker](GUIA_DOCKER.md). El uso de Docker es opcional para el desarrollo local.
+
 ## 1. Requisitos
 
 Cada desarrollador debe tener instalado:

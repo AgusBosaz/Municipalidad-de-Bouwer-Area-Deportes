@@ -1,6 +1,7 @@
 namespace Muni_Bouwer.Data.DAL;
 
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 using Muni_Bouwer.Data.Context;
 using Muni_Bouwer.Entities.Models;
 
@@ -39,10 +40,29 @@ public class ActivityDAL : IActivityDAL
         return activity;
     }
 
-    public async Task<bool> UpdateAsync(Activity activity)
+    public async Task<(bool Updated, string? Conflict)> UpdateAsync(Activity activity)
     {
+        await using var transaction = await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
         var existing = await _context.Activities.FindAsync(activity.Id);
-        if (existing is null || !existing.IsActive) return false;
+        if (existing is null || !existing.IsActive) return (false, null);
+
+        if (existing.Days != activity.Days || existing.StartTime != activity.StartTime || existing.EndTime != activity.EndTime)
+        {
+            var assignedInstructorIds = _context.InstructorActivities
+                .Where(item => item.ActivityId == activity.Id && item.IsActive && item.Instructor.IsActive)
+                .Select(item => item.InstructorId);
+            var conflict = await _context.InstructorActivities
+                .Where(item => item.ActivityId != activity.Id && item.IsActive &&
+                    item.Activity.IsActive && item.Instructor.IsActive &&
+                    assignedInstructorIds.Contains(item.InstructorId) &&
+                    (item.Activity.Days & activity.Days) != ActivityDays.None &&
+                    item.Activity.StartTime < activity.EndTime &&
+                    activity.StartTime < item.Activity.EndTime)
+                .Select(item => new { item.Instructor.FirstName, item.Instructor.LastName, ActivityName = item.Activity.Name })
+                .FirstOrDefaultAsync();
+            if (conflict is not null)
+                return (false, $"El horario se superpone con \"{conflict.ActivityName}\", asignada a {conflict.FirstName} {conflict.LastName}.");
+        }
 
         existing.Name = activity.Name;
         existing.Category = activity.Category;
@@ -51,7 +71,9 @@ public class ActivityDAL : IActivityDAL
         existing.Days = activity.Days;
         existing.Location = activity.Location;
         existing.MaximumCapacity = activity.MaximumCapacity;
-        return await _context.SaveChangesAsync() > 0;
+        await _context.SaveChangesAsync();
+        await transaction.CommitAsync();
+        return (true, null);
     }
 
     public async Task<bool> DeleteAsync(int id)

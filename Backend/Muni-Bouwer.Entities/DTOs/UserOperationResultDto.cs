@@ -7,7 +7,8 @@ public enum UserOperationStatus
     InvalidRoles,
     CannotDeactivateCurrentUser,
     CannotModifyCurrentUserRoles,
-    IncompatibleRoles
+    IncompatibleRoles,
+    InstructorRequiresReactivation
 }
 
 public class UserOperationResultDto

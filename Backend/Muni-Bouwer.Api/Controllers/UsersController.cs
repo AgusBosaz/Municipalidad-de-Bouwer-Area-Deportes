@@ -94,6 +94,11 @@ public class UsersController : ControllerBase
                 });
             }
 
+            if (result.Status == UserOperationStatus.InstructorRequiresReactivation)
+            {
+                return Conflict(new { message = "Usá la reactivación de docentes para generar una contraseña temporal." });
+            }
+
             return Ok(result.User);
         }
         catch (Exception exception)

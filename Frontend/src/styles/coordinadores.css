@@ -1,0 +1,28 @@
+.coordinador-page .content-card { max-width: 850px; }
+.coordinador-acciones { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+.coordinador-volver { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+.coordinador-error { margin-top: 18px; color: #a22b36; }
+.coordinador-credencial h2 { margin-bottom: 12px; }
+.coordinador-credencial p { margin: 12px 0; line-height: 1.5; }
+.coordinador-credencial-aviso { color: #8b5d00; }
+.coordinador-credencial label { display: block; margin: 16px 0 8px; font-weight: 600; }
+.coordinador-credencial input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font: inherit; overflow-wrap: anywhere; }
+.coordinador-copiar { margin-top: 10px; padding: 9px 14px; border: 1px solid #9a1b45; border-radius: 8px; background: #fff; color: #9a1b45; font-weight: 600; cursor: pointer; }
+.coordinador-copiar:hover { background: #f9eaf0; }
+.coordinadores-page .page-header-actions .search-input,
+.coordinadores-page .page-header-actions .primary-button { height: 44px; }
+.coordinadores-table td { overflow-wrap: anywhere; }
+@media (max-width: 600px) {
+  .coordinador-acciones { flex-direction: column-reverse; align-items: stretch; }
+  .coordinador-acciones > * { width: 100%; }
+  .coordinadores-page .page-header { flex-direction: column; align-items: stretch; gap: 20px; }
+  .coordinadores-page .page-header-actions { flex-direction: column; align-items: stretch; }
+  .coordinadores-page .page-header-actions .search-input { width: 100%; }
+  .coordinadores-table table, .coordinadores-table tbody, .coordinadores-table tr,
+  .coordinadores-table td { display: block; width: 100%; }
+  .coordinadores-table thead { display: none; }
+  .coordinadores-table tr { margin-bottom: 14px; border: 1px solid #eee; border-radius: 12px; overflow: hidden; }
+  .coordinadores-table td:not([colspan]) { display: flex; flex-direction: column; gap: 5px; padding: 12px 15px; }
+  .coordinadores-table td:not([colspan])::before { content: attr(data-label); font-size: 12px; font-weight: 600; color: #888; }
+  .coordinadores-table td[colspan] { text-align: center; }
+}

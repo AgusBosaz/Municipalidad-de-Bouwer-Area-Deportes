@@ -42,6 +42,11 @@
   margin-bottom: 1.5rem;
 }
 
+.inscripcion-contacto-adicional,
+.inscripcion-contacto-campos { grid-column: 1 / -1; min-width: 0; }
+.inscripcion-contacto-campos { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr)); gap: 1.25rem; }
+.inscripcion-contacto-adicional button { max-width: 100%; text-align: left; }
+
 .form-group label {
   display: block;
   font-size: 0.75rem;
@@ -66,6 +71,18 @@
 .form-group input:focus, .form-group select:focus {
   border-color: #8b1e41;
   box-shadow: 0 0 0 2px rgba(139, 30, 65, 0.15);
+}
+
+.inscripcion-container .form-group input[aria-invalid="true"],
+.inscripcion-container .form-group select[aria-invalid="true"] {
+  border-color: #bd4545;
+  box-shadow: 0 0 0 2px rgba(189, 69, 69, 0.12);
+}
+
+.inscripcion-error-campo {
+  margin: 5px 0 0;
+  color: #a33333;
+  font-size: 0.8rem;
 }
 
 .form-actions {

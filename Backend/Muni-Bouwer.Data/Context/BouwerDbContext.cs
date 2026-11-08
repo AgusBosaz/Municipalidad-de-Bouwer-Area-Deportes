@@ -21,6 +21,7 @@ public class BouwerDbContext : DbContext
     public DbSet<Enrollment> Enrollments { get; set; }
     public DbSet<Documentation> Documents { get; set; }
     public DbSet<MedicalRecord> MedicalRecords { get; set; }
+    public DbSet<MedicalRecordPdf> MedicalRecordPdfs { get; set; }
     public DbSet<StudentAttendance> StudentAttendances { get; set; }
     public DbSet<InstructorAttendance> InstructorAttendances { get; set; }
     public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
@@ -126,10 +127,32 @@ public class BouwerDbContext : DbContext
             .WithOne(student => student.MedicalRecord)
             .HasForeignKey<MedicalRecord>(record => record.StudentId);
 
+        modelBuilder.Entity<MedicalRecordPdf>()
+            .HasKey(pdf => pdf.StudentId);
+
+        modelBuilder.Entity<MedicalRecordPdf>()
+            .HasOne(pdf => pdf.Student)
+            .WithOne()
+            .HasForeignKey<MedicalRecordPdf>(pdf => pdf.StudentId);
+
+        modelBuilder.Entity<EmergencyContact>()
+            .HasOne(contact => contact.Student)
+            .WithMany(student => student.AdditionalEmergencyContacts)
+            .HasForeignKey(contact => contact.StudentId);
+
+        modelBuilder.Entity<EmergencyContact>().Property(contact => contact.Name).HasMaxLength(100);
+        modelBuilder.Entity<EmergencyContact>().Property(contact => contact.PhoneNumber).HasMaxLength(30);
+
         modelBuilder.Entity<StudentAttendance>()
             .HasOne(attendance => attendance.StudentActivity)
             .WithMany(assignment => assignment.Attendances)
             .HasForeignKey(attendance => attendance.StudentActivityId);
+
+        modelBuilder.Entity<StudentAttendance>()
+            .HasOne(attendance => attendance.Instructor)
+            .WithMany()
+            .HasForeignKey(attendance => attendance.InstructorId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<InstructorAttendance>()
             .HasOne(attendance => attendance.InstructorActivity)

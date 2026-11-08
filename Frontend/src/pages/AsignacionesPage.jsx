@@ -1,3 +1,4 @@
+import { useAvisos } from '../components/AvisosContext'
 import { useEffect, useState } from 'react'
 import { getActivities } from '../services/activityService'
 import { getInstructors } from '../services/instructor-controller'
@@ -15,6 +16,7 @@ function mostrarDias(days) {
 }
 
 function AsignacionesPage() {
+  const { avisar, preguntar } = useAvisos()
   const [actividad, setActividad] = useState('')
   const [docente, setDocente] = useState('')
   const [asignaciones, setAsignaciones] = useState([])
@@ -73,7 +75,7 @@ function AsignacionesPage() {
         ? `\n\nAvisos:\n${creada.warnings.join('\n')}`
         : ''
 
-      alert(`Asignación creada correctamente.${avisos}`)
+      await avisar(`Asignación creada correctamente.${avisos}`)
     } catch (error) {
       let mensaje = ''
 
@@ -83,7 +85,7 @@ function AsignacionesPage() {
         mensaje = ''
       }
 
-      alert(mensaje || 'No se pudo crear la asignación. Intentá nuevamente.')
+      await avisar(mensaje || 'No se pudo crear la asignación. Intentá nuevamente.')
     } finally {
       setGuardando(false)
     }
@@ -92,7 +94,7 @@ function AsignacionesPage() {
   const handleDelete = async (id) => {
     if (eliminandoId !== null) return
 
-    const confirmar = window.confirm(
+    const confirmar = await preguntar(
       '¿Querés quitar esta asignación?'
     )
 
@@ -107,7 +109,7 @@ function AsignacionesPage() {
         actuales.filter((item) => item.id !== id)
       )
     } catch {
-      alert('No se pudo quitar la asignación. Intentá nuevamente.')
+      await avisar('No se pudo quitar la asignación. Intentá nuevamente.')
     } finally {
       setEliminandoId(null)
     }

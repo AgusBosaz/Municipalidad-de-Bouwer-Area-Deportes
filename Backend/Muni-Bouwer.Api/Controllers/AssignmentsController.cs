@@ -40,13 +40,14 @@ public class AssignmentsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Assign(AssignInstructorDto dto)
     {
-        var (error, result) = await _assignmentService.AssignAsync(dto);
+        var (error, result, conflictName) = await _assignmentService.AssignAsync(dto);
 
         return error switch
         {
             "instructor_notfound" => NotFound(new { message = "Docente no encontrado." }),
             "activity_notfound" => NotFound(new { message = "Actividad no encontrada." }),
             "duplicate" => Conflict(new { message = "El docente ya está asignado a esa actividad." }),
+            "schedule_conflict" => Conflict(new { message = $"El docente ya tiene asignada la actividad \"{conflictName}\" en ese día y horario." }),
             _ => StatusCode(StatusCodes.Status201Created, result)
         };
     }

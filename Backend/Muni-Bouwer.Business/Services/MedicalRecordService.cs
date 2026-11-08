@@ -30,6 +30,28 @@ namespace Muni_Bouwer.Business
                 .FirstOrDefaultAsync();
         }
 
+        public async Task<byte[]?> GetPdfAsync(int studentId)
+        {
+            return await _context.MedicalRecordPdfs
+                .AsNoTracking()
+                .Where(pdf => pdf.StudentId == studentId)
+                .Select(pdf => pdf.Content)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task SavePdfAsync(int studentId, byte[] content)
+        {
+            var pdf = await _context.MedicalRecordPdfs
+                .FirstOrDefaultAsync(item => item.StudentId == studentId);
+            if (pdf is null)
+            {
+                pdf = new MedicalRecordPdf { StudentId = studentId };
+                _context.MedicalRecordPdfs.Add(pdf);
+            }
+            pdf.Content = content;
+            await _context.SaveChangesAsync();
+        }
+
         public async Task<MedicalRecordResponseDto> SaveOrUpdateAsync(
             int studentId,
             UpsertMedicalRecordDto dto)
