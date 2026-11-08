@@ -1,0 +1,46 @@
+services:
+  sql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${SQL_PASSWORD:?Falta configurar SQL_PASSWORD}
+    ports:
+      - "127.0.0.1:14333:1433"
+    volumes:
+      - sql_data:/var/opt/mssql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa
+          -P "$$MSSQL_SA_PASSWORD" -C -b -Q "SELECT 1" > /dev/null 2>&1
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  api:
+    build:
+      context: ./Backend
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__BouwerDatabase: ${SQL_CONNECTION:?Falta configurar SQL_CONNECTION}
+      Jwt__Key: ${JWT_KEY:?Falta configurar JWT_KEY}
+    ports:
+      - "127.0.0.1:15218:8080"
+    depends_on:
+      sql:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./Frontend
+    ports:
+      - "127.0.0.1:15173:80"
+    depends_on:
+      - api
+
+volumes:
+  sql_data:
+    external: true
+    name: muni-sql-prueba-data
