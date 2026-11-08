@@ -28,6 +28,7 @@ namespace Muni_Bouwer.Api.Controllers
         [HttpGet]
         public async Task<ActionResult<MedicalRecordResponseDto>> Get(int studentId)
         {
+            Response.Headers.CacheControl = "private, no-store";
             if (!User.IsInRole(RoleNames.Coordinator))
             {
                 if (!User.IsInRole(RoleNames.Instructor) ||
@@ -54,7 +55,7 @@ namespace Muni_Bouwer.Api.Controllers
         [Authorize(Policy = PermissionNames.MedicalRecordsManage)]
         [HttpPut("pdf")]
         [RequestSizeLimit(MaxPdfBytes + 65536)]
-       public async Task<IActionResult> UploadPdf(int studentId, IFormFile file)
+        public async Task<IActionResult> UploadPdf(int studentId, IFormFile file)
         {
             if (!User.IsInRole(RoleNames.Coordinator)) return Forbid();
             if (await _studentService.GetByIdAsync(studentId) is null) return NotFound();
@@ -100,6 +101,9 @@ namespace Muni_Bouwer.Api.Controllers
             int studentId,
             [FromBody] UpsertMedicalRecordDto dto)
         {
+            if (!User.IsInRole(RoleNames.Coordinator)) return Forbid();
+            if (await _studentService.GetByIdAsync(studentId) is null) return NotFound();
+            Response.Headers.CacheControl = "private, no-store";
             var updated = await _medicalRecordService.SaveOrUpdateAsync(studentId, dto);
             return Ok(new { message = "Ficha médica guardada con éxito.", data = updated });
         }

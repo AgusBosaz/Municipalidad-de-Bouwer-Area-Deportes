@@ -169,4 +169,4 @@ Si la API no arranca, comprobá que SQL esté `healthy`, que las migraciones se 
 
 Confirmar con la empresa el sistema y acceso al servidor, runner de GitLab, registro de imágenes, dominio y HTTPS, ubicación y credenciales de SQL Server, estrategia de persistencia y respaldos, mecanismo de secretos, correo de Mailjet y forma de ejecutar migraciones. También hay que preparar el primer coordinador y validar el recorrido completo en un entorno apropiado.
 
-El archivo `docker-compose.yml` actual usa la red y el volumen locales y no reemplaza esa configuración. Los Dockerfiles y Compose son un punto de partida que deberá verificarse y adaptarse a la infraestructura definitiva.
+El archivo `docker-compose.yml` actual usa la red y el volumen locales y no reemplaza esa configuración. Los Dockerfiles y Compose son un punto de partida que deberá verificarse y adaptarse a la infraestructura definitiva. Consultá también [Preparación de la entrega y producción](PREPARACION_PRODUCCION.md).

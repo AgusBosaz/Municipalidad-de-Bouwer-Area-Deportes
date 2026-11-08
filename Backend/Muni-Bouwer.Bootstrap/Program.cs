@@ -20,12 +20,21 @@ if (string.IsNullOrWhiteSpace(conexion))
     Console.WriteLine(
         "Falta configurar la conexión a la base de datos."
     );
+    Environment.ExitCode = 1;
     return;
 }
 
 try
 {
     var datosConexion = new SqlConnectionStringBuilder(conexion);
+
+    if (string.IsNullOrWhiteSpace(datosConexion.DataSource) ||
+        string.IsNullOrWhiteSpace(datosConexion.InitialCatalog))
+    {
+        Console.WriteLine("La conexión debe indicar un servidor y una base de datos.");
+        Environment.ExitCode = 1;
+        return;
+    }
 
     Console.WriteLine($"Servidor: {datosConexion.DataSource}");
     Console.WriteLine($"Base de datos: {datosConexion.InitialCatalog}");
@@ -44,6 +53,7 @@ try
         Console.WriteLine(
             "Hay migraciones pendientes. Aplicalas antes de continuar."
         );
+        Environment.ExitCode = 1;
         return;
     }
 
@@ -91,6 +101,7 @@ try
         out DateOnly fechaNacimiento))
     {
         Console.WriteLine("La fecha de nacimiento no es válida.");
+        Environment.ExitCode = 1;
         return;
     }
 
@@ -122,6 +133,7 @@ try
             Console.WriteLine(error.ErrorMessage);
         }
 
+        Environment.ExitCode = 1;
         return;
     }
 
@@ -134,6 +146,7 @@ try
     if (Console.ReadLine() != "CREAR")
     {
         Console.WriteLine("Operación cancelada.");
+        Environment.ExitCode = 1;
         return;
     }
 
@@ -166,6 +179,7 @@ try
         Console.WriteLine(
             "Ya existe un usuario con ese DNI o email."
         );
+        Environment.ExitCode = 1;
         return;
     }
 
@@ -196,5 +210,10 @@ catch (SqlException)
         "No se pudo acceder a SQL Server. Revisá la conexión y las credenciales."
     );
 
+    Environment.ExitCode = 1;
+}
+catch (DbUpdateException)
+{
+    Console.WriteLine("No se pudo guardar el coordinador. Revisá el estado de la base de datos.");
     Environment.ExitCode = 1;
 }
